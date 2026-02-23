@@ -27,7 +27,7 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead class="bg-light">
                         <tr>
-                            <th class="px-4 py-3">ID</th>
+                            <th class="px-4 py-3">No.</th>
                             <th class="py-3">Subject Name</th>
                             <th class="py-3 text-center">Questions</th>
                             <th class="py-3 text-end">Actions</th>
@@ -35,8 +35,11 @@
                     </thead>
                     <tbody>
                         @foreach($subjects as $subject)
+                            @php
+                                $rowNumber = ($subjects->firstItem() ?? 1) + $loop->index;
+                            @endphp
                             <tr>
-                                <td class="px-4 text-muted">#{{ $subject->id }}</td>
+                                <td class="px-4 text-muted">{{ $rowNumber }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="bg-primary bg-opacity-10 text-primary rounded p-2 me-3">

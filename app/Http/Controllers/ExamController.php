@@ -127,8 +127,8 @@ class ExamController extends Controller
         }
 
         // JAMB Mode: configurable questions from English + configurable from each of 3 selected subjects
-        $englishQuestionCount = Cache::get('jamb_english_questions', 60);
-        $subjectQuestionCount = Cache::get('jamb_questions_per_subject', 40);
+        $englishQuestionCount = Cache::get('jamb_english_questions', 3);
+        $subjectQuestionCount = Cache::get('jamb_questions_per_subject', 3);
         
         $englishQuestions = Question::where('subject_id', $englishSubject->id)
             ->inRandomOrder()
