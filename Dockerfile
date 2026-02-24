@@ -30,7 +30,7 @@ WORKDIR /var/www
 COPY . .
 
 # Copy .env.example to .env (for environment configuration)
-RUN cp .env.example .env
+# RUN cp .env.example .env
 
 # run composer update
 RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
@@ -39,7 +39,7 @@ RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 RUN php artisan key:generate
 
 # Migrate database
-# RUN php artisan migrate
+RUN php artisan migrate
 
 # Copy nginx and supervisor config
 COPY ./docker/nginx.conf /etc/nginx/sites-available/default
