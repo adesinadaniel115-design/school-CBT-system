@@ -55,7 +55,7 @@ RUN find . -type f -exec chmod 644 {} \; \
     && chmod -R 777 storage/* \
     && chmod -R 777 bootstrap/cache
 
-EXPOSE 8fix : exposes port 800
+EXPOSE 80
 
 # Start the application using supervisord to manage nginx and php-fpm
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
