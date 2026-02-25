@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y \
     git \
     unzip \
     libpng-dev \
-    libjpeg62-turbo-dev \
+    libjpeg-dev \
     libfreetype6-dev \
     libzip-dev \
     libxml2-dev \
@@ -16,46 +16,52 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     libxslt-dev \
     libcurl4-openssl-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo pdo_mysql mbstring exif bcmath gd intl xsl xml zip \
-    && rm -rf /var/lib/apt/lists/*
+    libpq-dev \
+    && docker-php-ext-install \
+        pdo \
+        pdo_mysql \
+        pdo_pgsql \
+        mbstring \
+        exif \
+        bcmath \
+        gd \
+        intl \
+        xsl \
+        xml \
+        zip \
+        pcntl
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Set working directory
-WORKDIR /var/www
+WORKDIR /var/www/html
 
-# Copy Laravel app code
+# Copy application source
 COPY . .
 
-# Copy .env.example to .env (for environment configuration)
-RUN cp .env.example .env
 
-# run composer update
-RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
+# Ensure entrypoint script is copied before installing Composer deps
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# Generate app key
-RUN php artisan key:generate
+# Install PHP dependencies
+RUN composer install --no-dev --no-scripts --optimize-autoloader --no-interaction
 
-# Migrate database
-# RUN php artisan migrate
+# Set proper permissions
+RUN chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
+    
+# Copy configuration files
+COPY ./docker/nginx/default.conf /etc/nginx/sites-available/default
+COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY docker/php/php.ini /usr/local/etc/php/conf.d/custom.ini
 
-# Copy nginx and supervisor config
-COPY ./docker/nginx.conf /etc/nginx/sites-available/default
-COPY ./docker/supervisord.conf /etc/supervisord.conf
 
 
-# Set permissions for the Laravel app
-RUN find . -type f -exec chmod 644 {} \; \
-    && find . -type d -exec chmod 755 {} \; \
-    && chown -R www-data:www-data . \
-    && chmod -R 755 . \
-    && chmod -R 777 storage \
-    && chmod -R 777 storage/* \
-    && chmod -R 777 bootstrap/cache
+# Expose ports
+EXPOSE 80
 
-EXPOSE 8000
-
-# Start the application using supervisord to manage nginx and php-fpm
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
+# will manage Laravel setup and Supervisor
+# CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+CMD ["/usr/local/bin/entrypoint.sh"]
