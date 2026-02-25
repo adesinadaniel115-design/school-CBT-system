@@ -1,0 +1,54 @@
+services:
+  # Web Service (Laravel App)
+  - type: web
+    name: school-cbt-system
+    runtime: docker
+    region: frankfurt
+    plan: starter
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /
+    disk:
+      name: storage
+      mountPath: /var/www/html/storage
+      sizeGB: 1
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: APP_KEY
+        sync: false
+      - key: APP_URL
+        value: https://school-cbt-system.onrender.com
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase:
+          name: school-cbt-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: school-cbt-db
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: school-cbt-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: school-cbt-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: school-cbt-db
+          property: password
+
+databases:
+  # PostgreSQL Database
+  - name: school-cbt-db
+    plan: starter
+    region: frankfurt
+    databaseName: school_cbt_db
+    user: school_cbt_user

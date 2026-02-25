@@ -457,6 +457,62 @@
             background: rgba(255, 255, 255, 0.3);
             border-color: white;
         }
+
+        /* Mobile Responsive (max-width: 768px) */
+        @media (max-width: 768px) {
+            body {
+                padding: 0;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .top-actions {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.75rem;
+            }
+
+            .profile-chip {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .history-card {
+                padding: 1.5rem !important;
+            }
+
+            .exam-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            .btn {
+                width: 100%;
+                font-size: 0.95rem;
+                padding: 0.6rem 1rem;
+            }
+        }
+
+        /* Small Mobile (max-width: 480px) */
+        @media (max-width: 480px) {
+            .history-card {
+                padding: 1rem !important;
+            }
+
+            .exam-title {
+                font-size: 1rem !important;
+            }
+
+            .exam-meta {
+                font-size: 0.8rem !important;
+            }
+
+            .profile-avatar {
+                width: 32px;
+                height: 32px;
+            }
+        }
     </style>
 </head>
 <body>

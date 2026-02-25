@@ -304,6 +304,82 @@
             color: #991b1b;
             font-weight: 500;
         }
+
+        /* Mobile Responsive (max-width: 768px) */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem 0.5rem;
+            }
+
+            .card {
+                padding: 1.5rem;
+                border-radius: 16px;
+            }
+
+            .header h1 {
+                font-size: 1.4rem;
+            }
+
+            .header p {
+                font-size: 0.95rem;
+            }
+
+            .student-info {
+                padding: 1rem;
+            }
+
+            .student-detail {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.35rem;
+            }
+
+            .subjects-list {
+                padding: 1rem;
+            }
+
+            .subject-item {
+                padding: 0.6rem;
+            }
+
+            .subject-icon {
+                width: 34px;
+                height: 34px;
+                font-size: 1rem;
+                margin-right: 0.75rem;
+            }
+
+            .token-input {
+                font-size: 1.1rem;
+                padding: 0.75rem 1rem;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        /* Small Mobile (max-width: 480px) */
+        @media (max-width: 480px) {
+            .card {
+                padding: 1rem;
+                border-radius: 14px;
+            }
+
+            .header h1 {
+                font-size: 1.2rem;
+            }
+
+            .info-value {
+                font-size: 1rem;
+                padding: 0.75rem;
+            }
+
+            .token-input {
+                font-size: 1rem;
+                letter-spacing: 1px;
+            }
+        }
     </style>
 </head>
 <body>

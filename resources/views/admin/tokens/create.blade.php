@@ -106,4 +106,47 @@
         </div>
     </div>
 </div>
+
+<style>
+    @media (max-width: 768px) {
+        .card-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .card-header .btn {
+            width: 100%;
+        }
+
+        .col-lg-8,
+        .col-lg-4 {
+            padding-left: 0.75rem;
+            padding-right: 0.75rem;
+        }
+
+        form > div[style*="display: flex"] {
+            flex-direction: column;
+        }
+
+        form > div[style*="display: flex"] .btn {
+            width: 100%;
+        }
+
+        .card {
+            margin-bottom: 1rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .card {
+            padding: 1rem !important;
+        }
+
+        .form-control,
+        .form-label {
+            font-size: 0.95rem;
+        }
+    }
+</style>
 @endsection

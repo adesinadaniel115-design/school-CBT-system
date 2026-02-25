@@ -305,6 +305,70 @@
         .btn-secondary:hover {
             background: #d1d5db;
         }
+
+        /* Mobile Responsive (max-width: 768px) */
+        @media (max-width: 768px) {
+            body {
+                padding: 0;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .top-actions {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.75rem;
+            }
+
+            .profile-chip {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .profile-card {
+                padding: 1.5rem !important;
+            }
+
+            .section-title {
+                font-size: 1.2rem !important;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            .form-control {
+                font-size: 1rem;
+            }
+
+            .btn {
+                width: 100%;
+                font-size: 0.95rem;
+                padding: 0.6rem 1rem;
+            }
+        }
+
+        /* Small Mobile (max-width: 480px) */
+        @media (max-width: 480px) {
+            .profile-card {
+                padding: 1rem !important;
+            }
+
+            .section-title {
+                font-size: 1.05rem !important;
+            }
+
+            .profile-avatar {
+                width: 90px !important;
+                height: 90px !important;
+            }
+
+            .info-text {
+                font-size: 0.85rem !important;
+            }
+        }
     </style>
 </head>
 <body>

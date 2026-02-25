@@ -575,6 +575,120 @@
                 margin-left: 0;
             }
         }
+
+        /* Mobile Responsive (max-width: 768px) */
+        @media (max-width: 768px) {
+            body {
+                padding: 0;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .top-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .profile-chip {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .welcome-card {
+                padding: 1.5rem !important;
+            }
+
+            .welcome-title {
+                font-size: 1.5rem !important;
+            }
+
+            .welcome-subtitle {
+                font-size: 0.9rem !important;
+            }
+
+            .quick-stats {
+                grid-template-columns: 1fr !important;
+            }
+
+            .stat-box {
+                padding: 1rem !important;
+            }
+
+            .exam-section h3 {
+                font-size: 1.3rem;
+            }
+
+            .exam-card {
+                padding: 1.5rem !important;
+            }
+
+            .exam-card h4 {
+                font-size: 1.2rem;
+            }
+
+            .exam-info {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .checkbox-group {
+                grid-template-columns: 1fr !important;
+            }
+
+            .form-select-lg {
+                font-size: 1rem;
+                padding: 0.5rem 0.75rem;
+            }
+
+            .btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.95rem;
+            }
+        }
+
+        /* Small Mobile (max-width: 480px) */
+        @media (max-width: 480px) {
+            .welcome-card {
+                padding: 1rem !important;
+            }
+
+            .welcome-title {
+                font-size: 1.2rem !important;
+            }
+
+            .exam-card {
+                padding: 1rem !important;
+                margin-bottom: 1rem;
+            }
+
+            .exam-card h4 {
+                font-size: 1.1rem;
+            }
+
+            .exam-info-item {
+                font-size: 0.85rem;
+            }
+
+            .btn-exam {
+                font-size: 0.9rem;
+                padding: 0.75rem 1rem;
+            }
+
+            .stat-box {
+                padding: 0.75rem !important;
+                gap: 0.5rem;
+            }
+
+            .stat-value {
+                font-size: 1.5rem !important;
+            }
+
+            .stat-label {
+                font-size: 0.75rem !important;
+            }
+        }
     </style>
 </head>
 <body>

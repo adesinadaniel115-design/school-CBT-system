@@ -348,6 +348,45 @@
 .share-btn-secondary:hover {
     background: #d1d5db;
 }
+
+/* Mobile Responsive (max-width: 768px) */
+@media (max-width: 768px) {
+    .card-header > div:last-child {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .card-header .btn {
+        width: 100%;
+    }
+
+    form[method="GET"] {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 0.75rem !important;
+    }
+
+    form[method="GET"] > div {
+        width: 100% !important;
+    }
+
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .table-container table {
+        min-width: 720px;
+    }
+
+    .share-modal-content {
+        padding: 1.25rem;
+    }
+
+    .share-btn-group {
+        grid-template-columns: 1fr;
+    }
+}
 </style>
 
 <!-- Share Modal -->
