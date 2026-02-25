@@ -106,6 +106,26 @@
                     </div>
                 </div>
 
+                <div class="form-group">
+                    <div class="form-check" style="padding: 1rem; background: #e0f2fe; border-radius: 8px; border-left: 3px solid #0284c7;">
+                        <input type="checkbox" id="shuffle_questions" name="shuffle_questions" class="form-check-input" value="1" {{ old('shuffle_questions', $settings['shuffle_questions']) ? 'checked' : '' }}>
+                        <label for="shuffle_questions" class="form-check-label">
+                            <strong>🔀 Shuffle Questions</strong>
+                            <br><small style="color: #6b7280;">Randomize question order for each student (prevents cheating)</small>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="form-check" style="padding: 1rem; background: #fef3c7; border-radius: 8px; border-left: 3px solid #f59e0b;">
+                        <input type="checkbox" id="shuffle_options" name="shuffle_options" class="form-check-input" value="1" {{ old('shuffle_options', $settings['shuffle_options']) ? 'checked' : '' }}>
+                        <label for="shuffle_options" class="form-check-label">
+                            <strong>🔄 Shuffle Answer Options</strong>
+                            <br><small style="color: #6b7280;">Randomize A/B/C/D position for each student (prevents answer pattern memorization)</small>
+                        </label>
+                    </div>
+                </div>
+
                 <div style="display: flex; gap: 1rem; padding-top: 1rem;">
                     <button type="submit" class="btn btn-primary">
                         <i class="bi bi-check-circle"></i> Save Settings

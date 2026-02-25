@@ -37,6 +37,15 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="student_id" class="form-label">Student ID</label>
+                    <input type="text" id="student_id" name="student_id" class="form-control @error('student_id') is-invalid @enderror" value="{{ old('student_id', $student->student_id) }}" placeholder="e.g., joy001 or sarah002">
+                    <small style="color: #6b7280;">Format: firstname + 3-digit number</small>
+                    @error('student_id')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="form-group">
                     <label for="password" class="form-label">New Password (Optional)</label>
                     <input type="password" id="password" name="password" class="form-control @error('password') is-invalid @enderror">
                     <small style="color: #6b7280;">Leave blank to keep current password</small>
@@ -62,9 +71,9 @@
             <h5 style="color: #1f2937; margin-bottom: 1rem;">
                 <i class="bi bi-person-badge"></i> Student Details
             </h5>
-            <div style="padding: 1rem; background: #f9fafb; border-radius: 8px; margin-bottom: 1rem;">
+            <div style="padding: 1rem; background: #f0f9ff; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #0369a1;">
                 <small style="color: #6b7280; display: block;">Student ID</small>
-                <strong style="color: #1f2937;">#{{ $student->id }}</strong>
+                <strong style="color: #1f2937; font-size: 1.1rem;">{{ $student->student_id ?? 'Not assigned' }}</strong>
             </div>
             <div style="padding: 1rem; background: #f9fafb; border-radius: 8px; margin-bottom: 1rem;">
                 <small style="color: #6b7280; display: block;">Registered</small>

@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminReportController;
 use App\Http\Controllers\AdminStudentController;
 use App\Http\Controllers\AdminSettingsController;
+use App\Http\Controllers\AdminExamTokenController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ExamController;
 use App\Http\Controllers\QuestionController;
@@ -44,6 +45,8 @@ Route::middleware('auto.login')->group(function () {
 
         Route::post('/exam/start', [ExamController::class, 'start'])->name('exam.start');
         Route::post('/exam/start-jamb', [ExamController::class, 'startJamb'])->name('exam.start.jamb');
+        Route::post('/exam/confirm', [ExamController::class, 'confirmJamb'])->name('exam.confirm.jamb');
+        Route::post('/exam/validate-token', [ExamController::class, 'validateToken'])->name('exam.validate.token');
         Route::get('/exam/{session}', [ExamController::class, 'take'])->name('exam.take');
         Route::post('/exam/{session}/answer', [ExamController::class, 'saveAnswer'])->name('exam.answer');
         Route::post('/exam/{session}/terminate', [ExamController::class, 'terminate'])->name('exam.terminate');
@@ -62,6 +65,16 @@ Route::middleware('auto.login')->group(function () {
             
             // Student Management
             Route::resource('students', AdminStudentController::class);
+            
+            // Exam Token Management
+            Route::get('tokens', [AdminExamTokenController::class, 'index'])->name('tokens.index');
+            Route::get('tokens/create', [AdminExamTokenController::class, 'create'])->name('tokens.create');
+            Route::post('tokens', [AdminExamTokenController::class, 'store'])->name('tokens.store');
+            Route::post('tokens/{token}/toggle', [AdminExamTokenController::class, 'toggle'])->name('tokens.toggle');
+            Route::delete('tokens/{token}', [AdminExamTokenController::class, 'destroy'])->name('tokens.destroy');
+            Route::delete('tokens-bulk-delete', [AdminExamTokenController::class, 'bulkDelete'])->name('tokens.bulk-delete');
+            Route::get('tokens/print', [AdminExamTokenController::class, 'print'])->name('tokens.print');
+            Route::post('tokens/validate', [AdminExamTokenController::class, 'validate'])->name('tokens.validate');
             
             // Subject & Question Management
             Route::resource('subjects', SubjectController::class);

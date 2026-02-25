@@ -42,17 +42,27 @@ class AdminStudentController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['required', 'string', 'min:6'],
+            'student_id' => ['nullable', 'string', 'unique:users,student_id'],
         ]);
+
+        // Auto-generate student ID if not provided
+        if (empty($validated['student_id'])) {
+            // Extract first name and count existing non-admin users
+            $firstName = strtolower(explode(' ', $validated['name'])[0]);
+            $studentCount = User::where('is_admin', false)->count();
+            $validated['student_id'] = $firstName . str_pad($studentCount + 1, 3, '0', STR_PAD_LEFT);
+        }
 
         $student = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
+            'student_id' => $validated['student_id'],
             'is_admin' => false,
         ]);
 
         return redirect()->route('admin.students.index')
-            ->with('status', 'Student created successfully!');
+            ->with('status', 'Student created successfully! ID: ' . $student->student_id);
     }
 
     public function edit(User $student)
@@ -75,11 +85,13 @@ class AdminStudentController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', Rule::unique('users')->ignore($student->id)],
             'password' => ['nullable', 'string', 'min:6'],
+            'student_id' => ['nullable', 'string', Rule::unique('users')->ignore($student->id)],
         ]);
 
         $student->update([
             'name' => $validated['name'],
             'email' => $validated['email'],
+            'student_id' => $validated['student_id'] ?? $student->student_id,
         ]);
 
         if ($request->filled('password')) {

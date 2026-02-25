@@ -11,6 +11,11 @@
                 <i class="bi bi-person-badge-fill"></i> {{ $student->name }}
             </h3>
             <p style="color: #6b7280; margin: 0.25rem 0 0; font-size: 0.875rem;">{{ $student->email }}</p>
+            @if($student->student_id)
+                <span style="display: inline-block; background: #f0f9ff; padding: 0.25rem 0.75rem; border-radius: 6px; color: #0369a1; font-weight: 500; font-size: 0.875rem; margin-top: 0.5rem;">
+                    <i class="bi bi-hash"></i> {{ $student->student_id }}
+                </span>
+            @endif
         </div>
         <div class="d-flex gap-2">
             <a href="{{ route('admin.students.edit', $student) }}" class="btn btn-secondary">

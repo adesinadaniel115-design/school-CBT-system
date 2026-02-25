@@ -295,6 +295,19 @@
                 $cardClass = $isUnanswered ? 'unanswered' : ($isCorrect ? 'correct' : 'incorrect');
                 $statusClass = $isUnanswered ? 'status-unanswered' : ($isCorrect ? 'status-correct' : 'status-incorrect');
                 $statusText = $isUnanswered ? 'Unanswered' : ($isCorrect ? '✓ Correct' : '✗ Incorrect');
+                
+                // Check if this is the first question in a passage group
+                $showPassage = false;
+                if ($question->passage_text) {
+                    if ($index === 0) {
+                        $showPassage = true;
+                    } else {
+                        $prevQuestion = $questions[$index - 1];
+                        if ($prevQuestion->passage_group !== $question->passage_group) {
+                            $showPassage = true;
+                        }
+                    }
+                }
             @endphp
 
             <div class="question-card {{ $cardClass }}">
@@ -307,8 +320,21 @@
                     <span class="subject-badge">{{ $question->subject->name }}</span>
                 @endif
 
+                {{-- Display passage if this is the first question in a group --}}
+                @if($showPassage && $question->passage_text)
+                    <div class="passage-container">
+                        <div class="passage-header">
+                            <i class="bi bi-file-text-fill"></i>
+                            <span>Reading Passage / Context</span>
+                        </div>
+                        <div class="passage-content">
+                            {!! $question->passage_text !!}
+                        </div>
+                    </div>
+                @endif
+
                 <div class="question-text">
-                    {{ $question->question_text }}
+                    {!! $question->question_text !!}
                 </div>
 
                 <div class="options-list">
@@ -338,7 +364,7 @@
                                     <i class="bi bi-x-lg"></i>
                                 </span>
                             @endif
-                            <span><strong>{{ $option }}.</strong> {{ $question->$optionText }}</span>
+                            <span><strong>{{ $option }}.</strong> {!! $question->$optionText !!}</span>
                         </div>
                     @endforeach
                 </div>
@@ -346,7 +372,7 @@
                 @if($question->explanation)
                     <div class="explanation-box">
                         <strong><i class="bi bi-lightbulb-fill"></i> Explanation:</strong>
-                        {{ $question->explanation }}
+                        {!! $question->explanation !!}
                     </div>
                 @endif
             </div>

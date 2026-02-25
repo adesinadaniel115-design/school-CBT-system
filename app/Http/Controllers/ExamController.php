@@ -5,11 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\ExamAnswer;
 use App\Models\ExamSession;
 use App\Models\ExamSubjectScore;
+use App\Models\ExamToken;
 use App\Models\Question;
 use App\Models\Subject;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class ExamController extends Controller
 {
@@ -40,10 +41,15 @@ class ExamController extends Controller
 
         // School mode: configurable questions per subject
         $questionCount = Cache::get('school_questions_count', 40);
-        $questions = Question::where('subject_id', $data['subject_id'])
-            ->inRandomOrder()
-            ->limit($questionCount)
-            ->get();
+        $shuffleQuestions = Cache::get('shuffle_questions', true);
+        
+        $query = Question::where('subject_id', $data['subject_id']);
+        
+        if ($shuffleQuestions) {
+            $query->inRandomOrder();
+        }
+        
+        $questions = $query->limit($questionCount)->get();
 
         if ($questions->isEmpty()) {
             return back()->withErrors(['subject_id' => 'No questions available for this subject.']);
@@ -126,90 +132,40 @@ class ExamController extends Controller
             ]);
         }
 
-        // JAMB Mode: configurable questions from English + configurable from each of 3 selected subjects
+        // Validate that enough questions exist
         $englishQuestionCount = Cache::get('jamb_english_questions', 3);
         $subjectQuestionCount = Cache::get('jamb_questions_per_subject', 3);
         
-        $englishQuestions = Question::where('subject_id', $englishSubject->id)
-            ->inRandomOrder()
-            ->limit($englishQuestionCount)
-            ->get();
+        $englishQuestionsAvailable = Question::where('subject_id', $englishSubject->id)->count();
 
-        if ($englishQuestions->count() < $englishQuestionCount) {
+        if ($englishQuestionsAvailable < $englishQuestionCount) {
             return back()->withErrors([
                 'subject_ids' => "Insufficient English questions (need {$englishQuestionCount}).",
             ]);
         }
 
-        // Collect all questions
-        $allQuestions = collect([$englishQuestions]);
-        $subjectMap = [];
-
-        // Track which subjects are included
-        $subjectMap[$englishSubject->id] = [
-            'name' => $englishSubject->name,
-            'count' => $englishQuestionCount,
-        ];
-
         foreach ($selectedSubjectIds as $subjectId) {
             $subject = Subject::find($subjectId);
-            $questions = Question::where('subject_id', $subjectId)
-                ->inRandomOrder()
-                ->limit($subjectQuestionCount)
-                ->get();
+            $availableCount = Question::where('subject_id', $subjectId)->count();
 
-            if ($questions->count() < $subjectQuestionCount) {
+            if ($availableCount < $subjectQuestionCount) {
                 return back()->withErrors([
                     'subject_ids' => "Insufficient questions for {$subject->name} (need {$subjectQuestionCount}).",
                 ]);
             }
-
-            $allQuestions->push($questions);
-            $subjectMap[$subjectId] = [
-                'name' => $subject->name,
-                'count' => $subjectQuestionCount,
-            ];
         }
 
-        // Flatten and shuffle all questions
-        $allQuestions = $allQuestions->flatten();
-        $shuffledQuestions = $allQuestions->shuffle();
-        $questionIds = $shuffledQuestions->pluck('id')->all();
-        $totalQuestions = count($questionIds);
-        $jambDuration = Cache::get('jamb_duration_minutes', 120);
-
-        // Create JAMB session
-        $session = DB::transaction(function () use ($studentId, $englishSubject, $selectedSubjectIds, $questionIds, $totalQuestions, $jambDuration) {
-            $session = ExamSession::create([
-                'student_id' => $studentId,
-                'subject_id' => $englishSubject->id, // Store English as primary for reference
-                'exam_mode' => 'jamb',
-                'total_questions' => $totalQuestions,
-                'duration_minutes' => $jambDuration,
-                'score' => 0,
-                'question_ids' => $questionIds,
-                'started_at' => now(),
-            ]);
-
-            // Create answer records for all questions
-            $now = now();
-            $answers = array_map(function ($questionId) use ($session, $now) {
-                return [
-                    'exam_session_id' => $session->id,
-                    'question_id' => $questionId,
-                    'selected_option' => null,
-                    'is_correct' => false,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ];
-            }, $questionIds);
-
-            ExamAnswer::insert($answers);
-
-            return $session;
-        });
-
-        return redirect()->route('exam.take', $session);
+        // Store selection in session and redirect to confirmation page
+        $selectedSubjects = Subject::whereIn('id', $selectedSubjectIds)->get();
+        
+        return view('student.exam.confirm-jamb', [
+            'englishSubject' => $englishSubject,
+            'selectedSubjects' => $selectedSubjects,
+            'subjectIds' => $selectedSubjectIds,
+            'englishQuestionCount' => $englishQuestionCount,
+            'subjectQuestionCount' => $subjectQuestionCount,
+            'duration' => Cache::get('jamb_duration_minutes', 120),
+        ]);
     }
 
     public function take(ExamSession $session)
@@ -233,6 +189,12 @@ class ExamController extends Controller
             ->get();
 
         $answers = $session->answers()->get()->keyBy('question_id');
+        
+        // Shuffle options if enabled
+        $shuffleOptions = Cache::get('shuffle_options', true);
+        if ($shuffleOptions) {
+            $questions = $this->shuffleQuestionOptions($questions, $session->id);
+        }
 
         return view('exam.take', [
             'session' => $session->load('subject'),
@@ -467,6 +429,12 @@ class ExamController extends Controller
             ->get();
 
         $answers = $session->answers()->get()->keyBy('question_id');
+        
+        // Shuffle options if enabled (same as during exam)
+        $shuffleOptions = Cache::get('shuffle_options', true);
+        if ($shuffleOptions) {
+            $questions = $this->shuffleQuestionOptions($questions, $session->id);
+        }
 
         return view('exam.review', [
             'session' => $session->load('subject'),
@@ -481,4 +449,205 @@ class ExamController extends Controller
             abort(403);
         }
     }
-}
+    
+    /**
+     * Shuffle question options (A/B/C/D) for each question
+     * Uses session ID as seed to ensure consistent shuffling per session
+     */
+    private function shuffleQuestionOptions($questions, $sessionId)
+    {
+        foreach ($questions as $question) {
+            // Use session ID + question ID as seed for consistent shuffling
+            mt_srand($sessionId + $question->id);
+            
+            // Create array of options with their original labels
+            $options = [
+                'A' => $question->option_a,
+                'B' => $question->option_b,
+                'C' => $question->option_c,
+                'D' => $question->option_d,
+            ];
+            
+            // Shuffle while preserving keys
+            $keys = array_keys($options);
+            shuffle($keys);
+            $shuffledOptions = [];
+            $mapping = [];
+            
+            // Map old position to new position
+            $newLabels = ['A', 'B', 'C', 'D'];
+            foreach ($keys as $index => $originalKey) {
+                $newLabel = $newLabels[$index];
+                $shuffledOptions[$newLabel] = $options[$originalKey];
+                $mapping[$originalKey] = $newLabel;
+            }
+            
+            // Update question options
+            $question->option_a = $shuffledOptions['A'];
+            $question->option_b = $shuffledOptions['B'];
+            $question->option_c = $shuffledOptions['C'];
+            $question->option_d = $shuffledOptions['D'];
+            
+            // Update correct answer to new position
+            $question->original_correct_option = $question->correct_option;
+            $question->correct_option = $mapping[$question->correct_option];
+            
+            // Store mapping for reference (optional, for debugging)
+            $question->option_mapping = $mapping;
+            
+            // Reset random seed
+            mt_srand();
+        }
+        
+        return $questions;
+    }
+
+    public function confirmJamb(Request $request)
+    {
+        $data = $request->validate([
+            'subject_ids' => ['required', 'array', 'size:3'],
+            'subject_ids.*' => ['required', 'exists:subjects,id'],
+            'token_code' => ['required', 'string'],
+        ]);
+
+        $studentId = $request->user()->id;
+        $tokenCode = strtoupper(trim($data['token_code']));
+
+        // Validate token
+        $token = ExamToken::where('code', $tokenCode)->first();
+
+        if (!$token) {
+            return back()->withErrors(['token_code' => 'Invalid token code.'])->withInput();
+        }
+
+        if (!$token->isValid()) {
+            $reason = !$token->is_active ? 'deactivated' :
+                     ($token->expires_at && $token->expires_at->isPast() ? 'expired' : 'fully used');
+            return back()->withErrors(['token_code' => "Token is {$reason}."])->withInput();
+        }
+
+        // Get English subject
+        $englishSubject = Subject::where('name', 'LIKE', '%English%')
+            ->orWhere('name', 'LIKE', '%ENGLISH%')
+            ->first();
+
+        $selectedSubjectIds = $data['subject_ids'];
+
+        // Collect questions
+        $englishQuestionCount = Cache::get('jamb_english_questions', 3);
+        $subjectQuestionCount = Cache::get('jamb_questions_per_subject', 3);
+        $shuffleQuestions = Cache::get('shuffle_questions', true);
+        
+        $englishQuery = Question::where('subject_id', $englishSubject->id);
+        
+        if ($shuffleQuestions) {
+            $englishQuery->inRandomOrder();
+        }
+        
+        $englishQuestions = $englishQuery->limit($englishQuestionCount)->get();
+
+        $allQuestions = collect([$englishQuestions]);
+        $subjectMap = [];
+
+        $subjectMap[$englishSubject->id] = [
+            'name' => $englishSubject->name,
+            'count' => $englishQuestionCount,
+        ];
+
+        foreach ($selectedSubjectIds as $subjectId) {
+            $subject = Subject::find($subjectId);
+            
+            $subjectQuery = Question::where('subject_id', $subjectId);
+            
+            if ($shuffleQuestions) {
+                $subjectQuery->inRandomOrder();
+            }
+            
+            $questions = $subjectQuery->limit($subjectQuestionCount)->get();
+
+            $allQuestions->push($questions);
+            $subjectMap[$subjectId] = [
+                'name' => $subject->name,
+                'count' => $subjectQuestionCount,
+            ];
+        }
+
+        // Flatten and shuffle all questions
+        $allQuestions = $allQuestions->flatten();
+        
+        if ($shuffleQuestions) {
+            $allQuestions = $allQuestions->shuffle();
+        }
+        
+        $questionIds = $allQuestions->pluck('id')->all();
+        $totalQuestions = count($questionIds);
+        $jambDuration = Cache::get('jamb_duration_minutes', 120);
+
+        // Create JAMB session
+        $session = DB::transaction(function () use ($studentId, $englishSubject, $selectedSubjectIds, $questionIds, $totalQuestions, $jambDuration, $token, $request) {
+            $session = ExamSession::create([
+                'student_id' => $studentId,
+                'subject_id' => $englishSubject->id,
+                'exam_mode' => 'jamb',
+                'total_questions' => $totalQuestions,
+                'duration_minutes' => $jambDuration,
+                'score' => 0,
+                'question_ids' => $questionIds,
+                'started_at' => now(),
+            ]);
+
+            // Create answer records for all questions
+            $now = now();
+            $answers = array_map(function ($questionId) use ($session, $now) {
+                return [
+                    'exam_session_id' => $session->id,
+                    'question_id' => $questionId,
+                    'selected_option' => null,
+                    'is_correct' => false,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }, $questionIds);
+
+            ExamAnswer::insert($answers);
+
+            // Use the token
+            $token->use($request->user(), $session->id);
+
+            return $session;
+        });
+
+        return redirect()->route('exam.take', $session);
+    }
+
+    public function validateToken(Request $request)
+    {
+        $request->validate([
+            'code' => ['required', 'string']
+        ]);
+
+        $token = ExamToken::where('code', strtoupper(trim($request->code)))->first();
+
+        if (!$token) {
+            return response()->json([
+                'valid' => false,
+                'message' => 'Token not found'
+            ], 404);
+        }
+
+        if (!$token->isValid()) {
+            $reason = !$token->is_active ? 'deactivated' :
+                     ($token->expires_at && $token->expires_at->isPast() ? 'expired' : 'fully used');
+            
+            return response()->json([
+                'valid' => false,
+                'message' => "Token is {$reason}"
+            ], 400);
+        }
+
+        return response()->json([
+            'valid' => true,
+            'message' => 'Token is valid',
+            'remaining_uses' => $token->remainingUses()
+        ]);
+    }}

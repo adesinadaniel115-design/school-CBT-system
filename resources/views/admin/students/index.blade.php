@@ -33,6 +33,7 @@
             <thead>
                 <tr>
                     <th>#</th>
+                    <th>Student ID</th>
                     <th>Name</th>
                     <th>Email</th>
                     <th>Exams Taken</th>
@@ -44,7 +45,8 @@
                 @forelse($students as $student)
                     <tr>
                         <td>{{ $students->firstItem() + $loop->index }}</td>
-                        <td><strong>{{ $student->name }}</strong></td>
+                        <td><strong style="background: #f0f9ff; padding: 0.25rem 0.75rem; border-radius: 6px; color: #0369a1;">{{ $student->student_id ?? 'N/A' }}</strong></td>
+                        <td>{{ $student->name }}</td>
                         <td>{{ $student->email }}</td>
                         <td>
                             <span class="badge badge-primary">{{ $student->exam_sessions_count }} exams</span>
@@ -70,7 +72,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" style="text-align: center; padding: 3rem; color: #6b7280;">
+                        <td colspan="7" style="text-align: center; padding: 3rem; color: #6b7280;">
                             <i class="bi bi-inbox" style="font-size: 3rem; display: block; margin-bottom: 1rem;"></i>
                             <strong style="display: block; margin-bottom: 0.5rem;">No students found</strong>
                             <p style="margin: 0;">Add your first student to get started</p>

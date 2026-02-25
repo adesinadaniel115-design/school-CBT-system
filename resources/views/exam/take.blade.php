@@ -28,6 +28,48 @@
         opacity: 1;
         transform: translateY(0);
     }
+
+    /* Passage/Comprehension Styling */
+    .passage-container {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-left: 4px solid #0d6efd;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .passage-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+        color: #0d6efd;
+        font-weight: 700;
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .passage-header i {
+        font-size: 1.25rem;
+    }
+
+    .passage-content {
+        background: white;
+        padding: 1.25rem;
+        border-radius: 8px;
+        line-height: 1.8;
+        color: #1f2937;
+        font-size: 1rem;
+        white-space: pre-wrap;
+        border: 1px solid #e5e7eb;
+    }
+
+    .passage-content strong {
+        font-weight: 700;
+        color: #111827;
+    }
 </style>
 @endpush
 
@@ -225,6 +267,19 @@
             @php
                 $answer = $answers->get($question->id);
                 $selected = $answer ? $answer->selected_option : null;
+                
+                // Check if this is the first question in a passage group
+                $showPassage = false;
+                if ($question->passage_text) {
+                    if ($index === 0) {
+                        $showPassage = true;
+                    } else {
+                        $prevQuestion = $questions[$index - 1];
+                        if ($prevQuestion->passage_group !== $question->passage_group) {
+                            $showPassage = true;
+                        }
+                    }
+                }
             @endphp
             
             <div class="question-card" 
@@ -254,8 +309,21 @@
                     @endif
                 </div>
 
+                {{-- Display passage if this is the first question in a group --}}
+                @if($showPassage && $question->passage_text)
+                    <div class="passage-container">
+                        <div class="passage-header">
+                            <i class="bi bi-file-text-fill"></i>
+                            <span>Reading Passage / Context</span>
+                        </div>
+                        <div class="passage-content">
+                            {!! $question->passage_text !!}
+                        </div>
+                    </div>
+                @endif
+
                 <div class="question-text">
-                    {{ $question->question_text }}
+                    {!! $question->question_text !!}
                 </div>
                 <div class="question-instruction">Choose the best answer.</div>
 
@@ -267,7 +335,7 @@
                                {{ $selected === 'A' ? 'checked' : '' }}
                                onchange="updateAnswerStatus({{ $index }}); saveAnswer({{ $question->id }}, {{ $index }});">
                         <span class="option-letter">A</span>
-                        <span class="option-text">{{ $question->option_a }}</span>
+                        <span class="option-text">{!! $question->option_a !!}</span>
                     </label>
 
                     <label class="option-label">
@@ -277,7 +345,7 @@
                                {{ $selected === 'B' ? 'checked' : '' }}
                                onchange="updateAnswerStatus({{ $index }}); saveAnswer({{ $question->id }}, {{ $index }});">
                         <span class="option-letter">B</span>
-                        <span class="option-text">{{ $question->option_b }}</span>
+                        <span class="option-text">{!! $question->option_b !!}</span>
                     </label>
 
                     <label class="option-label">
@@ -287,7 +355,7 @@
                                {{ $selected === 'C' ? 'checked' : '' }}
                                onchange="updateAnswerStatus({{ $index }}); saveAnswer({{ $question->id }}, {{ $index }});">
                         <span class="option-letter">C</span>
-                        <span class="option-text">{{ $question->option_c }}</span>
+                        <span class="option-text">{!! $question->option_c !!}</span>
                     </label>
 
                     <label class="option-label">
@@ -297,7 +365,7 @@
                                {{ $selected === 'D' ? 'checked' : '' }}
                                onchange="updateAnswerStatus({{ $index }}); saveAnswer({{ $question->id }}, {{ $index }});">
                         <span class="option-letter">D</span>
-                        <span class="option-text">{{ $question->option_d }}</span>
+                        <span class="option-text">{!! $question->option_d !!}</span>
                     </label>
                 </div>
 

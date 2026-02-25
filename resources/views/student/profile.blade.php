@@ -243,6 +243,68 @@
             height: 100%;
             object-fit: cover;
         }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #111827;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            color: #111827;
+            background: white;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
+        .text-muted {
+            color: #6b7280 !important;
+            font-size: 0.875rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #4b5563;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
     </style>
 </head>
 <body>
@@ -302,14 +364,41 @@
                 </div>
             @endif
 
+            <!-- Student Information Card -->
+            <div class="profile-card" style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.05) 0%, rgba(6, 182, 212, 0.05) 100%); border: 1px solid rgba(79, 70, 229, 0.1); margin-bottom: 1.5rem;">
+                <h4 style="margin: 0 0 1rem 0; color: #1f2937; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="bi bi-person-badge-fill" style="color: #4f46e5;"></i> Student Information
+                </h4>
+                <div style="display: flex; align-items: center; gap: 1.5rem;">
+                    <div style="width: 70px; height: 70px; border-radius: 12px; background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1.8rem; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);">
+                        {{ strtoupper(substr($user->name, 0, 1)) }}
+                    </div>
+                    <div style="flex: 1;">
+                        <h3 style="margin: 0; color: #111827; font-size: 1.4rem; font-weight: 700;">{{ $user->name }}</h3>
+                        <p style="margin: 0.5rem 0 0; color: #374151; font-size: 1rem; font-weight: 500;">{{ $user->email }}</p>
+                        @if($user->student_id)
+                            <div style="margin-top: 0.75rem;">
+                                <span style="display: inline-block; background: linear-gradient(135deg, #0369a1 0%, #06b6d4 100%); color: white; padding: 0.4rem 1rem; border-radius: 8px; font-weight: 700; font-size: 0.95rem; box-shadow: 0 2px 8px rgba(3, 105, 161, 0.3);">
+                                    Student ID: {{ $user->student_id }}
+                                </span>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
             <div class="profile-card">
-                <h3 class="mb-4"><i class="bi bi-person-circle"></i> Profile Settings</h3>
+                <h3 style="margin: 0 0 1.5rem 0; color: #111827; display: flex; align-items: center; gap: 0.5rem; font-size: 1.5rem; padding-bottom: 1rem; border-bottom: 2px solid #e5e7eb;">
+                    <i class="bi bi-person-circle" style="color: var(--primary);"></i> Profile Settings
+                </h3>
                 <form method="POST" action="{{ route('student.profile.update') }}" enctype="multipart/form-data">
                     @csrf
 
                     <div class="row g-4">
                         <div class="col-md-5">
-                            <h6 class="fw-semibold mb-3">Profile Photo</h6>
+                            <h5 style="margin-bottom: 1rem; color: #111827; font-weight: 700;">
+                                <i class="bi bi-image" style="color: var(--primary);"></i> Profile Photo
+                            </h5>
                             <div class="d-flex align-items-center gap-3">
                                 <div class="avatar">
                                     @if($user->profile_photo_path)
@@ -336,7 +425,9 @@
                         </div>
 
                         <div class="col-md-7">
-                            <h6 class="fw-semibold mb-3">Change Password</h6>
+                            <h5 style="margin-bottom: 1rem; color: #111827; font-weight: 700;">
+                                <i class="bi bi-lock" style="color: var(--primary);"></i> Change Password
+                            </h5>
                             <div class="form-group">
                                 <label class="form-label">Current Password</label>
                                 <input type="password" name="current_password" class="form-control @error('current_password') is-invalid @enderror" placeholder="Enter current password">
@@ -358,11 +449,13 @@
                         </div>
                     </div>
 
-                    <div class="d-flex gap-2 mt-4">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-save"></i> Save Changes
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid #e5e7eb;">
+                        <button type="submit" class="btn btn-primary" style="font-size: 1rem;">
+                            <i class="bi bi-check-circle-fill"></i> Save Changes
                         </button>
-                        <a href="{{ route('student.dashboard') }}" class="btn btn-secondary">Cancel</a>
+                        <a href="{{ route('student.dashboard') }}" class="btn btn-secondary" style="font-size: 1rem;">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
                     </div>
                 </form>
             </div>
@@ -403,5 +496,12 @@
             });
         })();
     </script>
+
+    <!-- Footer with Copyright -->
+    <footer style="background: #f9fafb; border-top: 1px solid #e5e7eb; padding: 1rem 2rem; text-align: center; margin-top: 2rem;">
+        <p style="margin: 0; color: #6b7280; font-size: 0.875rem;">
+            <strong style="color: #1f2937;">CBT Platform</strong> © 2026 El-Bethel Digital Learning Systems.
+        </p>
+    </footer>
 </body>
 </html>

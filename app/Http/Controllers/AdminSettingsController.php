@@ -24,6 +24,8 @@ class AdminSettingsController extends Controller
             'allow_question_flagging' => Cache::get('allow_question_flagging', true),
             'show_results_immediately' => Cache::get('show_results_immediately', true),
             'allow_exam_review' => Cache::get('allow_exam_review', false),
+            'shuffle_questions' => Cache::get('shuffle_questions', true),
+            'shuffle_options' => Cache::get('shuffle_options', true),
         ];
 
         return view('admin.settings.index', compact('settings', 'resetAt'));
@@ -43,6 +45,8 @@ class AdminSettingsController extends Controller
         $validated['allow_question_flagging'] = $request->has('allow_question_flagging');
         $validated['show_results_immediately'] = $request->has('show_results_immediately');
         $validated['allow_exam_review'] = $request->has('allow_exam_review');
+        $validated['shuffle_questions'] = $request->has('shuffle_questions');
+        $validated['shuffle_options'] = $request->has('shuffle_options');
 
         foreach ($validated as $key => $value) {
             Cache::forever($key, $value);

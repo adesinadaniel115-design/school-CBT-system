@@ -36,6 +36,15 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="student_id" class="form-label">Student ID <small style="color: #6b7280;">(Leave blank for auto-generate)</small></label>
+                    <input type="text" id="student_id" name="student_id" class="form-control @error('student_id') is-invalid @enderror" value="{{ old('student_id') }}" placeholder="e.g., joy001 or sarah002">
+                    <small style="color: #6b7280;">Format: firstname + 3-digit number (e.g., john001, mary002). Auto-generates based on student count.</small>
+                    @error('student_id')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="form-group">
                     <label for="password" class="form-label">Password *</label>
                     <input type="password" id="password" name="password" class="form-control @error('password') is-invalid @enderror" required>
                     <small style="color: #6b7280;">Minimum 6 characters</small>

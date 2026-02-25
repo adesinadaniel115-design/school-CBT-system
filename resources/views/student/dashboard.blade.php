@@ -648,6 +648,19 @@
                     <div class="welcome-title">
                         👋 Welcome back, {{ auth()->user()->name }}!
                     </div>
+                    @if(auth()->user()->student_id)
+                        <div style="margin: 1.5rem 0 1.5rem; background: linear-gradient(135deg, rgba(3, 105, 161, 0.08) 0%, rgba(6, 182, 212, 0.08) 100%); padding: 1rem; border-radius: 12px; border-left: 4px solid #0369a1;">
+                            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                                <div style="background: linear-gradient(135deg, #0369a1 0%, #06b6d4 100%); color: white; padding: 0.5rem 0.75rem; border-radius: 8px; font-weight: 700; font-size: 1.2rem; min-width: 100px; text-align: center;">
+                                    {{ auth()->user()->student_id }}
+                                </div>
+                                <div>
+                                    <div style="color: #6b7280; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Your Student ID</div>
+                                    <div style="color: #1f2937; font-weight: 600; font-size: 0.95rem;">{{ auth()->user()->email }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
                     <div class="welcome-subtitle">
                         Ready to challenge yourself today? Choose an exam mode below to get started.
                     </div>
@@ -887,5 +900,12 @@
             });
         })();
     </script>
+
+    <!-- Footer with Copyright -->
+    <footer style="background: #f9fafb; border-top: 1px solid #e5e7eb; padding: 1rem 2rem; text-align: center; margin-top: 2rem;">
+        <p style="margin: 0; color: #6b7280; font-size: 0.875rem;">
+            <strong style="color: #1f2937;">CBT Platform</strong> © 2026 El-Bethel Digital Learning Systems.
+        </p>
+    </footer>
 </body>
 </html>

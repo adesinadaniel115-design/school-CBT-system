@@ -708,6 +708,10 @@
                 </a>
 
                 <div class="menu-section-title">Configuration</div>
+                <a href="{{ route('admin.tokens.index') }}" class="menu-item {{ request()->routeIs('admin.tokens.*') ? 'active' : '' }}">
+                    <span class="menu-icon"><i class="bi bi-ticket-perforated"></i></span>
+                    <span class="menu-label">Exam Tokens</span>
+                </a>
                 <a href="{{ route('admin.settings.index') }}" class="menu-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
                     <span class="menu-icon"><i class="bi bi-gear"></i></span>
                     <span class="menu-label">Exam Settings</span>
@@ -782,6 +786,25 @@
             </div>
         </main>
     </div>
+
+    <!-- Footer with Copyright -->
+    <footer style="background: #f9fafb; border-top: 1px solid #e5e7eb; padding: 1rem 2rem; text-align: center; margin-left: 250px; transition: margin-left 0.3s ease;">
+        <p style="margin: 0; color: #6b7280; font-size: 0.875rem;">
+            <strong style="color: #1f2937;">CBT Platform</strong> © 2026 El-Bethel Digital Learning Systems.
+        </p>
+    </footer>
+
+    <style>
+        body.sidebar-collapsed footer {
+            margin-left: 60px;
+        }
+        
+        @media (max-width: 768px) {
+            footer {
+                margin-left: 0 !important;
+            }
+        }
+    </style>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>

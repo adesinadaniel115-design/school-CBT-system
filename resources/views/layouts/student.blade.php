@@ -479,6 +479,13 @@
 <body>
     @yield('content')
     
+    <!-- Footer with Copyright -->
+    <footer style="background: #f9fafb; border-top: 1px solid #e5e7eb; padding: 1rem 2rem; text-align: center; margin-top: 2rem;">
+        <p style="margin: 0; color: #6b7280; font-size: 0.875rem;">
+            <strong style="color: #1f2937;">CBT Platform</strong> © 2026 El-Bethel Digital Learning Systems.
+        </p>
+    </footer>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     @stack('scripts')
 </body>
