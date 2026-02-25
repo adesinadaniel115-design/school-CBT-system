@@ -40,12 +40,14 @@
             background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
             color: white;
             position: fixed;
+            left: 0;
+            top: 0;
             height: 100vh;
             overflow-y: auto;
             overflow-x: hidden;
             box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
             z-index: 1000;
-            transition: width 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+            transition: width 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease, left 0.3s ease;
         }
 
         body.sidebar-collapsed .sidebar {
@@ -654,7 +656,11 @@
         /* Responsive */
         @media (max-width: 991px) {
             .sidebar {
-                transform: translateX(-100%);
+                left: -100%;
+            }
+
+            .sidebar.mobile-open {
+                left: 0;
             }
 
             .main-content {
@@ -800,6 +806,27 @@
         }
         
         @media (max-width: 768px) {
+            .header {
+                padding: 1rem !important;
+            }
+
+            .header h1 {
+                font-size: 1.05rem !important;
+            }
+
+            .header-left {
+                gap: 0.5rem !important;
+            }
+
+            .sidebar-toggle {
+                width: 40px !important;
+                height: 40px !important;
+                min-width: 40px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+
             footer {
                 margin-left: 0 !important;
             }
@@ -812,6 +839,7 @@
             const storageKey = 'adminSidebarCollapsed';
             const body = document.body;
             const toggle = document.getElementById('adminSidebarToggle');
+            const sidebar = document.querySelector('.sidebar');
 
             if (localStorage.getItem(storageKey) === 'true') {
                 body.classList.add('sidebar-collapsed');
@@ -819,10 +847,27 @@
 
             if (toggle) {
                 toggle.addEventListener('click', function () {
-                    body.classList.toggle('sidebar-collapsed');
-                    localStorage.setItem(storageKey, body.classList.contains('sidebar-collapsed'));
+                    // On mobile: toggle sidebar visibility
+                    if (window.innerWidth <= 768) {
+                        if (sidebar) {
+                            sidebar.classList.toggle('mobile-open');
+                        }
+                    } else {
+                        // On desktop: collapse/expand sidebar
+                        body.classList.toggle('sidebar-collapsed');
+                        localStorage.setItem(storageKey, body.classList.contains('sidebar-collapsed'));
+                    }
                 });
             }
+
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', function(event) {
+                if (window.innerWidth <= 768 && sidebar && sidebar.classList.contains('mobile-open')) {
+                    if (!sidebar.contains(event.target) && !toggle.contains(event.target)) {
+                        sidebar.classList.remove('mobile-open');
+                    }
+                }
+            });
         })();
     </script>
     <script>
