@@ -44,7 +44,7 @@ COPY . .
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# Clear old Laravel cache to prevent stale files
+# Clear old Laravel cache (just remove old files, not running artisan)
 RUN rm -f bootstrap/cache/*.php
 
 # Install PHP dependencies (production ready)
@@ -62,11 +62,5 @@ COPY docker/php/php.ini /usr/local/etc/php/conf.d/custom.ini
 # Expose HTTP port
 EXPOSE 80
 
-# Clear Laravel caches at container start
-RUN php artisan config:clear
-RUN php artisan cache:clear
-RUN php artisan route:clear
-RUN php artisan view:clear
-
-# Start Laravel setup and Supervisor
+# Start Laravel setup and Supervisor at container start
 CMD ["/usr/local/bin/entrypoint.sh"]
