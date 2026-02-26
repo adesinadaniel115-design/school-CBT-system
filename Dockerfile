@@ -44,18 +44,18 @@ COPY . .
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# Clear old cache
+# Clear old Laravel cache to prevent stale files
 RUN rm -f bootstrap/cache/*.php
 
-# Install PHP dependencies INCLUDING dev packages and scripts
-RUN composer install --optimize-autoloader --no-interaction
+# Install PHP dependencies (production ready)
+RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 # Set permissions for storage and cache
 RUN chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
 # Copy configuration files
-COPY ./docker/nginx/default.conf /etc/nginx/sites-available/default
+COPY docker/nginx/default.conf /etc/nginx/sites-available/default
 COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/custom.ini
 
