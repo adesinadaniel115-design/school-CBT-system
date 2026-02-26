@@ -18,7 +18,7 @@ services:
       - key: LOG_CHANNEL
         value: stderr
       - key: APP_KEY
-        value: base64:lzWyASlzFThizz1WFnnF5CmGtVStiCF/oBo3WUQjQQE=
+        value: base64:1fzwFzII20kBI8YXKV6o+bMD4dnKBl/+YfnB2zWEHIg=
       - key: APP_URL
         value: https://school-cbt-system.onrender.com
       - key: DB_CONNECTION
