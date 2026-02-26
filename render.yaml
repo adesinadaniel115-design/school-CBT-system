@@ -2,7 +2,7 @@ services:
   # Web Service (Laravel App)
   - type: web
     name: school-cbt-system
-    runtime: docker  # or "php" if you prefer not using Docker
+    runtime: docker    # or "php" if you prefer not using Docker
     region: frankfurt
     plan: starter
     dockerfilePath: ./Dockerfile
@@ -23,7 +23,7 @@ services:
       - key: APP_URL
         value: https://school-cbt-system.onrender.com
       - key: DB_CONNECTION
-        value: pgsql       # PostgreSQL on Render
+        value: pgsql
       - key: DB_HOST
         value: dpg-d6fvvic50q8c7382edu0-a
       - key: DB_PORT
