@@ -40,31 +40,27 @@ WORKDIR /var/www/html
 # Copy application source
 COPY . .
 
-
-# Ensure entrypoint script is copied before installing Composer deps
+# Copy entrypoint script
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# Prevent stale local package manifests from breaking --no-dev builds
+# Clear old cache
 RUN rm -f bootstrap/cache/*.php
 
-# Install PHP dependencies
-RUN composer install --no-dev --no-scripts --optimize-autoloader --no-interaction
+# Install PHP dependencies INCLUDING dev packages and scripts
+RUN composer install --optimize-autoloader --no-interaction
 
-# Set proper permissions
+# Set permissions for storage and cache
 RUN chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
-    
+
 # Copy configuration files
 COPY ./docker/nginx/default.conf /etc/nginx/sites-available/default
 COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/custom.ini
 
-
-
-# Expose ports
+# Expose HTTP port
 EXPOSE 80
 
-# will manage Laravel setup and Supervisor
-# CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+# Start Laravel setup and Supervisor
 CMD ["/usr/local/bin/entrypoint.sh"]

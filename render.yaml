@@ -1,8 +1,7 @@
 services:
-  # Web Service (Laravel App)
   - type: web
     name: school-cbt-system
-    runtime: docker    # or "php" if you prefer not using Docker
+    runtime: docker
     region: frankfurt
     plan: starter
     dockerfilePath: ./Dockerfile
