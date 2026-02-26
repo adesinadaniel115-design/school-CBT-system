@@ -2,7 +2,7 @@ services:
   # Web Service (Laravel App)
   - type: web
     name: school-cbt-system
-    runtime: docker
+    runtime: docker  # or "php" if you prefer not using Docker
     region: frankfurt
     plan: starter
     dockerfilePath: ./Dockerfile
@@ -19,18 +19,18 @@ services:
       - key: LOG_CHANNEL
         value: stderr
       - key: APP_KEY
-        sync: false
+        value: base64:lzWyASlzFThizz1WFnnF5CmGtVStiCF/oBo3WUQjQQE=
       - key: APP_URL
         value: https://school-cbt-system.onrender.com
       - key: DB_CONNECTION
-        value: mariadb
+        value: pgsql       # PostgreSQL on Render
       - key: DB_HOST
-        value: 16.16.92.252
+        value: dpg-d6fvvic50q8c7382edu0-a
       - key: DB_PORT
-        value: "3308"
+        value: "5432"
       - key: DB_DATABASE
-        value: cbt
+        value: cbt_db_ciw1
       - key: DB_USERNAME
-        value: cbt
+        value: cbt_db_ciw1_user
       - key: DB_PASSWORD
-        value: 1ncrease
+        value: hvs5jSoNCXbooKYAD5Id0iWJ4sBu9wRg
