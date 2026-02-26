@@ -62,5 +62,11 @@ COPY docker/php/php.ini /usr/local/etc/php/conf.d/custom.ini
 # Expose HTTP port
 EXPOSE 80
 
+# Clear Laravel caches at container start
+RUN php artisan config:clear
+RUN php artisan cache:clear
+RUN php artisan route:clear
+RUN php artisan view:clear
+
 # Start Laravel setup and Supervisor
 CMD ["/usr/local/bin/entrypoint.sh"]
