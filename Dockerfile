@@ -45,6 +45,9 @@ COPY . .
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
+# Prevent stale local package manifests from breaking --no-dev builds
+RUN rm -f bootstrap/cache/*.php
+
 # Install PHP dependencies
 RUN composer install --no-dev --no-scripts --optimize-autoloader --no-interaction
 
