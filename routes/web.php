@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminReportController;
+use App\Http\Controllers\AdminExportReportController;
 use App\Http\Controllers\AdminStudentController;
 use App\Http\Controllers\AdminSettingsController;
 use App\Http\Controllers\AdminExamTokenController;
@@ -86,6 +87,10 @@ Route::middleware('auto.login')->group(function () {
             // Reports & Analytics
             Route::get('reports', [AdminReportController::class, 'index'])->name('reports.index');
             Route::get('reports/{session}', [AdminReportController::class, 'show'])->name('reports.show');
+            
+            // Export Exam Reports
+            Route::get('export-reports', [AdminExportReportController::class, 'index'])->name('export-reports.index');
+            Route::post('export-reports/generate', [AdminExportReportController::class, 'generate'])->name('export-reports.generate');
             
             // Settings
             Route::get('settings', [AdminSettingsController::class, 'index'])->name('settings.index');

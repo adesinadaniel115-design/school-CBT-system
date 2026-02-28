@@ -236,7 +236,11 @@
                 <span>or</span>
             </div>
 
-            <a href="{{ route('register') }}" class="btn-register">
+           {{-- 
+<a href="{{ route('register') }}" class="btn-register">
+    <i class="bi bi-person-plus"></i> Create New Account
+</a> 
+--}}
                 <i class="bi bi-person-plus"></i> Create New Account
             </a>
         </div>
