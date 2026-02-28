@@ -217,7 +217,15 @@ class ExamController extends Controller
         ]);
 
         $questionIds = array_map('intval', $session->question_ids ?? []);
-        $questions = Question::with('subject')->whereIn('id', $questionIds)->get()->keyBy('id');
+        $questions = Question::with('subject')->whereIn('id', $questionIds)->get();
+        
+        // Apply shuffle if enabled to get correct shuffled correct_option
+        $shuffleOptions = Cache::get('shuffle_options', true);
+        if ($shuffleOptions) {
+            $questions = $this->shuffleQuestionOptions($questions, $session->id);
+        }
+        
+        $questions = $questions->keyBy('id');
         $submittedAnswers = $request->input('answers', []);
 
         if ($session->exam_mode === 'jamb') {
@@ -255,6 +263,12 @@ class ExamController extends Controller
         $question = Question::find($data['question_id']);
         if (!$question) {
             return response()->json(['message' => 'Question not found.'], 404);
+        }
+
+        // Apply shuffle to get the correct shuffled correct_option
+        $shuffleOptions = Cache::get('shuffle_options', true);
+        if ($shuffleOptions) {
+            $question = $this->shuffleQuestionOptions(collect([$question]), $session->id)->first();
         }
 
         $isCorrect = $data['selected_option']
