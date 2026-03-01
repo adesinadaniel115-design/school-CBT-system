@@ -84,14 +84,21 @@
             <div class="col-md-4">
                 <div class="form-group">
                     <label for="date_from" class="form-label">From Date</label>
-                    <input id="date_from" type="date" name="date_from" value="{{ $filters['date_from'] }}" class="form-control">
+                    <input id="date_from" type="date" name="date_from" value="{{ old('date_from', $filters['date_from']) }}" class="form-control @error('date_from') is-invalid @enderror">
+                    @error('date_from')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
             </div>
             
             <div class="col-md-4">
                 <div class="form-group">
                     <label for="date_to" class="form-label">To Date</label>
-                    <input id="date_to" type="date" name="date_to" value="{{ $filters['date_to'] }}" class="form-control">
+                    <input id="date_to" type="date" name="date_to" value="{{ old('date_to', $filters['date_to']) }}" class="form-control @error('date_to') is-invalid @enderror">
+                    @error('date_to')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                    <small class="form-text text-muted">Leave blank to filter only the single date above.</small>
                 </div>
             </div>
             

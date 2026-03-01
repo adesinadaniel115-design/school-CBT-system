@@ -70,6 +70,211 @@
         font-weight: 700;
         color: #111827;
     }
+
+    /* Scientific Calculator Styles */
+    .calculator-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.5);
+        z-index: 1040;
+        align-items: flex-end;
+        justify-content: center;
+        padding: 1rem;
+        backdrop-filter: blur(4px);
+    }
+
+    .calculator-overlay.show {
+        display: flex;
+    }
+
+    .calculator-container {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.3);
+        width: 100%;
+        max-width: 320px; /* make compact */
+        overflow: hidden;
+        animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .calculator-header {
+        background: linear-gradient(120deg, #1e3a8a, #0f172a);
+        color: white;
+        padding: 1rem 1.25rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(30, 58, 138, 0.1);
+    }
+
+    .calculator-header h5 {
+        font-size: 1rem;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .calculator-header .btn-close {
+        filter: brightness(0) invert(1);
+        opacity: 0.8;
+    }
+
+    .calculator-header .btn-close:hover {
+        opacity: 1;
+    }
+
+    .calculator-display {
+        padding: 1rem 1.25rem;
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .calc-screen {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        font-size: 1.5rem;
+        font-weight: 600;
+        text-align: right;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        background: white;
+        color: #0f172a;
+        font-family: "Courier New", monospace;
+        word-wrap: break-word;
+        word-break: break-all;
+        max-height: 80px;
+        overflow-y: auto;
+    }
+
+    .calc-screen:focus {
+        outline: none;
+        border-color: #1e3a8a;
+        box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+    }
+
+    .calculator-buttons {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.5rem;
+        padding: 1rem;
+        background: white;
+    }
+
+    .calc-btn {
+        padding: 1rem;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: #f1f5f9;
+        color: #0f172a;
+        border: 1px solid #e2e8f0;
+    }
+
+    .calc-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
+        border-color: #cbd5e1;
+    }
+
+    .calc-btn:active {
+        transform: translateY(0);
+        box-shadow: inset 0 2px 4px rgba(15, 23, 42, 0.1);
+    }
+
+    .calc-btn.op {
+        background: #e0e7ff;
+        color: #1e3a8a;
+        border-color: #c7d2fe;
+        font-weight: 700;
+    }
+
+    .calc-btn.op:hover {
+        background: #c7d2fe;
+    }
+
+    .calc-btn.func {
+        background: #dbeafe;
+        color: #0369a1;
+        border-color: #bae6fd;
+        font-size: 0.85rem;
+    }
+
+    .calc-btn.func:hover {
+        background: #bae6fd;
+    }
+
+    .calc-btn.clear {
+        background: #fee2e2;
+        color: #991b1b;
+        border-color: #fca5a5;
+        font-weight: 700;
+    }
+
+    .calc-btn.clear:hover {
+        background: #fca5a5;
+    }
+
+    .calc-btn.equals {
+        background: linear-gradient(120deg, #1e3a8a, #0f172a);
+        color: white;
+        border: none;
+        font-size: 1.2rem;
+        font-weight: 700;
+    }
+
+    .calc-btn.equals:hover {
+        opacity: 0.9;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .calculator-container {
+            max-width: 100%;
+        }
+
+        .calc-btn {
+            padding: 0.85rem 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .calculator-buttons {
+            gap: 0.35rem;
+            padding: 0.75rem;
+        }
+
+        .calc-screen {
+            font-size: 1.25rem;
+        }
+        
+        .autosave-toast {
+            right: 1rem;
+            bottom: 1rem;
+            font-size: 0.85rem;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .autosave-toast {
+            right: 0.75rem;
+            bottom: 0.75rem;
+            padding: 0.6rem 0.8rem;
+            font-size: 0.75rem;
+        }
+    }
 </style>
 @endpush
 
@@ -180,6 +385,44 @@
     </div>
 </div>
 
+<!-- Calculator Overlay -->
+<div id="calculatorOverlay" class="calculator-overlay">
+    <div class="calculator-container">
+        <div class="calculator-header">
+            <h5 class="mb-0">Calculator</h5>
+            <button type="button" class="btn-close" onclick="toggleCalculator()" aria-label="Close calculator"></button>
+        </div>
+        <div class="calculator-display">
+            <input type="text" id="calcDisplay" class="calc-screen" readonly value="0">
+        </div>
+        <div class="calculator-buttons">
+            <!-- Row 1 -->
+            <button class="calc-btn" onclick="appendCalc('7')">7</button>
+            <button class="calc-btn" onclick="appendCalc('8')">8</button>
+            <button class="calc-btn" onclick="appendCalc('9')">9</button>
+            <button class="calc-btn op" onclick="appendCalc('/')">÷</button>
+            <!-- Row 2 -->
+            <button class="calc-btn" onclick="appendCalc('4')">4</button>
+            <button class="calc-btn" onclick="appendCalc('5')">5</button>
+            <button class="calc-btn" onclick="appendCalc('6')">6</button>
+            <button class="calc-btn op" onclick="appendCalc('*')">×</button>
+            <!-- Row 3 -->
+            <button class="calc-btn" onclick="appendCalc('1')">1</button>
+            <button class="calc-btn" onclick="appendCalc('2')">2</button>
+            <button class="calc-btn" onclick="appendCalc('3')">3</button>
+            <button class="calc-btn op" onclick="appendCalc('-')">−</button>
+            <!-- Row 4 -->
+            <button class="calc-btn" onclick="appendCalc('0')" style="grid-column: span 2;">0</button>
+            <button class="calc-btn" onclick="appendCalc('.')">.</button>
+            <button class="calc-btn op" onclick="appendCalc('+')">+</button>
+            <!-- Controls -->
+            <button class="calc-btn clear" onclick="clearCalculator()">C</button>
+            <button class="calc-btn clear" onclick="backspaceCalculator()">←</button>
+            <button class="calc-btn equals" onclick="calculateResult()" style="grid-column: span 4;">=</button>
+        </div>
+    </div>
+</div>
+
 <!-- Sidebar Overlay for Mobile -->
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
@@ -235,6 +478,14 @@
                 </button>
             @endforeach
         </div>
+    </div>
+
+    <!-- Calculator Button -->
+    <div class="sidebar-card">
+        <button type="button" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2" 
+                onclick="toggleCalculator()" title="Open Scientific Calculator">
+            <i class="bi bi-calculator-fill"></i> Calculator
+        </button>
     </div>
 
     <div class="sidebar-card">
@@ -609,6 +860,102 @@
         const helpModal = new bootstrap.Modal(document.getElementById('helpModal'));
         helpModal.show();
     }
+
+    // Basic Calculator Functions
+    let calcExpression = '';
+
+    function toggleCalculator() {
+        const overlay = document.getElementById('calculatorOverlay');
+        overlay.classList.toggle('show');
+        if (overlay.classList.contains('show')) {
+            document.getElementById('calcDisplay').focus();
+        }
+    }
+
+    function appendCalc(value) {
+        const display = document.getElementById('calcDisplay');
+        if (display.value === '0' && value !== '.') {
+            display.value = value;
+        } else if (display.value === '0' && value === '.') {
+            display.value = '0.';
+        } else {
+            display.value += value;
+        }
+        calcExpression = display.value;
+    }
+
+    function clearCalculator() {
+        document.getElementById('calcDisplay').value = '0';
+        calcExpression = '';
+    }
+
+    function backspaceCalculator() {
+        const display = document.getElementById('calcDisplay');
+        if (display.value.length > 1) {
+            display.value = display.value.slice(0, -1);
+        } else {
+            display.value = '0';
+        }
+        calcExpression = display.value;
+    }
+
+    function calculateResult() {
+        const display = document.getElementById('calcDisplay');
+        try {
+            let expression = display.value;
+            // Replace mathematical symbols with JavaScript operators
+            expression = expression.replace(/×/g, '*');
+            expression = expression.replace(/÷/g, '/');
+            expression = expression.replace(/−/g, '-');
+            
+            let result = eval(expression);
+            if (!isFinite(result)) {
+                display.value = 'Error';
+            } else {
+                result = Math.round(result * 10000000000) / 10000000000;
+                display.value = result;
+            }
+            calcExpression = display.value;
+        } catch(e) {
+            display.value = 'Error';
+            console.error('Calculator error:', e);
+        }
+    }
+
+    // Close calculator when clicking outside
+    document.addEventListener('DOMContentLoaded', function() {
+        const calculatorOverlay = document.getElementById('calculatorOverlay');
+        calculatorOverlay.addEventListener('click', function(e) {
+            if (e.target === calculatorOverlay) {
+                toggleCalculator();
+            }
+        });
+
+        // Allow keyboard input for calculator if visible
+        document.addEventListener('keydown', function(e) {
+            const overlay = document.getElementById('calculatorOverlay');
+            if (!overlay.classList.contains('show')) return;
+
+            const key = e.key;
+
+            if (key >= '0' && key <= '9') {
+                appendCalc(key);
+            } else if (key === '+' || key === '-' || key === '*' || key === '/') {
+                appendCalc(key);
+            } else if (key === '.') {
+                appendCalc('.');
+            } else if (key === 'Enter') {
+                e.preventDefault();
+                calculateResult();
+            } else if (key === 'Backspace') {
+                e.preventDefault();
+                backspaceCalculator();
+            } else if (key.toLowerCase() === 'c') {
+                e.preventDefault();
+                clearCalculator();
+            }
+        });
+    });
 
     document.addEventListener('DOMContentLoaded', function() {
         updateCounts();

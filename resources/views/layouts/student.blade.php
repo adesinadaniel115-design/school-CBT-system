@@ -36,31 +36,43 @@
             left: 0;
             right: 0;
             z-index: 1030;
-            padding: 0 1.5rem;
+            padding: 0 1rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 1rem;
             box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
             border-bottom: 1px solid rgba(255, 255, 255, 0.12);
             font-family: "Space Grotesk", sans-serif;
+            flex-wrap: wrap;
+            min-height: auto;
+        }
+        
+        .exam-navbar > div {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
         }
         
         .exam-navbar .exam-title {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: 600;
             margin: 0;
+            white-space: nowrap;
         }
         
         .exam-navbar .timer {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 700;
             color: #fde68a;
-            padding: 0.5rem 1rem;
+            padding: 0.4rem 0.8rem;
             background: rgba(255, 255, 255, 0.12);
             border-radius: 999px;
             border: 1px solid rgba(255, 255, 255, 0.18);
             box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
             transition: all 0.3s ease;
+            white-space: nowrap;
         }
 
         .exam-navbar .timer.paused {
@@ -89,14 +101,15 @@
             border-right: 1px solid var(--exam-border);
             overflow-y: auto;
             padding: 1.5rem;
-            z-index: 1020;
+            z-index: 1025;
             font-family: "Space Grotesk", sans-serif;
+            min-width: 0;
         }
         
         .exam-content {
             margin-left: var(--sidebar-width);
             margin-top: var(--navbar-height);
-            padding: 2.5rem 2.25rem 3rem;
+            padding: 2rem 1.5rem 2rem;
             min-height: calc(100vh - var(--navbar-height));
             background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
             position: relative;
@@ -209,7 +222,7 @@
         .question-card {
             background: var(--exam-paper);
             border-radius: var(--exam-radius);
-            padding: 2.25rem 2.5rem;
+            padding: 1.75rem 1.5rem;
             box-shadow: var(--exam-shadow);
             border: 1px solid var(--exam-border);
         }
@@ -267,16 +280,17 @@
         
         .option-label {
             display: grid;
-            grid-template-columns: 20px 32px 1fr;
-            gap: 0.75rem;
+            grid-template-columns: auto auto 1fr;
+            gap: 0.5rem;
             align-items: start;
-            padding: 1rem 1.25rem;
+            padding: 0.8rem 1rem;
             border: 1px solid var(--exam-border);
             border-radius: 12px;
-            margin-bottom: 0.9rem;
+            margin-bottom: 0.75rem;
             cursor: pointer;
             transition: all 0.2s;
             background: #ffffff;
+            min-height: 3rem;
         }
         
         .option-label:hover {
@@ -340,8 +354,16 @@
         
         .navigation-buttons {
             display: flex;
-            gap: 1rem;
+            gap: 0.75rem;
             margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .navigation-buttons .btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 0.6rem 1rem;
+            font-size: 1rem;
         }
 
         .sidebar-card {
@@ -388,19 +410,41 @@
             
             .exam-sidebar {
                 left: -300px;
-                transition: left 0.3s;
+                width: 300px;
+                transition: left 0.3s ease;
+                box-shadow: 2px 0 20px rgba(15, 23, 42, 0.15);
             }
             
             .exam-sidebar.show {
                 left: 0;
             }
             
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: var(--navbar-height);
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1023;
+            }
+            
+            .sidebar-overlay.show {
+                display: block;
+            }
+            
             .exam-content {
                 margin-left: 0;
+                padding: 1.5rem 1rem;
             }
             
             .mobile-toggle {
                 display: block !important;
+            }
+            
+            .question-grid {
+                grid-template-columns: repeat(3, 1fr) !important;
             }
         }
         
@@ -409,24 +453,16 @@
             background: rgba(255,255,255,0.2);
             border: none;
             color: white;
-            padding: 0.5rem 1rem;
+            padding: 0.4rem 0.8rem;
             border-radius: 6px;
             cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s;
         }
         
-        .sidebar-overlay {
-            display: none;
-            position: fixed;
-            top: var(--navbar-height);
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 1010;
-        }
-        
-        .sidebar-overlay.show {
-            display: block;
+        .mobile-toggle:hover {
+            background: rgba(255,255,255,0.3);
         }
         
         kbd {
@@ -455,22 +491,166 @@
         }
         
         @media (max-width: 768px) {
+            .exam-navbar {
+                height: auto;
+                min-height: var(--navbar-height);
+                padding: 0.5rem 0.75rem;
+                gap: 0.5rem;
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: flex-start;
+            }
+            
+            .exam-navbar > div {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
             .exam-navbar .exam-title {
-                font-size: 1rem;
+                font-size: 0.95rem;
             }
             
             .exam-navbar .timer {
-                font-size: 1rem;
-                padding: 0.25rem 0.5rem;
+                font-size: 0.85rem;
+                padding: 0.3rem 0.6rem;
             }
             
             .exam-navbar .btn {
-                padding: 0.5rem 1rem;
-                font-size: 0.875rem;
+                padding: 0.4rem 0.6rem !important;
+                font-size: 0.8rem !important;
+            }
+            
+            .exam-content {
+                padding: 1rem 0.75rem;
+            }
+            
+            .question-card {
+                padding: 1.25rem 1rem;
+            }
+            
+            .question-header {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+            
+            .btn-flag {
+                padding: 0.4rem 0.75rem;
+                font-size: 0.8rem;
+            }
+            
+            .question-text {
+                font-size: 1rem;
+                line-height: 1.6;
+            }
+            
+            .option-label {
+                grid-template-columns: auto auto 1fr;
+                padding: 0.7rem 0.85rem;
+                gap: 0.4rem;
+                min-height: auto;
+            }
+            
+            .option-letter {
+                width: 24px;
+                height: 24px;
+                font-size: 0.8rem;
+            }
+            
+            .option-text {
+                font-size: 0.95rem;
+            }
+            
+            .navigation-buttons {
+                gap: 0.5rem;
+            }
+            
+            .navigation-buttons .btn {
+                padding: 0.5rem 0.8rem;
+                font-size: 0.85rem;
+            }
+            
+            .sidebar-card {
+                padding: 0.9rem 1rem;
+                margin-bottom: 1rem;
+            }
+            
+            .sidebar-title {
+                font-size: 0.85rem;
             }
             
             .question-grid {
-                grid-template-columns: repeat(5, 1fr);
+                grid-template-columns: repeat(4, 1fr) !important;
+                gap: 0.35rem;
+            }
+            
+            .question-num {
+                font-size: 0.8rem;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .info-value {
+                font-size: 1.1rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .exam-navbar {
+                min-height: 50px;
+                padding: 0.4rem 0.5rem;
+            }
+            
+            .exam-navbar .exam-title {
+                font-size: 0.8rem;
+            }
+            
+            .exam-navbar .timer {
+                font-size: 0.75rem;
+                padding: 0.2rem 0.5rem;
+            }
+            
+            .exam-navbar .btn {
+                padding: 0.3rem 0.4rem !important;
+                font-size: 0.7rem !important;
+            }
+            
+            .exam-content {
+                padding: 0.75rem 0.5rem;
+            }
+            
+            .question-card {
+                padding: 1rem 0.75rem;
+            }
+            
+            .question-text {
+                font-size: 0.95rem;
+            }
+            
+            .navigation-buttons {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .navigation-buttons .btn {
+                width: 100%;
+            }
+            
+            .navigation-buttons .ms-auto {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .question-grid {
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 0.25rem;
+            }
+            
+            .question-num {
+                font-size: 0.65rem;
             }
         }
     </style>

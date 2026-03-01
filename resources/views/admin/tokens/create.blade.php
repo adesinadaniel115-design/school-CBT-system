@@ -20,13 +20,28 @@
                 @csrf
 
                 <div class="form-group">
+                    <label for="center_id" class="form-label">Center (optional)</label>
+                    <select id="center_id" name="center_id" class="form-control @error('center_id') is-invalid @enderror">
+                        <option value="">-- select center --</option>
+                        @foreach($centers as $center)
+                            <option value="{{ $center->id }}" {{ old('center_id') == $center->id ? 'selected' : '' }}>
+                                {{ $center->name }}@if($center->location) ({{ $center->location }})@endif
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('center_id')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="form-group">
                     <label for="quantity" class="form-label">Number of Tokens to Generate *</label>
                     <input type="number" id="quantity" name="quantity" class="form-control @error('quantity') is-invalid @enderror" 
                            value="{{ old('quantity', 1) }}" min="1" max="100" required>
                     @error('quantity')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
-                    <small style="color: #6b7280;">Generate between 1 and 100 tokens at once</small>
+                    <small style="color: #6b7280;">Generate between 1 and 100 tokens at once (updated by center below)</small>
                 </div>
 
                 <div class="form-group">
@@ -149,4 +164,23 @@
         }
     }
 </style>
+
+@push('scripts')
+<script>
+    document.getElementById('center_id')?.addEventListener('change', function(e) {
+        const centerId = e.target.value;
+        if (!centerId) {
+            return;
+        }
+        fetch('/admin/centers/' + centerId + '/students')
+            .then(r => r.json())
+            .then(data => {
+                const count = (data.students || []).length;
+                if (count > 0) {
+                    document.getElementById('quantity').value = count;
+                }
+            });
+    });
+</script>
+@endpush
 @endsection

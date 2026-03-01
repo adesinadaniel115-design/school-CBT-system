@@ -164,6 +164,7 @@
                             <th>Started</th>
                             <th>Duration</th>
                             <th>Status</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -186,6 +187,14 @@
                                     <span class="badge badge-success" style="animation: pulse 2s infinite;">
                                         <i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i> In Progress
                                     </span>
+                                </td>
+                                <td>
+                                    <form method="POST" action="{{ route('exam.terminate', $session) }}" style="display:inline;" onsubmit="return confirm('Terminate this exam session?');">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Terminate exam">
+                                            <i class="bi bi-stop-fill"></i> Terminate
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                         @endforeach

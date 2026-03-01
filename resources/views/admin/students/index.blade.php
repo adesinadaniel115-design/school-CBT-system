@@ -14,15 +14,29 @@
         </a>
     </div>
 
-    <!-- Search -->
+    <!-- Filters -->
+    @if(request('center_id'))
+        @php $fil = App\Models\Center::find(request('center_id')); @endphp
+        @if($fil)
+            <div class="alert alert-info">Showing students from <strong>{{ $fil->name }}</strong></div>
+        @endif
+    @endif
     <form method="GET" action="{{ route('admin.students.index') }}" class="mb-3">
         <div class="row g-3">
-            <div class="col-md-8">
+            <div class="col-md-4">
+                <select name="center_id" class="form-select">
+                    <option value="">-- All Centers --</option>
+                    @foreach(App\Models\Center::orderBy('name')->get() as $center)
+                        <option value="{{ $center->id }}" {{ request('center_id') == $center->id ? 'selected' : '' }}>{{ $center->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-4">
                 <input type="text" name="search" class="form-control" placeholder="Search by name or email..." value="{{ request('search') }}">
             </div>
             <div class="col-md-4">
                 <button type="submit" class="btn btn-primary w-100">
-                    <i class="bi bi-search"></i> Search
+                    <i class="bi bi-search"></i> Filter
                 </button>
             </div>
         </div>
@@ -89,4 +103,6 @@
         </div>
     @endif
 </div>
+
+
 @endsection

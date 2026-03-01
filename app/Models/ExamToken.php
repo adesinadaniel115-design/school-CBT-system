@@ -14,7 +14,8 @@ class ExamToken extends Model
         'is_active',
         'created_by',
         'expires_at',
-        'notes'
+        'notes',
+        'center_id',
     ];
 
     protected $casts = [
@@ -25,6 +26,14 @@ class ExamToken extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Token center (optional)
+     */
+    public function center()
+    {
+        return $this->belongsTo(Center::class);
     }
 
     public function usages()

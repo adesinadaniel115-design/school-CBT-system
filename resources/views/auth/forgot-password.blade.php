@@ -109,8 +109,14 @@
             font-size: 1.25rem;
         }
 
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
         .btn-primary {
-            width: 100%;
             padding: 0.875rem;
             background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
             border: none;
@@ -120,16 +126,21 @@
             color: white;
             cursor: pointer;
             transition: all 0.3s;
-            margin-top: 1rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 30px rgba(245, 158, 11, 0.3);
+            color: white;
+            text-decoration: none;
         }
 
         .btn-secondary {
-            width: 100%;
             padding: 0.875rem;
             background: #f3f4f6;
             border: none;
@@ -139,11 +150,17 @@
             color: #374151;
             cursor: pointer;
             transition: all 0.3s;
-            margin-top: 0.5rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }
 
         .btn-secondary:hover {
             background: #e5e7eb;
+            color: #374151;
+            text-decoration: none;
         }
 
         .error-message {
@@ -270,13 +287,14 @@
                     @enderror
                 </div>
 
-                <button type="submit" class="btn-primary">
-                    <i class="bi bi-arrow-right"></i> Send Reset Link
-                </button>
-
-                <a href="{{ route('login') }}" class="btn-secondary">
-                    <i class="bi bi-arrow-left"></i> Back to Login
-                </a>
+                <div class="button-group">
+                    <button type="submit" class="btn-primary">
+                        <i class="bi bi-arrow-right"></i> Send Reset Link
+                    </button>
+                    <a href="{{ route('login') }}" class="btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Login
+                    </a>
+                </div>
             </form>
 
             <p class="info-text">

@@ -229,6 +229,20 @@
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
         }
 
+        /* export controls at top of history list */
+        .export-controls {
+            background: #ffffffcc;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            align-items: center;
+        }
+
+        .export-controls input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+        }
+
         .page-header {
             background: white;
             border-radius: 20px;
@@ -458,6 +472,44 @@
             border-color: white;
         }
 
+        @media (max-width: 991px) {
+            .sidebar {
+                transform: translateX(-100%);
+                z-index: 1050;
+                width: 280px;
+                box-shadow: 2px 0 20px rgba(0, 0, 0, 0.15);
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+            
+            /* Sidebar backdrop overlay */
+            .sidebar::after {
+                content: '';
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.5);
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.25s ease;
+                z-index: -1;
+            }
+            
+            .sidebar.show::after {
+                opacity: 1;
+                pointer-events: all;
+            }
+            
+            .sidebar-toggle {
+                display: flex !important;
+            }
+        }
+
         /* Mobile Responsive (max-width: 768px) */
         @media (max-width: 768px) {
             body {
@@ -469,13 +521,18 @@
             }
 
             .top-actions {
-                flex-direction: column;
-                align-items: stretch;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
                 gap: 0.75rem;
+            }
+            
+            .sidebar-toggle {
+                flex-shrink: 0;
             }
 
             .profile-chip {
-                width: 100%;
+                flex: 1;
                 justify-content: center;
             }
 
@@ -488,14 +545,26 @@
             }
 
             .btn {
-                width: 100%;
                 font-size: 0.95rem;
                 padding: 0.6rem 1rem;
+            }
+            
+            .session-badge {
+                font-size: 0.75rem;
+            }
+            
+            .exam-badge {
+                display: inline-block;
+                font-size: 0.75rem;
             }
         }
 
         /* Small Mobile (max-width: 480px) */
         @media (max-width: 480px) {
+            .main-content {
+                padding: 0.75rem;
+            }
+
             .history-card {
                 padding: 1rem !important;
             }
@@ -593,8 +662,17 @@
                     </a>
                 </div>
             @else
-                @foreach($sessions as $session)
-                    <div class="exam-card">
+                <form method="POST" action="{{ route('student.history.generate') }}" id="exportForm">
+                    @csrf
+                    <div class="export-controls mb-3 d-flex align-items-center gap-2">
+                        <input type="checkbox" id="selectAll" /> <label for="selectAll" class="mb-0">Select all</label>
+                        <button type="submit" class="btn btn-primary btn-sm">Download Selected</button>
+                        <button type="submit" name="all" value="1" class="btn btn-secondary btn-sm">Download All</button>
+                    </div>
+                
+                    @foreach($sessions as $session)
+                        <div class="exam-card">
+                        <input type="checkbox" name="session_ids[]" value="{{ $session->id }}" class="session-checkbox" />
                         <div class="exam-icon {{ $session->exam_mode }}">
                             <i class="bi {{ $session->exam_mode === 'jamb' ? 'bi-lightning-charge-fill' : 'bi-journal-text' }}"></i>
                         </div>
@@ -642,6 +720,7 @@
                 <div class="mt-4">
                     {{ $sessions->links('pagination::bootstrap-5') }}
                 </div>
+                </form>
             @endif
         </main>
     </div>
@@ -651,17 +730,43 @@
         (function () {
             const storageKey = 'studentSidebarCollapsed';
             const toggle = document.getElementById('studentSidebarToggle');
+            const sidebar = document.querySelector('.sidebar');
 
             if (localStorage.getItem(storageKey) === 'true') {
                 document.body.classList.add('sidebar-collapsed');
             }
 
             if (toggle) {
-                toggle.addEventListener('click', function () {
-                    document.body.classList.toggle('sidebar-collapsed');
-                    localStorage.setItem(storageKey, document.body.classList.contains('sidebar-collapsed'));
+                toggle.addEventListener('click', function (e) {
+                    // On mobile (< 991px), show/hide sidebar with `.show` class
+                    if (window.innerWidth < 991) {
+                        sidebar?.classList.toggle('show');
+                        e.stopPropagation();
+                    } else {
+                        // On desktop, use the collapse toggle
+                        document.body.classList.toggle('sidebar-collapsed');
+                        localStorage.setItem(storageKey, document.body.classList.contains('sidebar-collapsed'));
+                    }
                 });
             }
+            
+            // Close sidebar when clicking outside on mobile
+            if (sidebar) {
+                document.addEventListener('click', function (e) {
+                    if (window.innerWidth < 991) {
+                        if (!sidebar.contains(e.target) && e.target !== toggle && !toggle?.contains(e.target)) {
+                            sidebar.classList.remove('show');
+                        }
+                    }
+                });
+            }
+            
+            // Close sidebar on resize to desktop
+            window.addEventListener('resize', function () {
+                if (window.innerWidth >= 991) {
+                    sidebar?.classList.remove('show');
+                }
+            });
         })();
     </script>
     <script>
@@ -677,6 +782,18 @@
 
             sidebar.addEventListener('scroll', function () {
                 sessionStorage.setItem(key, String(sidebar.scrollTop));
+            });
+        })();
+    </script>
+    <script>
+        // select all / deselect all checkboxes for export
+        (function () {
+            const selectAll = document.getElementById('selectAll');
+            if (!selectAll) return;
+            const checkboxes = document.querySelectorAll('.session-checkbox');
+
+            selectAll.addEventListener('change', function () {
+                checkboxes.forEach(cb => cb.checked = selectAll.checked);
             });
         })();
     </script>

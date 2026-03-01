@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\DB;
 
 class ExamController extends Controller
 {
-    public function start(Request $request)
+    public function startSchool(Request $request)
     {
         $data = $request->validate([
             'subject_id' => ['required', 'exists:subjects,id'],
@@ -39,7 +39,69 @@ class ExamController extends Controller
             ]);
         }
 
+        // Validate subject exists
+        $subject = Subject::find($data['subject_id']);
+        if (!$subject) {
+            return back()->withErrors(['subject_id' => 'Subject not found.']);
+        }
+
         // School mode: configurable questions per subject
+        $questionCount = Cache::get('school_questions_count', 40);
+        
+        $questionsAvailable = Question::where('subject_id', $data['subject_id'])->count();
+        
+        if ($questionsAvailable < $questionCount) {
+            return back()->withErrors([
+                'subject_id' => "Insufficient questions for this subject (need {$questionCount}).",
+            ]);
+        }
+
+        // Redirect to confirmation page with subject info
+        $durationMinutes = Cache::get('school_duration_minutes', 60);
+
+        return view('student.exam.confirm-school', [
+            'subject' => $subject,
+            'subjectId' => $data['subject_id'],
+            'questionCount' => $questionCount,
+            'duration' => $durationMinutes,
+        ]);
+    }
+
+    public function confirmSchool(Request $request)
+    {
+        $data = $request->validate([
+            'subject_id' => ['required', 'exists:subjects,id'],
+            'token_code' => ['required', 'string'],
+        ]);
+
+        $studentId = $request->user()->id;
+        $tokenCode = strtoupper(trim($data['token_code']));
+
+        // Validate token
+        $token = ExamToken::where('code', $tokenCode)->first();
+
+        if (!$token) {
+            return back()->withErrors(['token_code' => 'Invalid token code.'])->withInput();
+        }
+
+        if (!$token->isValid()) {
+            $reason = !$token->is_active ? 'deactivated' :
+                     ($token->expires_at && $token->expires_at->isPast() ? 'expired' : 'fully used');
+            return back()->withErrors(['token_code' => "Token is {$reason}."])->withInput();
+        }
+
+        // Check for any active (ongoing) session again to be safe
+        $activeSession = ExamSession::where('student_id', $studentId)
+            ->whereNull('completed_at')
+            ->first();
+
+        if ($activeSession) {
+            return back()->withErrors([
+                'subject_id' => 'You have an active exam. Please complete it before starting another.',
+            ]);
+        }
+
+        // Collect questions
         $questionCount = Cache::get('school_questions_count', 40);
         $shuffleQuestions = Cache::get('shuffle_questions', true);
         
@@ -56,10 +118,10 @@ class ExamController extends Controller
         }
 
         $questionIds = $questions->pluck('id')->all();
-
         $durationMinutes = Cache::get('school_duration_minutes', 60);
 
-        $session = DB::transaction(function () use ($studentId, $data, $questionIds, $durationMinutes) {
+        // Create exam session
+        $session = DB::transaction(function () use ($studentId, $data, $questionIds, $durationMinutes, $token) {
             $session = ExamSession::create([
                 'student_id' => $studentId,
                 'subject_id' => $data['subject_id'],
@@ -84,6 +146,9 @@ class ExamController extends Controller
             }, $questionIds);
 
             ExamAnswer::insert($answers);
+
+            // Decrement token usage
+            $token->increment('times_used');
 
             return $session;
         });
@@ -287,10 +352,14 @@ class ExamController extends Controller
 
     public function terminate(ExamSession $session)
     {
-        $this->authorizeSession($session);
+        // Allow admin or the student who owns the session to terminate
+        if (!auth()->user()->is_admin) {
+            $this->authorizeSession($session);
+        }
 
         if ($session->completed_at) {
-            return redirect()->route('exam.result', $session);
+            $redirectTo = auth()->user()->is_admin ? route('admin.dashboard') : route('student.dashboard');
+            return redirect($redirectTo);
         }
 
         DB::transaction(function () use ($session) {
@@ -302,8 +371,9 @@ class ExamController extends Controller
             ]);
         });
 
-        return redirect()->route('student.dashboard')
-            ->with('status', 'Exam terminated successfully.');
+        $redirectTo = auth()->user()->is_admin ? route('admin.dashboard') : route('student.dashboard');
+        $message = auth()->user()->is_admin ? 'Exam session terminated.' : 'Exam terminated successfully.';
+        return redirect($redirectTo)->with('status', $message);
     }
 
     private function submitSchoolExam(ExamSession $session, $questions, $submittedAnswers): void
