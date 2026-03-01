@@ -3,7 +3,9 @@
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminReportController;
 use App\Http\Controllers\AdminExportReportController;
+use App\Http\Controllers\AdminPerformanceController;
 use App\Http\Controllers\AdminStudentController;
+use App\Http\Controllers\AdminCenterController;
 use App\Http\Controllers\AdminSettingsController;
 use App\Http\Controllers\AdminExamTokenController;
 use App\Http\Controllers\AuthController;
@@ -67,6 +69,10 @@ Route::middleware('auto.login')->group(function () {
             // Student Management
             Route::resource('students', AdminStudentController::class);
             
+            // Center Management
+            Route::resource('centers', AdminCenterController::class);
+            Route::get('centers/{center}/students', [AdminCenterController::class, 'getStudents'])->name('centers.students');
+            
             // Exam Token Management
             Route::get('tokens', [AdminExamTokenController::class, 'index'])->name('tokens.index');
             Route::get('tokens/create', [AdminExamTokenController::class, 'create'])->name('tokens.create');
@@ -91,7 +97,10 @@ Route::middleware('auto.login')->group(function () {
             // Export Exam Reports
             Route::get('export-reports', [AdminExportReportController::class, 'index'])->name('export-reports.index');
             Route::post('export-reports/generate', [AdminExportReportController::class, 'generate'])->name('export-reports.generate');
-            
+
+            // Performance Analytics
+            Route::get('performance', [AdminPerformanceController::class, 'index'])->name('performance.index');
+            Route::post('performance/generate', [AdminPerformanceController::class, 'generate'])->name('performance.generate');
             // Settings
             Route::get('settings', [AdminSettingsController::class, 'index'])->name('settings.index');
             Route::post('settings', [AdminSettingsController::class, 'update'])->name('settings.update');

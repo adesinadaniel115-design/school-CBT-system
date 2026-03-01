@@ -24,6 +24,7 @@ class User extends Authenticatable
         'is_admin',
         'student_id',
         'profile_photo_path',
+        'center_id',
     ];
 
     /**
@@ -71,5 +72,13 @@ class User extends Authenticatable
     public function examSessions()
     {
         return $this->hasMany(ExamSession::class, 'student_id');
+    }
+
+    /**
+     * Get the center this user (student) belongs to
+     */
+    public function center()
+    {
+        return $this->belongsTo(Center::class);
     }
 }

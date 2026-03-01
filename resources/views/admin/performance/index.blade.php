@@ -3,14 +3,14 @@
 @section('content')
 <div class="card">
     <div class="card-header">
-        <h3 class="card-title">Export Exam Reports</h3>
+        <h3 class="card-title">Performance Analytics</h3>
     </div>
     <div class="card-body">
         @if(session('error'))
             <div class="alert alert-danger">{{ session('error') }}</div>
         @endif
 
-        <form method="POST" action="{{ route('admin.export-reports.generate') }}" enctype="multipart/form-data">
+        <form method="POST" action="{{ route('admin.performance.generate') }}" enctype="multipart/form-data">
             @csrf
             <div class="mb-3">
                 <label for="center_select" class="form-label">Center (optional)</label>
@@ -22,7 +22,6 @@
                 </select>
                 <input type="hidden" name="center_id" id="center_id_input" value="{{ request('center_id') }}">
             </div>
-
             <div class="mb-3">
                 <label for="school_name" class="form-label">School Name / Institution Name (optional)</label>
                 <input type="text" name="school_name" id="school_name" class="form-control" value="{{ old('school_name') }}">
@@ -42,7 +41,8 @@
                 <small class="form-text text-muted">Max 2MB. Accepted formats: JPG, PNG, GIF</small>
             </div>
             <div class="mb-3">
-                <button type="submit" class="btn btn-primary" id="generate-btn">Generate PDF</button>
+                <button type="submit" name="all" value="1" class="btn btn-secondary">Download All Students</button>
+                <button type="submit" class="btn btn-primary" id="download-selected">Download Selected</button>
             </div>
 
             <table class="table table-bordered table-striped">
@@ -51,7 +51,7 @@
                         <th style="width:40px;"><input type="checkbox" id="select-all"></th>
                         <th>Student Name</th>
                         <th>Student ID</th>
-                        <th>Submitted Exams</th>
+                        <th>Attempts</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -63,9 +63,7 @@
                             <td><span class="badge badge-primary">{{ $student->submitted_exam_sessions_count }}</span></td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="4">No submitted students found.</td>
-                        </tr>
+                        <tr><td colspan="4">No students with submitted exams found.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -79,16 +77,13 @@
         const checked = e.target.checked;
         document.querySelectorAll('input[name="student_ids[]"]').forEach(cb => cb.checked = checked);
     });
-    // Fetch students by center
     document.getElementById('center_select')?.addEventListener('change', function (e) {
         const centerId = e.target.value;
-        // update hidden field so it's submitted
         document.getElementById('center_id_input').value = centerId;
         const tbody = document.querySelector('table tbody');
         tbody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
         if (!centerId) {
-            // reload the page to show all students
-            window.location.href = '{{ route("admin.export-reports.index") }}';
+            window.location.href = '{{ route("admin.performance.index") }}';
             return;
         }
 

@@ -2,20 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ExamAnswer;
 use App\Models\ExamSession;
-use App\Models\ExamSubjectScore;
-use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class AdminExportReportController extends Controller
+class AdminPerformanceController extends Controller
 {
     public function index(Request $request)
     {
-        // Allow optional center filtering
         $centerId = $request->query('center_id');
 
         $query = User::where('is_admin', false)
@@ -33,14 +28,15 @@ class AdminExportReportController extends Controller
         $students = $query->orderBy('name')->get();
         $centers = \App\Models\Center::orderBy('name')->get();
 
-        return view('admin.export_reports.index', compact('students', 'centers'));
+        return view('admin.performance.index', compact('students', 'centers'));
     }
 
     public function generate(Request $request)
     {
         $data = $request->validate([
-            'student_ids' => 'required|array|min:1',
+            'student_ids' => 'nullable|array',
             'student_ids.*' => 'integer|exists:users,id',
+            'all' => 'nullable|boolean',
             'center_id' => 'nullable|integer|exists:centers,id',
             'school_name' => 'nullable|string|max:255',
             'school_address' => 'nullable|string|max:500',
@@ -51,7 +47,7 @@ class AdminExportReportController extends Controller
         $schoolName = $data['school_name'] ?? null;
         $schoolAddress = $data['school_address'] ?? null;
         $watermarkFontSize = $data['watermark_font_size'] ?? 60;
-        
+
         // Handle logo upload
         $schoolLogoBase64 = null;
         if ($request->hasFile('school_logo') && $request->file('school_logo')->isValid()) {
@@ -59,14 +55,23 @@ class AdminExportReportController extends Controller
             $schoolLogoBase64 = 'data:image/' . $request->file('school_logo')->extension() . ';base64,' . base64_encode($logoContent);
         }
 
-        $students = User::whereIn('id', $data['student_ids'])
-            ->where('is_admin', false)
+        if (empty($data['student_ids']) && empty($data['all'])) {
+            return back()->withErrors(['student_ids' => 'Please select at least one student or choose download all.']);
+        }
+
+        $query = User::where('is_admin', false)
+            ->whereHas('examSessions', function ($q) {
+                $q->whereNotNull('completed_at');
+            })
             ->with(['examSessions' => function ($q) {
-                $q->whereNotNull('completed_at')
-                    ->with(['answers.question.subject', 'examSubjectScores.subject', 'subject'])
-                    ->orderByDesc('completed_at');
-            }])
-            ->get();
+                $q->whereNotNull('completed_at');
+            }]);
+
+        if (!empty($data['student_ids'])) {
+            $query->whereIn('id', $data['student_ids']);
+        }
+
+        $students = $query->get();
 
         $centerName = null;
         if (!empty($data['center_id'])) {
@@ -137,8 +142,6 @@ class AdminExportReportController extends Controller
             ];
         }
 
-        // Render a single PDF with each student on its own page.
-        // Using Barryvdh\DomPDF facade `PDF`. Ensure package is installed (`composer require barryvdh/laravel-dompdf`).
         try {
             $pdf = app()->make('dompdf.wrapper');
             
@@ -150,16 +153,15 @@ class AdminExportReportController extends Controller
                 'defaultFont' => 'Helvetica',
             ]);
             
-            $html = view('admin.export_reports.jamb_result_slip', compact('reports', 'schoolName', 'schoolAddress', 'schoolLogoBase64', 'watermarkFontSize', 'centerName'))->render();
+            $html = view('admin.performance.jamb_result_slip', compact('reports', 'schoolName', 'schoolAddress', 'schoolLogoBase64', 'watermarkFontSize', 'centerName'))->render();
             $pdf->loadHTML($html)->setPaper('a4', 'portrait');
-
-            return $pdf->stream('jamb-result-slip.pdf');
+            return $pdf->stream('performance-jamb-result-slip.pdf');
         } catch (\Throwable $e) {
-            Log::error('ExportExamReports PDF generation failed: '.$e->getMessage(), [
+            Log::error('Performance Analytics PDF generation failed: '.$e->getMessage(), [
                 'exception' => $e,
                 'trace' => $e->getTraceAsString(),
             ]);
-            return back()->with('error', 'Failed to generate PDF: '.($e->getMessage() ?? 'Unknown error'));
+            return back()->with('error', 'Failed to generate performance PDF: '.($e->getMessage() ?? 'Unknown error'));
         }
     }
 }

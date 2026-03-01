@@ -20,6 +20,7 @@
     </style>
 </head>
 <body>
+@include('pdf.school_header', ['schoolName' => $schoolName ?? null])
 @foreach($reports as $idx => $r)
     <div class="report">
         <div class="header">

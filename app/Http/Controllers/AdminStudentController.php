@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Center;
 use App\Models\Subject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -33,7 +34,8 @@ class AdminStudentController extends Controller
     public function create()
     {
         $subjects = Subject::all();
-        return view('admin.students.create', compact('subjects'));
+        $centers = Center::all();
+        return view('admin.students.create', compact('subjects', 'centers'));
     }
 
     public function store(Request $request)
@@ -43,6 +45,7 @@ class AdminStudentController extends Controller
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['required', 'string', 'min:6'],
             'student_id' => ['nullable', 'string', 'unique:users,student_id'],
+            'center_id' => ['nullable', 'exists:centers,id'],
         ]);
 
         // Auto-generate student ID if not provided
@@ -58,6 +61,7 @@ class AdminStudentController extends Controller
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'student_id' => $validated['student_id'],
+            'center_id' => $validated['center_id'] ?? null,
             'is_admin' => false,
         ]);
 
@@ -72,7 +76,8 @@ class AdminStudentController extends Controller
         }
 
         $subjects = Subject::all();
-        return view('admin.students.edit', compact('student', 'subjects'));
+        $centers = Center::all();
+        return view('admin.students.edit', compact('student', 'subjects', 'centers'));
     }
 
     public function update(Request $request, User $student)
@@ -86,12 +91,14 @@ class AdminStudentController extends Controller
             'email' => ['required', 'email', Rule::unique('users')->ignore($student->id)],
             'password' => ['nullable', 'string', 'min:6'],
             'student_id' => ['nullable', 'string', Rule::unique('users')->ignore($student->id)],
+            'center_id' => ['nullable', 'exists:centers,id'],
         ]);
 
         $student->update([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'student_id' => $validated['student_id'] ?? $student->student_id,
+            'center_id' => $validated['center_id'] ?? $student->center_id,
         ]);
 
         if ($request->filled('password')) {
