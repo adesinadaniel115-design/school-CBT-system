@@ -45,6 +45,19 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="center_id" class="form-label">Center (optional)</label>
+                    <select id="center_id" name="center_id" class="form-control @error('center_id') is-invalid @enderror">
+                        <option value="">-- Select Center --</option>
+                        @foreach($centers as $center)
+                            <option value="{{ $center->id }}" {{ old('center_id') == $center->id ? 'selected' : '' }}>{{ $center->name }} @if($center->location) ({{ $center->location }}) @endif</option>
+                        @endforeach
+                    </select>
+                    @error('center_id')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="form-group">
                     <label for="password" class="form-label">Password *</label>
                     <input type="password" id="password" name="password" class="form-control @error('password') is-invalid @enderror" required>
                     <small style="color: #6b7280;">Minimum 6 characters</small>

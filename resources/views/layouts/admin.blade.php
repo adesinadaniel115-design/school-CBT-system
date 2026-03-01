@@ -696,11 +696,23 @@
                     <span class="menu-icon"><i class="bi bi-graph-up"></i></span>
                     <span class="menu-label">Analytics & Reports</span>
                 </a>
+                <a href="{{ route('admin.export-reports.index') }}" class="menu-item {{ request()->routeIs('admin.export-reports.*') ? 'active' : '' }}">
+                    <span class="menu-icon"><i class="bi bi-file-earmark-arrow-down"></i></span>
+                    <span class="menu-label">Export Exam Reports</span>
+                </a>
+                <a href="{{ route('admin.performance.index') }}" class="menu-item {{ request()->routeIs('admin.performance.*') ? 'active' : '' }}">
+                    <span class="menu-icon"><i class="bi bi-bar-chart"></i></span>
+                    <span class="menu-label">Performance Analytics</span>
+                </a>
 
                 <div class="menu-section-title">User Management</div>
                 <a href="{{ route('admin.students.index') }}" class="menu-item {{ request()->routeIs('admin.students.*') ? 'active' : '' }}">
                     <span class="menu-icon"><i class="bi bi-people"></i></span>
                     <span class="menu-label">Students</span>
+                </a>
+                <a href="{{ route('admin.centers.index') }}" class="menu-item {{ request()->routeIs('admin.centers.*') ? 'active' : '' }}">
+                    <span class="menu-icon"><i class="bi bi-building"></i></span>
+                    <span class="menu-label">Centers</span>
                 </a>
 
                 <div class="menu-section-title">Content Management</div>

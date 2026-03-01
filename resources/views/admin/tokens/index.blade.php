@@ -14,7 +14,7 @@
         </div>
         <div style="display: flex; gap: 0.75rem;">
             @if($tokens->total() > 0)
-                <a href="{{ route('admin.tokens.print', ['all' => 1] + request()->only(['search', 'status'])) }}" 
+                <a href="{{ route('admin.tokens.print', ['all' => 1] + request()->only(['search', 'status', 'center_id'])) }}" 
                    class="btn btn-secondary" target="_blank" title="Print all filtered tokens">
                     <i class="bi bi-printer-fill"></i> Print All
                 </a>
@@ -29,6 +29,15 @@
 <!-- Filters -->
 <div class="card" style="margin-bottom: 1.5rem;">
     <form method="GET" action="{{ route('admin.tokens.index') }}" style="display: flex; gap: 1rem; align-items: end;">
+        <div style="flex: 1;">
+            <label class="form-label">Center</label>
+            <select name="center_id" class="form-control" id="filter-center">
+                <option value="">All Centers</option>
+                @foreach($centers ?? [] as $center)
+                    <option value="{{ $center->id }}" {{ request('center_id') == $center->id ? 'selected' : '' }}>{{ $center->name }}@if($center->location) ({{ $center->location }})@endif</option>
+                @endforeach
+            </select>
+        </div>
         <div style="flex: 1;">
             <label class="form-label">Search Token Code</label>
             <input type="text" name="search" class="form-control" placeholder="Enter token code..." value="{{ request('search') }}">
@@ -46,7 +55,7 @@
         <button type="submit" class="btn btn-secondary">
             <i class="bi bi-search"></i> Filter
         </button>
-        @if(request()->anyFilled(['search', 'status']))
+        @if(request()->anyFilled(['search', 'status', 'center_id']))
             <a href="{{ route('admin.tokens.index') }}" class="btn btn-light">
                 <i class="bi bi-x-circle"></i> Clear
             </a>
@@ -117,6 +126,7 @@
             <thead>
                 <tr>
                     <th>Token Code</th>
+                    <th>Center</th>
                     <th>Status</th>
                     <th>Usage</th>
                     <th>Created By</th>
@@ -133,6 +143,13 @@
                             </div>
                             @if($token->notes)
                                 <small style="color: #6b7280;">{{ $token->notes }}</small>
+                            @endif
+                        </td>
+                        <td>
+                            @if($token->center)
+                                {{ $token->center->name }}
+                            @else
+                                <span class="text-muted">-</span>
                             @endif
                         </td>
                         <td>

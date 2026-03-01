@@ -236,6 +236,9 @@
                 <span>or</span>
             </div>
 
+            <a href="{{ route('password.request') }}" class="btn-register mb-2">
+                <i class="bi bi-question-circle"></i> Forgot Password?
+            </a>
             <a href="{{ route('register') }}" class="btn-register">
                 <i class="bi bi-person-plus"></i> Create New Account
             </a>

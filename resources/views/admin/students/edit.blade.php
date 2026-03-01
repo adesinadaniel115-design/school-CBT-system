@@ -46,6 +46,19 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="center_id" class="form-label">Center</label>
+                    <select id="center_id" name="center_id" class="form-control @error('center_id') is-invalid @enderror">
+                        <option value="">-- Select Center --</option>
+                        @foreach($centers as $center)
+                            <option value="{{ $center->id }}" {{ (old('center_id', $student->center_id) == $center->id) ? 'selected' : '' }}>{{ $center->name }} @if($center->location) ({{ $center->location }}) @endif</option>
+                        @endforeach
+                    </select>
+                    @error('center_id')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="form-group">
                     <label for="password" class="form-label">New Password (Optional)</label>
                     <input type="password" id="password" name="password" class="form-control @error('password') is-invalid @enderror">
                     <small style="color: #6b7280;">Leave blank to keep current password</small>

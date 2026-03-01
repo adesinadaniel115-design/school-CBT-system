@@ -9,7 +9,7 @@ class AdminExamTokenController extends Controller
 {
     public function index(Request $request)
     {
-        $query = ExamToken::with(['creator', 'usages.user']);
+        $query = ExamToken::with(['creator', 'usages.user', 'center']);
 
         if ($request->filled('search')) {
             $query->where('code', 'like', "%{$request->search}%");
@@ -27,14 +27,20 @@ class AdminExamTokenController extends Controller
             }
         }
 
-        $tokens = $query->latest()->paginate(20);
+        if ($request->filled('center_id')) {
+            $query->where('center_id', $request->center_id);
+        }
 
-        return view('admin.tokens.index', compact('tokens'));
+        $tokens = $query->latest()->paginate(20);
+        $centers = \App\Models\Center::orderBy('name')->get();
+
+        return view('admin.tokens.index', compact('tokens', 'centers'));
     }
 
     public function create()
     {
-        return view('admin.tokens.create');
+        $centers = \App\Models\Center::orderBy('name')->get();
+        return view('admin.tokens.create', compact('centers'));
     }
 
     public function store(Request $request)
@@ -44,6 +50,7 @@ class AdminExamTokenController extends Controller
             'max_uses' => ['required', 'integer', 'min:1', 'max:1000'],
             'expires_at' => ['nullable', 'date', 'after:today'],
             'notes' => ['nullable', 'string', 'max:500'],
+            'center_id' => ['nullable','exists:centers,id'],
         ]);
 
         $tokens = [];
@@ -54,6 +61,7 @@ class AdminExamTokenController extends Controller
                 'created_by' => auth()->id(),
                 'expires_at' => $validated['expires_at'] ?? null,
                 'notes' => $validated['notes'] ?? null,
+                'center_id' => $validated['center_id'] ?? null,
             ]);
         }
 
@@ -126,7 +134,8 @@ class AdminExamTokenController extends Controller
     {
         // If 'all' parameter is present, print all tokens (with filters)
         if ($request->has('all')) {
-            $query = ExamToken::with(['creator']);
+            // include center for print
+            $query = ExamToken::with(['creator', 'center']);
 
             // Apply same filters as index page
             if ($request->filled('search')) {
@@ -143,6 +152,10 @@ class AdminExamTokenController extends Controller
                 } elseif ($request->status === 'used_up') {
                     $query->whereColumn('used_count', '>=', 'max_uses');
                 }
+            }
+
+            if ($request->filled('center_id')) {
+                $query->where('center_id', $request->center_id);
             }
 
             $tokens = $query->latest()->get();

@@ -568,11 +568,38 @@
         @media (max-width: 991px) {
             .sidebar {
                 transform: translateX(-100%);
-                z-index: 1000;
+                z-index: 1050;
+                width: 280px;
+                box-shadow: 2px 0 20px rgba(0, 0, 0, 0.15);
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
             }
 
             .main-content {
                 margin-left: 0;
+            }
+            
+            /* Sidebar backdrop overlay */
+            .sidebar::after {
+                content: '';
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.5);
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.25s ease;
+                z-index: -1;
+            }
+            
+            .sidebar.show::after {
+                opacity: 1;
+                pointer-events: all;
+            }
+            
+            .sidebar-toggle {
+                display: flex !important;
             }
         }
 
@@ -587,12 +614,18 @@
             }
 
             .top-actions {
-                flex-direction: column;
-                align-items: stretch;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                gap: 0.75rem;
+            }
+
+            .sidebar-toggle {
+                flex-shrink: 0;
             }
 
             .profile-chip {
-                width: 100%;
+                flex: 1;
                 justify-content: center;
             }
 
@@ -646,10 +679,33 @@
                 padding: 0.5rem 1rem;
                 font-size: 0.95rem;
             }
+            
+            .btn-exam {
+                padding: 0.75rem 1rem;
+                font-size: 0.95rem;
+            }
+            
+            .btn-continue {
+                padding: 0.6rem 1rem;
+                font-size: 0.85rem;
+            }
+            
+            .session-grid {
+                grid-template-columns: 1fr !important;
+            }
+            
+            .exam-badge {
+                display: inline-block;
+                font-size: 0.75rem;
+            }
         }
 
         /* Small Mobile (max-width: 480px) */
         @media (max-width: 480px) {
+            .main-content {
+                padding: 0.75rem;
+            }
+
             .welcome-card {
                 padding: 1rem !important;
             }
@@ -985,17 +1041,43 @@
 
             const storageKey = 'studentSidebarCollapsed';
             const toggle = document.getElementById('studentSidebarToggle');
+            const sidebar = document.querySelector('.sidebar');
 
             if (localStorage.getItem(storageKey) === 'true') {
                 document.body.classList.add('sidebar-collapsed');
             }
 
             if (toggle) {
-                toggle.addEventListener('click', function () {
-                    document.body.classList.toggle('sidebar-collapsed');
-                    localStorage.setItem(storageKey, document.body.classList.contains('sidebar-collapsed'));
+                toggle.addEventListener('click', function (e) {
+                    // On mobile (< 991px), show/hide sidebar with `.show` class
+                    if (window.innerWidth < 991) {
+                        sidebar?.classList.toggle('show');
+                        e.stopPropagation();
+                    } else {
+                        // On desktop, use the collapse toggle
+                        document.body.classList.toggle('sidebar-collapsed');
+                        localStorage.setItem(storageKey, document.body.classList.contains('sidebar-collapsed'));
+                    }
                 });
             }
+            
+            // Close sidebar when clicking outside on mobile
+            if (sidebar) {
+                document.addEventListener('click', function (e) {
+                    if (window.innerWidth < 991) {
+                        if (!sidebar.contains(e.target) && e.target !== toggle && !toggle?.contains(e.target)) {
+                            sidebar.classList.remove('show');
+                        }
+                    }
+                });
+            }
+            
+            // Close sidebar on resize to desktop
+            window.addEventListener('resize', function () {
+                if (window.innerWidth >= 991) {
+                    sidebar?.classList.remove('show');
+                }
+            });
         });
     </script>
     <script>

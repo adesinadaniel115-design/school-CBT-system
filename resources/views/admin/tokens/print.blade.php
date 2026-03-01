@@ -33,31 +33,39 @@
                 background: white !important;
                 padding: 3mm !important;
                 margin: 0 !important;
+                color: #000 !important;
             }
             
             .container {
                 max-width: 100% !important;
                 padding: 0 !important;
                 margin: 0 !important;
+                background: white !important;
+                margin: 0 !important;
             }
             
             .scratch-card {
                 page-break-inside: avoid;
                 box-shadow: none !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                display: block !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
                 color-adjust: exact !important;
             }
             
             .tokens-grid {
-                gap: 4mm !important;
+                gap: 3mm !important;
                 display: grid !important;
-                grid-template-columns: repeat(5, 1fr) !important;
+                grid-template-columns: repeat(3, 1fr) !important;
                 justify-content: center !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 width: 100% !important;
                 max-width: 100% !important;
+                visibility: visible !important;
+                opacity: 1 !important;
             }
             
             .card-header-section,
@@ -169,8 +177,9 @@
         /* Scratch Card Grid */
         .tokens-grid {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 5mm;
+            /* 3-column layout for tighter A4 packing (8-10+ cards per page) */
+            grid-template-columns: repeat(3, 1fr);
+            gap: 3mm;
             margin: 0 auto;
             justify-content: center;
             width: 100%;
@@ -218,6 +227,8 @@
             flex-direction: column;
             position: relative;
             overflow: hidden;
+            visibility: visible !important;
+            opacity: 1 !important;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
             color-adjust: exact;
@@ -471,9 +482,21 @@
 </head>
 <body>
     <div class="container">
+        @php
+            $commonCenter = null;
+            if ($tokens->count() > 0) {
+                $firstCenter = $tokens->first()->center;
+                if ($firstCenter && $tokens->every(fn($t) => $t->center_id === $firstCenter->id)) {
+                    $commonCenter = $firstCenter->name;
+                }
+            }
+        @endphp
         <div class="header no-print">
             <h1>🎓 School CBT Exam Tokens</h1>
             <p>Professional Exam Access Cards - Generated on {{ now()->format('F d, Y h:i A') }}</p>
+            @if($commonCenter)
+                <p style="font-size:12px; margin-top:4px;">Center: {{ $commonCenter }}</p>
+            @endif
         </div>
 
         <div class="no-print instructions">
@@ -520,6 +543,12 @@
                                     <div class="detail-label">Max Uses</div>
                                     <div class="detail-value">{{ $token->max_uses }}</div>
                                 </div>
+                                @if($token->center)
+                                <div class="detail-item">
+                                    <div class="detail-label">Center</div>
+                                    <div class="detail-value" style="font-size:9px;">{{ $token->center->name }}</div>
+                                </div>
+                                @endif
                                 <div class="detail-item">
                                     <div class="detail-label">Remaining</div>
                                     <div class="detail-value" style="color: {{ $token->remainingUses() > 0 ? '#10b981' : '#ef4444' }};">
@@ -581,13 +610,16 @@
     </div>
 
     <script>
-        // Auto-print on page load
-        window.onload = function() {
+        // Auto-print on page load - delay longer to ensure DOM is fully rendered
+        document.addEventListener('DOMContentLoaded', function() {
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('autoprint') === '1' || urlParams.get('download') === '1') {
-                setTimeout(() => window.print(), 500);
+                // Give browser more time to render all content
+                setTimeout(() => {
+                    window.print();
+                }, 1000);
             }
-        };
+        });
     </script>
 </body>
 </html>
