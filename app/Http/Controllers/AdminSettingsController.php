@@ -9,24 +9,42 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
+use App\Models\Setting;
 
 class AdminSettingsController extends Controller
 {
     public function index()
     {
         $resetAt = Cache::get('admin_stats_reset_at');
-        $settings = [
-            'school_questions_count' => Cache::get('school_questions_count', 40),
-            'school_duration_minutes' => Cache::get('school_duration_minutes', 60),
-            'jamb_questions_per_subject' => Cache::get('jamb_questions_per_subject', 40),
-            'jamb_english_questions' => Cache::get('jamb_english_questions', 60),
-            'jamb_duration_minutes' => Cache::get('jamb_duration_minutes', 120),
-            'allow_question_flagging' => Cache::get('allow_question_flagging', true),
-            'show_results_immediately' => Cache::get('show_results_immediately', true),
-            'allow_exam_review' => Cache::get('allow_exam_review', false),
-            'shuffle_questions' => Cache::get('shuffle_questions', true),
-            'shuffle_options' => Cache::get('shuffle_options', true),
+        // Keys and defaults
+        $defaults = [
+            'school_questions_count' => 40,
+            'school_duration_minutes' => 60,
+            'jamb_questions_per_subject' => 40,
+            'jamb_english_questions' => 60,
+            'jamb_duration_minutes' => 120,
+            'allow_question_flagging' => true,
+            'show_results_immediately' => true,
+            'allow_exam_review' => false,
+            'shuffle_questions' => true,
+            'shuffle_options' => true,
         ];
+
+        $settings = [];
+        foreach ($defaults as $key => $default) {
+            // Prefer cache, fall back to DB-stored setting, then default
+            $value = Cache::get($key);
+            if (is_null($value)) {
+                $dbVal = Setting::getValue($key, null);
+                if (!is_null($dbVal)) {
+                    $value = $dbVal;
+                    Cache::forever($key, $value);
+                } else {
+                    $value = $default;
+                }
+            }
+            $settings[$key] = $value;
+        }
 
         return view('admin.settings.index', compact('settings', 'resetAt'));
     }
@@ -49,6 +67,8 @@ class AdminSettingsController extends Controller
         $validated['shuffle_options'] = $request->has('shuffle_options');
 
         foreach ($validated as $key => $value) {
+            // Persist to DB and cache
+            Setting::setValue($key, $value);
             Cache::forever($key, $value);
         }
 

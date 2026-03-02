@@ -48,12 +48,29 @@ class ExamController extends Controller
         // School mode: configurable questions per subject
         $questionCount = Cache::get('school_questions_count', 40);
         
-        $questionsAvailable = Question::where('subject_id', $data['subject_id'])->count();
-        
-        if ($questionsAvailable < $questionCount) {
-            return back()->withErrors([
-                'subject_id' => "Insufficient questions for this subject (need {$questionCount}).",
-            ]);
+        // Avoid reusing questions the student already attempted (if possible)
+        $usedQuestionIds = ExamSession::where('student_id', $studentId)
+            ->pluck('question_ids')
+            ->filter()
+            ->map(function ($ids) {
+                return is_array($ids) ? $ids : json_decode($ids, true) ?: [];
+            })->flatten()->unique()->values()->all();
+
+        $baseQuery = Question::where('subject_id', $data['subject_id']);
+        $newQuery = $baseQuery->when(!empty($usedQuestionIds), function ($q) use ($usedQuestionIds) {
+            return $q->whereNotIn('id', $usedQuestionIds);
+        });
+
+        $newAvailable = $newQuery->count();
+
+        if ($newAvailable < $questionCount) {
+            // Not enough fresh questions — we'll allow mixing previously-used questions
+            $questionsAvailable = $baseQuery->count();
+            if ($questionsAvailable < $questionCount) {
+                return back()->withErrors([
+                    'subject_id' => "Insufficient questions for this subject (need {$questionCount}).",
+                ]);
+            }
         }
 
         // Redirect to confirmation page with subject info
@@ -105,13 +122,35 @@ class ExamController extends Controller
         $questionCount = Cache::get('school_questions_count', 40);
         $shuffleQuestions = Cache::get('shuffle_questions', true);
         
+        // Prefer fresh questions the student hasn't seen before, but fall back to older ones
         $query = Question::where('subject_id', $data['subject_id']);
-        
+        $selected = collect();
+
+        // Try to get fresh questions first
+        $freshQuery = $query->when(!empty($usedQuestionIds), function ($q) use ($usedQuestionIds) {
+            return $q->whereNotIn('id', $usedQuestionIds);
+        });
         if ($shuffleQuestions) {
-            $query->inRandomOrder();
+            $freshQuery->inRandomOrder();
         }
-        
-        $questions = $query->limit($questionCount)->get();
+        $fresh = $freshQuery->limit($questionCount)->get();
+        $selected = $selected->merge($fresh);
+
+        if ($selected->count() < $questionCount) {
+            $needed = $questionCount - $selected->count();
+            // Fill remaining from full pool excluding already selected IDs
+            $excludeIds = $selected->pluck('id')->all();
+            $fallbackQuery = $query->when(!empty($excludeIds), function ($q) use ($excludeIds) {
+                return $q->whereNotIn('id', $excludeIds);
+            });
+            if ($shuffleQuestions) {
+                $fallbackQuery->inRandomOrder();
+            }
+            $fallback = $fallbackQuery->limit($needed)->get();
+            $selected = $selected->merge($fallback);
+        }
+
+        $questions = $selected->values();
 
         if ($questions->isEmpty()) {
             return back()->withErrors(['subject_id' => 'No questions available for this subject.']);
@@ -198,8 +237,8 @@ class ExamController extends Controller
         }
 
         // Validate that enough questions exist
-        $englishQuestionCount = Cache::get('jamb_english_questions', 3);
-        $subjectQuestionCount = Cache::get('jamb_questions_per_subject', 3);
+        $englishQuestionCount = Cache::get('jamb_english_questions', 60);
+        $subjectQuestionCount = Cache::get('jamb_questions_per_subject', 40);
         
         $englishQuestionsAvailable = Question::where('subject_id', $englishSubject->id)->count();
 
@@ -618,17 +657,49 @@ class ExamController extends Controller
         $selectedSubjectIds = $data['subject_ids'];
 
         // Collect questions
-        $englishQuestionCount = Cache::get('jamb_english_questions', 3);
-        $subjectQuestionCount = Cache::get('jamb_questions_per_subject', 3);
+        $englishQuestionCount = Cache::get('jamb_english_questions', 60);
+        $subjectQuestionCount = Cache::get('jamb_questions_per_subject', 40);
         $shuffleQuestions = Cache::get('shuffle_questions', true);
         
-        $englishQuery = Question::where('subject_id', $englishSubject->id);
-        
-        if ($shuffleQuestions) {
-            $englishQuery->inRandomOrder();
-        }
-        
-        $englishQuestions = $englishQuery->limit($englishQuestionCount)->get();
+        // Build list of previously attempted question IDs for this student
+        $usedQuestionIds = ExamSession::where('student_id', $studentId)
+            ->pluck('question_ids')
+            ->filter()
+            ->map(function ($ids) {
+                return is_array($ids) ? $ids : json_decode($ids, true) ?: [];
+            })->flatten()->unique()->values()->all();
+
+        // Helper: select fresh questions first, then fallback to older ones if needed
+        $selectQuestions = function ($subjectId, $count) use ($shuffleQuestions, $usedQuestionIds) {
+            $q = Question::where('subject_id', $subjectId);
+            $selected = collect();
+
+            $freshQ = $q->when(!empty($usedQuestionIds), function ($qq) use ($usedQuestionIds) {
+                return $qq->whereNotIn('id', $usedQuestionIds);
+            });
+            if ($shuffleQuestions) {
+                $freshQ->inRandomOrder();
+            }
+            $fresh = $freshQ->limit($count)->get();
+            $selected = $selected->merge($fresh);
+
+            if ($selected->count() < $count) {
+                $needed = $count - $selected->count();
+                $exclude = $selected->pluck('id')->all();
+                $fallbackQ = $q->when(!empty($exclude), function ($qq) use ($exclude) {
+                    return $qq->whereNotIn('id', $exclude);
+                });
+                if ($shuffleQuestions) {
+                    $fallbackQ->inRandomOrder();
+                }
+                $fallback = $fallbackQ->limit($needed)->get();
+                $selected = $selected->merge($fallback);
+            }
+
+            return $selected->values();
+        };
+
+        $englishQuestions = $selectQuestions($englishSubject->id, $englishQuestionCount);
 
         $allQuestions = collect([$englishQuestions]);
         $subjectMap = [];
@@ -641,14 +712,7 @@ class ExamController extends Controller
         foreach ($selectedSubjectIds as $subjectId) {
             $subject = Subject::find($subjectId);
             
-            $subjectQuery = Question::where('subject_id', $subjectId);
-            
-            if ($shuffleQuestions) {
-                $subjectQuery->inRandomOrder();
-            }
-            
-            $questions = $subjectQuery->limit($subjectQuestionCount)->get();
-
+            $questions = $selectQuestions($subjectId, $subjectQuestionCount);
             $allQuestions->push($questions);
             $subjectMap[$subjectId] = [
                 'name' => $subject->name,

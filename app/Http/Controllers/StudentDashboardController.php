@@ -13,8 +13,8 @@ class StudentDashboardController extends Controller
     {
         // Get minimum question requirements from cache/config
         $schoolQuestionsCount = Cache::get('school_questions_count', 40);
-        $jambQuestionsPerSubject = Cache::get('jamb_questions_per_subject', 3);
-        $jambEnglishQuestions = Cache::get('jamb_english_questions', 3);
+        $jambQuestionsPerSubject = Cache::get('jamb_questions_per_subject', 40);
+        $jambEnglishQuestions = Cache::get('jamb_english_questions', 60);
         $schoolDurationMinutes = Cache::get('school_duration_minutes', 60);
         $jambDurationMinutes = Cache::get('jamb_duration_minutes', 120);
         $jambTotalQuestions = $jambEnglishQuestions + ($jambQuestionsPerSubject * 3);
