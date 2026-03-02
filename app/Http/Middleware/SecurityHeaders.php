@@ -28,7 +28,7 @@ class SecurityHeaders
         $response->headers->set('Permissions-Policy', env('PERMISSIONS_POLICY', 'interest-cohort=()'));
 
         // Minimal CSP; adjust via env if you need to allow specific sources
-        $csp = env('CSP_POLICY', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;");
+        $csp = env('CSP_POLICY', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src 'self' https://cdn.jsdelivr.net data:; img-src 'self' data:;");
         $response->headers->set('Content-Security-Policy', $csp);
 
         return $response;
