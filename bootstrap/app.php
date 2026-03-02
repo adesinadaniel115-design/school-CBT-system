@@ -21,8 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // TrustProxies must be global (prepended) to work for all requests
         $middleware->prepend(\App\Http\Middleware\TrustProxies::class);
 
-        // Add SecurityHeaders to the web group
-        $middleware->group('web', [
+        // Append SecurityHeaders without overriding Laravel's default web middleware stack.
+        $middleware->web(append: [
             \App\Http\Middleware\SecurityHeaders::class,
         ]);
     })
