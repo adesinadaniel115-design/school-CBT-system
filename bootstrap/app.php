@@ -18,9 +18,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'trust.proxies' => \App\Http\Middleware\TrustProxies::class,
         ]);
 
-        // Add TrustProxies and SecurityHeaders to the web group
+        // TrustProxies must be global (prepended) to work for all requests
+        $middleware->prepend(\App\Http\Middleware\TrustProxies::class);
+
+        // Add SecurityHeaders to the web group
         $middleware->group('web', [
-            \App\Http\Middleware\TrustProxies::class,
             \App\Http\Middleware\SecurityHeaders::class,
         ]);
     })
