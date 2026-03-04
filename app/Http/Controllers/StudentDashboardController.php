@@ -17,6 +17,21 @@ class StudentDashboardController extends Controller
         $jambEnglishQuestions = Cache::get('jamb_english_questions', 60);
         $schoolDurationMinutes = Cache::get('school_duration_minutes', 60);
         $jambDurationMinutes = Cache::get('jamb_duration_minutes', 120);
+
+        // override with plan if available
+        $plan = auth()->user()->activePlan();
+        if ($plan) {
+            if (!is_null($plan->school_questions)) {
+                $schoolQuestionsCount = $plan->school_questions;
+            }
+            if (!is_null($plan->jamb_questions_per_subject)) {
+                $jambQuestionsPerSubject = $plan->jamb_questions_per_subject;
+            }
+            if (!is_null($plan->jamb_english_questions)) {
+                $jambEnglishQuestions = $plan->jamb_english_questions;
+            }
+        }
+
         $jambTotalQuestions = $jambEnglishQuestions + ($jambQuestionsPerSubject * 3);
 
         // Get all subjects with question counts
@@ -84,11 +99,26 @@ class StudentDashboardController extends Controller
     }
 
     /**
+     * Display the plans & tokens informational page for students.
+     * UI only: must not perform any database actions or token activations.
+     */
+    public function plans()
+    {
+        return view('student.plans');
+    }
+
+    /**
      * Generate PDF report(s) for the authenticated student's history.
      * Accepts an array of session_ids or the 'all' flag.
+     * PREMIUM FEATURE: Only available to users with an active premium plan.
      */
     public function generateHistoryPdf(Request $request)
     {
+        // Check if user has an active premium plan
+        if (!auth()->user()->activePlan()) {
+            return back()->with('error', 'This feature is available to premium users only. Please redeem a premium token to unlock PDF downloads.');
+        }
+
         $request->validate([
             'session_ids' => 'nullable|array',
             'session_ids.*' => 'integer|exists:exam_sessions,id',

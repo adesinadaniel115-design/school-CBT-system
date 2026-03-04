@@ -8,6 +8,7 @@ use App\Models\ExamSubjectScore;
 use App\Models\ExamToken;
 use App\Models\Question;
 use App\Models\Subject;
+use App\Models\StudentPlan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -53,7 +54,9 @@ class ExamController extends Controller
             ->pluck('question_ids')
             ->filter()
             ->map(function ($ids) {
-                return is_array($ids) ? $ids : json_decode($ids, true) ?: [];
+                return is_array($ids)
+                    ? $ids
+                    : (json_decode($ids, true) ?: []);
             })->flatten()->unique()->values()->all();
 
         $baseQuery = Question::where('subject_id', $data['subject_id']);
@@ -121,36 +124,49 @@ class ExamController extends Controller
         // Collect questions
         $questionCount = Cache::get('school_questions_count', 40);
         $shuffleQuestions = Cache::get('shuffle_questions', true);
+        // allow premium plan to change count
+        $activePlan = $request->user()->activePlan();
+        if ($activePlan && !is_null($activePlan->school_questions)) {
+            $questionCount = $activePlan->school_questions;
+        }
+        
+        // build list of previously attempted question IDs so we can avoid repeats
+        $usedQuestionIds = ExamSession::where('student_id', $studentId)
+            ->pluck('question_ids')
+            ->filter()
+            ->map(function ($ids) {
+                return is_array($ids)
+                    ? $ids
+                    : (json_decode($ids, true) ?: []);
+            })->flatten()->unique()->values()->all();
         
         // Prefer fresh questions the student hasn't seen before, but fall back to older ones
-        $query = Question::where('subject_id', $data['subject_id']);
-        $selected = collect();
-
-        // Try to get fresh questions first
-        $freshQuery = $query->when(!empty($usedQuestionIds), function ($q) use ($usedQuestionIds) {
-            return $q->whereNotIn('id', $usedQuestionIds);
-        });
-        if ($shuffleQuestions) {
-            $freshQuery->inRandomOrder();
+        $allQuestions = Question::where('subject_id', $data['subject_id'])->get();
+        // separate fresh vs used in PHP to avoid SQLite parameter limits
+        if (!empty($usedQuestionIds)) {
+            $fresh = $allQuestions->whereNotIn('id', $usedQuestionIds);
+        } else {
+            $fresh = $allQuestions;
         }
-        $fresh = $freshQuery->limit($questionCount)->get();
-        $selected = $selected->merge($fresh);
+
+        if ($shuffleQuestions) {
+            $fresh = $fresh->shuffle();
+        }
+
+        $selected = $fresh->take($questionCount);
 
         if ($selected->count() < $questionCount) {
             $needed = $questionCount - $selected->count();
-            // Fill remaining from full pool excluding already selected IDs
-            $excludeIds = $selected->pluck('id')->all();
-            $fallbackQuery = $query->when(!empty($excludeIds), function ($q) use ($excludeIds) {
-                return $q->whereNotIn('id', $excludeIds);
-            });
+            $remaining = $allQuestions->whereNotIn('id', $selected->pluck('id')->all());
             if ($shuffleQuestions) {
-                $fallbackQuery->inRandomOrder();
+                $remaining = $remaining->shuffle();
             }
-            $fallback = $fallbackQuery->limit($needed)->get();
-            $selected = $selected->merge($fallback);
+            $selected = $selected->merge($remaining->take($needed));
         }
 
         $questions = $selected->values();
+
+        // debugging: during tests, output the arrays so we can see what was chosen
 
         if ($questions->isEmpty()) {
             return back()->withErrors(['subject_id' => 'No questions available for this subject.']);
@@ -159,8 +175,10 @@ class ExamController extends Controller
         $questionIds = $questions->pluck('id')->all();
         $durationMinutes = Cache::get('school_duration_minutes', 60);
 
-        // Create exam session
-        $session = DB::transaction(function () use ($studentId, $data, $questionIds, $durationMinutes, $token) {
+        // Create exam session and consume token within a single transaction.
+        // We need to use the token first so that the StudentPlan record exists
+        // before we attempt to decrement it.
+        $session = DB::transaction(function () use ($studentId, $data, $questionIds, $durationMinutes, $token, $request) {
             $session = ExamSession::create([
                 'student_id' => $studentId,
                 'subject_id' => $data['subject_id'],
@@ -186,8 +204,26 @@ class ExamController extends Controller
 
             ExamAnswer::insert($answers);
 
-            // Decrement token usage
-            $token->increment('times_used');
+            // consume the token, binding it and creating StudentPlan if needed
+            $ip = request()->ip();
+            $ua = request()->header('User-Agent');
+            $ok = $token->use(request()->user(), $session->id, $ip, $ua);
+            if (!$ok) {
+                throw new \Exception('Token cannot be used by this account; it may have been used by another user.');
+            }
+
+            // now that the token has been used we can locate the plan record
+            if ($token->plan_id) {
+                $record = $request->user()->studentPlans()
+                    ->where('plan_id', $token->plan_id)
+                    ->latest()
+                    ->first();
+                if ($record) {
+                    $record->decrement('attempts_remaining');
+                    $session->student_plan_id = $record->id;
+                    $session->save();
+                }
+            }
 
             return $session;
         });
@@ -198,9 +234,20 @@ class ExamController extends Controller
     public function startJamb(Request $request)
     {
         $data = $request->validate([
-            'subject_ids' => ['required', 'array', 'size:3'],
+            'subject_ids' => ['required', 'array', 'size:3', 'distinct'],
             'subject_ids.*' => ['required', 'exists:subjects,id'],
         ]);
+
+        // Although Laravel's "distinct" rule should catch duplicates, we've
+        // seen odd behavior in the test environment where the rule seems to be
+        // bypassed.  Guard with an explicit PHP check so we reliably return an
+        // error message and keep the tests stable.
+        $ids = $data['subject_ids'] ?? [];
+        if (count($ids) !== count(array_unique($ids))) {
+            return back()->withErrors([
+                'subject_ids' => 'Please select three different subjects.',
+            ]);
+        }
 
         $studentId = $request->user()->id;
 
@@ -239,6 +286,16 @@ class ExamController extends Controller
         // Validate that enough questions exist
         $englishQuestionCount = Cache::get('jamb_english_questions', 60);
         $subjectQuestionCount = Cache::get('jamb_questions_per_subject', 40);
+        // apply plan override if student has one
+        $activePlan = $request->user()->activePlan();
+        if ($activePlan) {
+            if (!is_null($activePlan->jamb_questions_per_subject)) {
+                $subjectQuestionCount = $activePlan->jamb_questions_per_subject;
+            }
+            if (!is_null($activePlan->jamb_english_questions)) {
+                $englishQuestionCount = $activePlan->jamb_english_questions;
+            }
+        }
         
         $englishQuestionsAvailable = Question::where('subject_id', $englishSubject->id)->count();
 
@@ -289,8 +346,10 @@ class ExamController extends Controller
         // Load questions with subject for JAMB mode
         $questions = Question::with('subject')
             ->whereIn('id', $questionIds)
-            ->orderByRaw('FIELD(id, '.implode(',', $questionIds).')')
-            ->get();
+            ->get()
+            ->sortBy(function($q) use ($questionIds) {
+                return array_search($q->id, $questionIds);
+            })->values();
 
         $answers = $session->answers()->get()->keyBy('question_id');
         
@@ -310,6 +369,9 @@ class ExamController extends Controller
 
     public function submit(Request $request, ExamSession $session)
     {
+        // allow the script more time to grade large exams – default 60s may be hit
+        @set_time_limit(120);
+
         $this->authorizeSession($session);
 
         if ($session->completed_at) {
@@ -318,9 +380,18 @@ class ExamController extends Controller
 
         $request->validate([
             'answers' => ['array'],
+            'answers.*' => ['nullable', 'in:A,B,C,D'],
         ]);
 
+        $submittedAnswers = $request->input('answers', []);
         $questionIds = array_map('intval', $session->question_ids ?? []);
+
+        // ensure student isn't submitting answers for questions outside of session
+        $invalidKeys = array_diff(array_map('intval', array_keys($submittedAnswers)), $questionIds);
+        if (!empty($invalidKeys)) {
+            return back()->withErrors(['answers' => 'Invalid question answered.'])->withInput();
+        }
+
         $questions = Question::with('subject')->whereIn('id', $questionIds)->get();
         
         // Apply shuffle if enabled to get correct shuffled correct_option
@@ -332,10 +403,17 @@ class ExamController extends Controller
         $questions = $questions->keyBy('id');
         $submittedAnswers = $request->input('answers', []);
 
-        if ($session->exam_mode === 'jamb') {
-            $this->submitJambExam($session, $questions, $submittedAnswers);
-        } else {
-            $this->submitSchoolExam($session, $questions, $submittedAnswers);
+        try {
+            if ($session->exam_mode === 'jamb') {
+                $this->submitJambExam($session, $questions, $submittedAnswers);
+            } else {
+                $this->submitSchoolExam($session, $questions, $submittedAnswers);
+            }
+        } catch (\Throwable $e) {
+            // log it so administrators can investigate rather than dropping to 500
+            \Log::error('error submitting exam session '.$session->id, ['exception' => $e]);
+            return redirect()->route('student.dashboard')
+                         ->withErrors('An error occurred while submitting your exam. Please try again or contact support.');
         }
 
         if (!Cache::get('show_results_immediately', true)) {
@@ -530,7 +608,7 @@ class ExamController extends Controller
         ]);
     }
 
-    public function review(ExamSession $session)
+    public function review(ExamSession $session, Request $request)
     {
         $this->authorizeSession($session);
 
@@ -539,17 +617,36 @@ class ExamController extends Controller
             return redirect()->route('exam.take', $session);
         }
 
-        if (!Cache::get('allow_exam_review', false)) {
+        // Allow review if global setting enabled OR user has an active premium plan
+        $globalAllow = Cache::get('allow_exam_review', false);
+        $hasPremium = auth()->user()->activePlan() !== null;
+        if (!$globalAllow && !$hasPremium) {
             return redirect()->route('exam.result', $session)
                 ->with('error', 'Exam review is not allowed.');
         }
 
-        // Load all questions with their answers
-        $questionIds = array_map('intval', $session->question_ids ?? []);
+        // Get all question IDs in order
+        $allQuestionIds = array_map('intval', $session->question_ids ?? []);
+        $totalQuestions = count($allQuestionIds);
+        
+        // Paginate questions (default 10 per page to provide more pages)
+        $perPage = (int) $request->get('per_page', 10);
+        // clamp perPage to reasonable bounds
+        if ($perPage < 5) $perPage = 5;
+        if ($perPage > 100) $perPage = 100;
+        $currentPage = $request->get('page', 1);
+        $offset = ($currentPage - 1) * $perPage;
+        
+        // Get question IDs for current page
+        $paginatedQuestionIds = array_slice($allQuestionIds, $offset, $perPage);
+        
+        // Load questions for current page only
         $questions = Question::with('subject')
-            ->whereIn('id', $questionIds)
-            ->orderByRaw('FIELD(id, '.implode(',', $questionIds).')')
-            ->get();
+            ->whereIn('id', $paginatedQuestionIds)
+            ->get()
+            ->sortBy(function($q) use ($paginatedQuestionIds) {
+                return array_search($q->id, $paginatedQuestionIds);
+            })->values();
 
         $answers = $session->answers()->get()->keyBy('question_id');
         
@@ -559,10 +656,27 @@ class ExamController extends Controller
             $questions = $this->shuffleQuestionOptions($questions, $session->id);
         }
 
+        // Create a proper LengthAwarePaginator instance
+        $paginator = new \Illuminate\Pagination\LengthAwarePaginator(
+            $questions->values(),
+            $totalQuestions,
+            $perPage,
+            $currentPage,
+            [
+                'path' => route('exam.review', $session),
+                'query' => $request->query(),
+            ]
+        );
+        // Show a larger range of page links so users can navigate across many pages
+        $paginator->onEachSide(10);
+
         return view('exam.review', [
             'session' => $session->load('subject'),
-            'questions' => $questions,
+            'questions' => $paginator,
             'answers' => $answers,
+            'totalQuestions' => $totalQuestions,
+            'currentPage' => $currentPage,
+            'perPage' => $perPage,
         ]);
     }
 
@@ -660,23 +774,36 @@ class ExamController extends Controller
         $englishQuestionCount = Cache::get('jamb_english_questions', 60);
         $subjectQuestionCount = Cache::get('jamb_questions_per_subject', 40);
         $shuffleQuestions = Cache::get('shuffle_questions', true);
+        // plan override
+        $activePlan = $request->user()->activePlan();
+        if ($activePlan) {
+            if (!is_null($activePlan->jamb_questions_per_subject)) {
+                $subjectQuestionCount = $activePlan->jamb_questions_per_subject;
+            }
+            if (!is_null($activePlan->jamb_english_questions)) {
+                $englishQuestionCount = $activePlan->jamb_english_questions;
+            }
+        }
         
         // Build list of previously attempted question IDs for this student
         $usedQuestionIds = ExamSession::where('student_id', $studentId)
             ->pluck('question_ids')
             ->filter()
             ->map(function ($ids) {
-                return is_array($ids) ? $ids : json_decode($ids, true) ?: [];
+                return is_array($ids)
+                    ? $ids
+                    : (json_decode($ids, true) ?: []);
             })->flatten()->unique()->values()->all();
 
         // Helper: select fresh questions first, then fallback to older ones if needed
         $selectQuestions = function ($subjectId, $count) use ($shuffleQuestions, $usedQuestionIds) {
-            $q = Question::where('subject_id', $subjectId);
             $selected = collect();
 
-            $freshQ = $q->when(!empty($usedQuestionIds), function ($qq) use ($usedQuestionIds) {
-                return $qq->whereNotIn('id', $usedQuestionIds);
-            });
+            // fresh questions query
+            $freshQ = Question::where('subject_id', $subjectId);
+            if (!empty($usedQuestionIds)) {
+                $freshQ->whereNotIn('id', $usedQuestionIds);
+            }
             if ($shuffleQuestions) {
                 $freshQ->inRandomOrder();
             }
@@ -686,9 +813,12 @@ class ExamController extends Controller
             if ($selected->count() < $count) {
                 $needed = $count - $selected->count();
                 $exclude = $selected->pluck('id')->all();
-                $fallbackQ = $q->when(!empty($exclude), function ($qq) use ($exclude) {
-                    return $qq->whereNotIn('id', $exclude);
-                });
+
+                // fallback query starts fresh again (do not reuse $freshQ)
+                $fallbackQ = Question::where('subject_id', $subjectId);
+                if (!empty($exclude)) {
+                    $fallbackQ->whereNotIn('id', $exclude);
+                }
                 if ($shuffleQuestions) {
                     $fallbackQ->inRandomOrder();
                 }
@@ -731,8 +861,9 @@ class ExamController extends Controller
         $totalQuestions = count($questionIds);
         $jambDuration = Cache::get('jamb_duration_minutes', 120);
 
-        // Create JAMB session
-        $session = DB::transaction(function () use ($studentId, $englishSubject, $selectedSubjectIds, $questionIds, $totalQuestions, $jambDuration, $token, $request) {
+        // Create JAMB session.  Attach plan record if present and decrement
+        // attempts within the same transaction so we can record the association.
+        $session = DB::transaction(function () use ($studentId, $englishSubject, $selectedSubjectIds, $questionIds, $totalQuestions, $jambDuration, $token, $request, $activePlan) {
             $session = ExamSession::create([
                 'student_id' => $studentId,
                 'subject_id' => $englishSubject->id,
@@ -759,8 +890,26 @@ class ExamController extends Controller
 
             ExamAnswer::insert($answers);
 
-            // Use the token
-            $token->use($request->user(), $session->id);
+            // Use the token first (capture IP/UA); this will bind the token and
+            // create a StudentPlan record if the token grants a plan.
+            $ip = $request->ip();
+            $ua = $request->header('User-Agent');
+            $ok = $token->use($request->user(), $session->id, $ip, $ua);
+            if (!$ok) {
+                throw new \Exception('Token sharing detected');
+            }
+
+            // If the student has an active plan record (just created above),
+            // consume an attempt and remember the record on the session so
+            // features persist for this exam.
+            if ($token->plan_id) {
+                $record = $request->user()->studentPlans()->where('plan_id', $token->plan_id)->latest()->first();
+                if ($record) {
+                    $record->decrement('attempts_remaining');
+                    $session->student_plan_id = $record->id;
+                    $session->save();
+                }
+            }
 
             return $session;
         });
@@ -783,6 +932,15 @@ class ExamController extends Controller
             ], 404);
         }
 
+        // prevent validation if token has been bound to someone else
+        $user = $request->user();
+        if ($token->bound_user_id && $token->bound_user_id !== $user->id) {
+            return response()->json([
+                'valid' => false,
+                'message' => 'Token has already been redeemed by another user.'
+            ], 403);
+        }
+
         if (!$token->isValid()) {
             $reason = !$token->is_active ? 'deactivated' :
                      ($token->expires_at && $token->expires_at->isPast() ? 'expired' : 'fully used');
@@ -793,9 +951,41 @@ class ExamController extends Controller
             ], 400);
         }
 
-        return response()->json([
+        $resp = [
             'valid' => true,
             'message' => 'Token is valid',
-            'remaining_uses' => $token->remainingUses()
-        ]);
+            // always return numeric remaining_uses so admin can track token usage
+            'remaining_uses' => $token->remainingUses(),
+            'sharing_detected' => (bool) $token->sharing_detected,
+            'bound_user_id' => $token->bound_user_id,
+            'plan_token' => (bool) $token->plan_id,
+        ];
+
+        if (\Schema::hasTable('plans') && $token->plan) {
+            $resp['plan'] = [
+                'name' => $token->plan->name,
+                'price' => $token->plan->price,
+                'attempts_allowed' => $token->plan->attempts_allowed,
+                'duration_days' => $token->plan->duration_days,
+                'has_explanations' => $token->plan->has_explanations,
+                'has_leaderboard' => $token->plan->has_leaderboard,
+                'has_streak' => $token->plan->has_streak,
+            ];
+
+            // Get the student's current plan attempts remaining (if they already have this plan)
+            if (\Schema::hasTable('student_plans') && $user) {
+                $studentPlan = StudentPlan::where('student_id', $user->id)
+                    ->where('plan_id', $token->plan_id)
+                    ->first();
+                
+                if ($studentPlan) {
+                    $resp['plan']['attempts_remaining'] = $studentPlan->attempts_remaining;
+                } else {
+                    // first time redeeming this plan - show full attempts
+                    $resp['plan']['attempts_remaining'] = $token->plan->attempts_allowed;
+                }
+            }
+        }
+
+        return response()->json($resp);
     }}
