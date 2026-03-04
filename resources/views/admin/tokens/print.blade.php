@@ -523,17 +523,24 @@
 
         /* Copyright Notice on Card */
         .card-copyright {
-            background: #e5e7eb;
             padding: 2px 6px;
             text-align: center;
             font-size: 5px;
-            color: #1f2937;
-            border-top: 1px solid #d1d5db;
+            color: rgba(255, 255, 255, 0.85);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
             font-weight: 700;
             letter-spacing: 0.3px;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
             color-adjust: exact;
+        }
+
+        /* Plan-specific copyright color ensure visibility */
+        .scratch-card.basic .card-copyright,
+        .scratch-card.smart .card-copyright,
+        .scratch-card.premium .card-copyright {
+            color: rgba(255, 255, 255, 0.85);
+            border-top-color: rgba(255, 255, 255, 0.2);
         }
 
         /* Back Link */
