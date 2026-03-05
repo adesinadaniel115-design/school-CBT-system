@@ -408,6 +408,18 @@
                 --sidebar-width: 0;
             }
             
+            /* make both exam and regular sidebars cover full screen height and
+               sit flush at the very top on phones; also ensure a solid background
+               so menu labels remain legible over underlying content */
+            .exam-sidebar,
+            .sidebar {
+                top: 0 !important;
+                bottom: 0 !important;
+                height: 100vh;
+                background: #ffffff;
+                z-index: 1040; /* sit above navbar so sidebar appears full-height */
+            }
+
             .exam-sidebar {
                 left: -300px;
                 width: 300px;
@@ -422,7 +434,7 @@
             .sidebar-overlay {
                 display: none;
                 position: fixed;
-                top: var(--navbar-height);
+                top: 0;
                 left: 0;
                 right: 0;
                 bottom: 0;

@@ -591,36 +591,7 @@
 </head>
 <body>
     <div class="dashboard-container">
-        <aside class="sidebar">
-            <div class="sidebar-brand">
-                <h4><i class="bi bi-mortarboard-fill"></i> <span>School CBT</span></h4>
-                <p>Computer Based Testing Platform</p>
-            </div>
-
-            <nav class="sidebar-menu">
-                <a href="{{ route('student.dashboard') }}" class="menu-item">
-                    <span class="menu-icon"><i class="bi bi-house-door-fill"></i></span>
-                    <span class="menu-label">Dashboard</span>
-                </a>
-                <a href="{{ route('student.history') }}" class="menu-item active">
-                    <span class="menu-icon"><i class="bi bi-clock-history"></i></span>
-                    <span class="menu-label">Exam History</span>
-                </a>
-                <a href="{{ route('student.profile.edit') }}" class="menu-item">
-                    <span class="menu-icon"><i class="bi bi-person-circle"></i></span>
-                    <span class="menu-label">Profile</span>
-                </a>
-                <div style="margin-top: 2rem; padding: 0 1rem;">
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="menu-item logout w-100 border-0">
-                            <span class="menu-icon"><i class="bi bi-box-arrow-right"></i></span>
-                            <span class="menu-label">Logout</span>
-                        </button>
-                    </form>
-                </div>
-            </nav>
-        </aside>
+        @include('student.partials.sidebar')
 
         <main class="main-content">
             <div class="top-actions">
@@ -667,13 +638,27 @@
                     </a>
                 </div>
             @else
+                @php
+                    $hasPremiumPlan = auth()->user()->activePlan() !== null;
+                @endphp
+                
+                @if(!$hasPremiumPlan)
+                    <div class="alert alert-info alert-dismissible fade show mb-3" role="alert">
+                        <i class="bi bi-lock-fill me-2"></i>
+                        <strong>Premium Feature:</strong> Download your exam questions as PDF. Redeem a premium token to unlock this feature.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                @endif
+
                 <form method="POST" action="{{ route('student.history.generate') }}" id="exportForm">
                     @csrf
+                    @if($hasPremiumPlan)
                     <div class="export-controls mb-3 d-flex align-items-center gap-2">
                         <input type="checkbox" id="selectAll" /> <label for="selectAll" class="mb-0">Select all</label>
                         <button type="submit" class="btn btn-primary btn-sm">Download Selected</button>
                         <button type="submit" name="all" value="1" class="btn btn-secondary btn-sm">Download All</button>
                     </div>
+                    @endif
                 
                     @foreach($sessions as $session)
                         <div class="exam-card">

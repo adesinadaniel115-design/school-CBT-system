@@ -24,6 +24,18 @@
             <p>Subjects</p>
         </div>
     </a>
+
+    @if(\Schema::hasTable('plans'))
+    <a href="{{ route('admin.plans.index') }}" class="stat-card text-decoration-none" style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)'">
+        <div class="stat-icon silver">
+            <i class="bi bi-card-list"></i>
+        </div>
+        <div class="stat-content">
+            <h3>Plans</h3>
+            <p>Subscription Plans</p>
+        </div>
+    </a>
+    @endif
     <a href="{{ route('admin.all-questions') }}" class="stat-card text-decoration-none" style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)'">
         <div class="stat-icon yellow">
             <i class="bi bi-question-circle-fill"></i>

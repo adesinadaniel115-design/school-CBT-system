@@ -730,6 +730,14 @@
                     <span class="menu-icon"><i class="bi bi-ticket-perforated"></i></span>
                     <span class="menu-label">Exam Tokens</span>
                 </a>
+
+                @if(\Schema::hasTable('plans') && \Route::has('admin.plans.index'))
+                <a href="{{ route('admin.plans.index') }}" class="menu-item {{ request()->routeIs('admin.plans.*') ? 'active' : '' }}">
+                    <span class="menu-icon"><i class="bi bi-card-list"></i></span>
+                    <span class="menu-label">Plans</span>
+                </a>
+                @endif
+
                 <a href="{{ route('admin.settings.index') }}" class="menu-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
                     <span class="menu-icon"><i class="bi bi-gear"></i></span>
                     <span class="menu-label">Exam Settings</span>
