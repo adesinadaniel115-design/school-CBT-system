@@ -306,8 +306,25 @@
             background: #d1d5db;
         }
 
-        /* Mobile Responsive (max-width: 768px) */
-        @media (max-width: 768px) {
+        /* Mobile sidebar - full height */
+        @media (max-width: 991px) {
+            .sidebar {
+                /* Span full height and width on mobile */
+                top: 0 !important;
+                bottom: 0 !important;
+                height: 100vh;
+                background: #ffffff;
+                transform: translateX(-100%);
+                z-index: 1050;
+                width: 280px;
+                box-shadow: 2px 0 20px rgba(0, 0, 0, 0.15);
+            }
+            .sidebar.show {
+                transform: translateX(0);
+            }
+        }
+
+        
             body {
                 padding: 0;
             }

@@ -474,6 +474,11 @@
 
         @media (max-width: 991px) {
             .sidebar {
+                /* Span full height and width on mobile */
+                top: 0 !important;
+                bottom: 0 !important;
+                height: 100vh;
+                background: #ffffff;
                 transform: translateX(-100%);
                 z-index: 1050;
                 width: 280px;
