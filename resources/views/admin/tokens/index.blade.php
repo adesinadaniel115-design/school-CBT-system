@@ -12,19 +12,32 @@
             </h3>
             <p style="color: #6b7280; margin: 0.25rem 0 0; font-size: 0.875rem;">Generate and manage exam access tokens</p>
         </div>
-        <div style="display: flex; gap: 0.75rem;">
-            @if($tokens->total() > 0)
+        <div style="display: flex; gap: 0.75rem; align-items: center;">
+                <a href="{{ route('admin.tokens.create') }}" class="btn btn-primary" title="Generate Tokens">
+                    <i class="bi bi-plus-circle"></i> Generate Tokens
+                </a>
+                @if($tokens->total() > 0)
                 <a href="{{ route('admin.tokens.print', ['all' => 1] + request()->only(['search', 'status', 'center_id'])) }}" 
                    class="btn btn-secondary" target="_blank" title="Print all filtered tokens">
                     <i class="bi bi-printer-fill"></i> Print All
                 </a>
-            @endif
-            <a href="{{ route('admin.tokens.create') }}" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Generate Tokens
-            </a>
-        </div>
+                @endif
     </div>
 </div>
+
+<style>
+    /* plan badge colours */
+    .plan-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    .plan-badge.basic { background-color: #8BC34A; color: #fff; }
+    .plan-badge.silver { background: linear-gradient(135deg, #e0e0e0 0%, #c0c0c0 100%); color: #000; }
+    .plan-badge.gold   { background: linear-gradient(135deg, #ffecb3 0%, #ffd700 100%); color: #000; }
+</style>
 
 <!-- Filters -->
 <div class="card" style="margin-bottom: 1.5rem;">
@@ -127,6 +140,7 @@
                 <tr>
                     <th>Token Code</th>
                     <th>Center</th>
+                    <th>Plan</th>
                     <th>Status</th>
                     <th>Usage</th>
                     <th>Created By</th>
@@ -153,6 +167,17 @@
                             @endif
                         </td>
                         <td>
+                            @if($includePlan)
+                                @php
+                                    $planName = $token->plan ? $token->plan->name : 'Basic';
+                                    $slug = strtolower($planName);
+                                @endphp
+                                <span class="plan-badge {{ $slug }}">{{ $planName }}</span>
+                            @else
+                                <span class="plan-badge basic">Basic</span>
+                            @endif
+                        </td>
+                        <td>
                             @if(!$token->is_active)
                                 <span class="badge badge-danger">Inactive</span>
                             @elseif($token->expires_at && $token->expires_at->isPast())
@@ -164,10 +189,13 @@
                             @endif
                         </td>
                         <td>
-                            <strong style="color: {{ $token->remainingUses() > 0 ? '#10b981' : '#ef4444' }};">
-                                {{ $token->used_count }} / {{ $token->max_uses }}
-                            </strong>
-                            <br><small style="color: #6b7280;">{{ $token->remainingUses() }} remaining</small>
+                            @if(\Schema::hasTable('plans') && $token->plan)
+                                <small style="color: #6b7280;">Grants: {{ $token->plan->attempts_allowed }} attempts</small>
+                                <br><strong style="color: {{ $token->remainingUses() > 0 ? '#10b981' : '#ef4444' }};">Token remaining: {{ $token->remainingUses() }}</strong>
+                            @else
+                                <strong style="color: {{ $token->remainingUses() > 0 ? '#10b981' : '#ef4444' }};">{{ $token->used_count }} / {{ $token->max_uses }}</strong>
+                                <br><small style="color: #6b7280;">{{ $token->remainingUses() }} remaining</small>
+                            @endif
                         </td>
                         <td>
                             {{ $token->creator->name }}
@@ -183,16 +211,7 @@
                         </td>
                         <td>
                             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                                <button type="button" class="btn btn-sm btn-info copy-token-btn" 
-                                        data-token="{{ $token->code }}" title="Copy Token Code">
-                                    <i class="bi bi-clipboard"></i>
-                                </button>
-                                <button type="button" class="btn btn-sm btn-success share-token-btn" 
-                                        data-token="{{ $token->code }}"
-                                        data-expires="{{ $token->expires_at ? $token->expires_at->format('M d, Y') : 'Never' }}"
-                                        data-uses="{{ $token->remainingUses() }}" title="Share Token">
-                                    <i class="bi bi-share"></i>
-                                </button>
+                                <!-- Copy / Share removed: keep only Print, Activate/Deactivate, Delete -->
                                 <a href="{{ route('admin.tokens.print', ['ids' => $token->id, 'download' => 1]) }}" 
                                    class="btn btn-sm btn-primary" target="_blank" title="Download">
                                     <i class="bi bi-download"></i>
@@ -405,123 +424,4 @@
     }
 }
 </style>
-
-<!-- Share Modal -->
-<div id="shareModal" class="share-modal">
-    <div class="share-modal-content">
-        <div class="share-modal-header">
-            <h3><i class="bi bi-share-fill"></i> Share Token</h3>
-            <button class="share-close-btn" onclick="closeShareModal()">
-                <i class="bi bi-x"></i>
-            </button>
-        </div>
-        <div class="share-options">
-            <div class="share-text-box" id="shareText"></div>
-            <div class="share-btn-group">
-                <button class="share-btn share-btn-primary" onclick="copyShareText()">
-                    <i class="bi bi-clipboard"></i> Copy Text
-                </button>
-                <button class="share-btn share-btn-secondary" onclick="closeShareModal()">
-                    <i class="bi bi-x-circle"></i> Close
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-let currentShareText = '';
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Copy Token Buttons
-    const copyButtons = document.querySelectorAll('.copy-token-btn');
-    
-    copyButtons.forEach(button => {
-        button.addEventListener('click', async function() {
-            const tokenCode = this.getAttribute('data-token');
-            const icon = this.querySelector('i');
-            const originalClass = icon.className;
-            
-            try {
-                await navigator.clipboard.writeText(tokenCode);
-                
-                // Visual feedback
-                this.classList.add('copied');
-                icon.className = 'bi bi-check-circle-fill';
-                
-                // Reset after 2 seconds
-                setTimeout(() => {
-                    this.classList.remove('copied');
-                    icon.className = originalClass;
-                }, 2000);
-            } catch (err) {
-                // Fallback
-                const textarea = document.createElement('textarea');
-                textarea.value = tokenCode;
-                textarea.style.position = 'fixed';
-                textarea.style.opacity = '0';
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
-                
-                this.classList.add('copied');
-                icon.className = 'bi bi-check-circle-fill';
-                setTimeout(() => {
-                    this.classList.remove('copied');
-                    icon.className = originalClass;
-                }, 2000);
-            }
-        });
-    });
-
-    // Share Token Buttons
-    const shareButtons = document.querySelectorAll('.share-token-btn');
-    
-    shareButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const tokenCode = this.getAttribute('data-token');
-            const expires = this.getAttribute('data-expires');
-            const uses = this.getAttribute('data-uses');
-            
-            const shareText = `🎓 EXAM ACCESS TOKEN\n\nToken Code: ${tokenCode}\n\nExpires: ${expires}\nRemaining Uses: ${uses}\n\nInstructions:\n1. Log in to your student account\n2. Select JAMB exam mode\n3. Choose your 3 subjects\n4. Enter this token code when prompted\n5. Start your exam\n\n⚠️ Keep this token secure and do not share unnecessarily.`;
-            
-            currentShareText = shareText;
-            document.getElementById('shareText').textContent = shareText;
-            document.getElementById('shareModal').classList.add('active');
-        });
-    });
-
-    // Close modal when clicking outside
-    document.getElementById('shareModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeShareModal();
-        }
-    });
-});
-
-function closeShareModal() {
-    document.getElementById('shareModal').classList.remove('active');
-}
-
-function copyShareText() {
-    navigator.clipboard.writeText(currentShareText).then(() => {
-        const btn = event.target.closest('button');
-        const icon = btn.querySelector('i');
-        const originalClass = icon.className;
-        
-        icon.className = 'bi bi-check-circle-fill';
-        btn.textContent = '';
-        btn.appendChild(icon);
-        btn.appendChild(document.createTextNode(' Copied!'));
-        
-        setTimeout(() => {
-            icon.className = originalClass;
-            btn.textContent = '';
-            btn.appendChild(icon);
-            btn.appendChild(document.createTextNode(' Copy Text'));
-        }, 2000);
-    });
-}
-</script>
 @endsection

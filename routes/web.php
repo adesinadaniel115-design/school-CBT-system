@@ -13,6 +13,7 @@ use App\Http\Controllers\ExamController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\StudentDashboardController;
 use App\Http\Controllers\SubjectController;
+use App\Http\Controllers\PlanController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -52,6 +53,11 @@ Route::middleware('auto.login')->group(function () {
         // Student Routes
         Route::get('/student/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
         Route::get('/history', [StudentDashboardController::class, 'history'])->name('student.history');
+        // Plans & Tokens informational page for students
+        Route::get('/plans', [StudentDashboardController::class, 'plans'])->name('student.plans');
+        // leaderboard for paid plans
+        Route::get('/leaderboard', [\App\Http\Controllers\StudentLeaderboardController::class, 'index'])
+            ->name('student.leaderboard');
         Route::post('/history/clear', [StudentDashboardController::class, 'clearHistory'])->name('student.history.clear');
         // export selected/all history results as PDF
         Route::post('/history/generate', [StudentDashboardController::class, 'generateHistoryPdf'])->name('student.history.generate');
@@ -99,6 +105,9 @@ Route::middleware('auto.login')->group(function () {
             // Subject & Question Management
             Route::resource('subjects', SubjectController::class);
             Route::resource('questions', QuestionController::class)->except(['show']);
+
+            // Plan Management (for subscription features)
+            Route::resource('plans', PlanController::class)->except(['show']);
             Route::get('questions-import/download-template', [QuestionController::class, 'downloadTemplate'])->name('questions.import.template');
             Route::get('questions-import', [QuestionController::class, 'showImportForm'])->name('questions.import.form');
             Route::post('questions-import', [QuestionController::class, 'import'])->name('questions.import');

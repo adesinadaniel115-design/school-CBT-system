@@ -9,7 +9,11 @@ class AdminExamTokenController extends Controller
 {
     public function index(Request $request)
     {
+        $includePlan = \Schema::hasTable('plans');
         $query = ExamToken::with(['creator', 'usages.user', 'center']);
+        if ($includePlan) {
+            $query->with('plan');
+        }
 
         if ($request->filled('search')) {
             $query->where('code', 'like', "%{$request->search}%");
@@ -34,34 +38,55 @@ class AdminExamTokenController extends Controller
         $tokens = $query->latest()->paginate(20);
         $centers = \App\Models\Center::orderBy('name')->get();
 
-        return view('admin.tokens.index', compact('tokens', 'centers'));
+        return view('admin.tokens.index', compact('tokens', 'centers', 'includePlan'));
     }
 
     public function create()
     {
         $centers = \App\Models\Center::orderBy('name')->get();
-        return view('admin.tokens.create', compact('centers'));
+        $plans = [];
+
+        if (\Schema::hasTable('plans')) {
+            $plans = \App\Models\Plan::orderBy('price')->get();
+        }
+
+        return view('admin.tokens.create', compact('centers', 'plans'));
     }
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $rules = [
             'quantity' => ['required', 'integer', 'min:1', 'max:100'],
-            'max_uses' => ['required', 'integer', 'min:1', 'max:1000'],
             'expires_at' => ['nullable', 'date', 'after:today'],
             'notes' => ['nullable', 'string', 'max:500'],
             'center_id' => ['nullable','exists:centers,id'],
-        ]);
+        ];
+
+        if (\Schema::hasTable('plans')) {
+            // Plan-first flow: require selecting a plan; token usage limits inherit from plan
+            $rules['plan_id'] = ['required','exists:plans,id'];
+        }
+
+        $validated = $request->validate($rules);
 
         $tokens = [];
+        $planValue = null;
+        $planAttempts = 1;
+        if (\Schema::hasTable('plans')) {
+            $planValue = $validated['plan_id'];
+            $planModel = \App\Models\Plan::findOrFail($planValue);
+            $planAttempts = $planModel->attempts_allowed;
+        }
+
         for ($i = 0; $i < $validated['quantity']; $i++) {
             $tokens[] = ExamToken::create([
                 'code' => ExamToken::generateCode(),
-                'max_uses' => $validated['max_uses'],
+                'max_uses' => $planAttempts,
                 'created_by' => auth()->id(),
                 'expires_at' => $validated['expires_at'] ?? null,
                 'notes' => $validated['notes'] ?? null,
                 'center_id' => $validated['center_id'] ?? null,
+                'plan_id' => $planValue,
             ]);
         }
 
@@ -193,13 +218,27 @@ class AdminExamTokenController extends Controller
             ], 400);
         }
 
-        return response()->json([
+        $response = [
             'valid' => true,
             'token' => [
                 'code' => $token->code,
                 'remaining_uses' => $token->remainingUses(),
                 'expires_at' => $token->expires_at?->format('M d, Y'),
             ]
-        ]);
+        ];
+
+        if (\Schema::hasTable('plans') && $token->plan) {
+            $response['token']['plan'] = [
+                'name' => $token->plan->name,
+                'price' => $token->plan->price,
+                'attempts_allowed' => $token->plan->attempts_allowed,
+                'duration_days' => $token->plan->duration_days,
+                'has_explanations' => $token->plan->has_explanations,
+                'has_leaderboard' => $token->plan->has_leaderboard,
+                'has_streak' => $token->plan->has_streak,
+            ];
+        }
+
+        return response()->json($response);
     }
 }

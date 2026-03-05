@@ -283,6 +283,8 @@
                     <div class="stat-label">Score</div>
                 </div>
             </div>
+
+            {{-- Top pagination removed - pagination will appear at the bottom only --}}
         </div>
 
         @foreach($questions as $index => $question)
@@ -311,10 +313,10 @@
             @endphp
 
             <div class="question-card {{ $cardClass }}">
-                <div class="question-header">
-                    <span class="question-number">Question {{ $index + 1 }}</span>
-                    <span class="question-status {{ $statusClass }}">{{ $statusText }}</span>
-                </div>
+                    <div class="question-header">
+                        <span class="question-number">Question {{ (($currentPage - 1) * $perPage) + $index + 1 }}</span>
+                        <span class="question-status {{ $statusClass }}">{{ $statusText }}</span>
+                    </div>
 
                 @if($session->exam_mode === 'jamb')
                     <span class="subject-badge">{{ $question->subject->name }}</span>
@@ -369,7 +371,23 @@
                     @endforeach
                 </div>
 
-                @if($question->explanation)
+                @php
+                    $user = auth()->user();
+                @endphp
+
+                @php
+                    $showExplanation = false;
+                    if ($question->explanation) {
+                        if ($user->hasFeature('explanations')) {
+                            $showExplanation = true;
+                        } elseif (method_exists($session, 'hasFeature') && $session->hasFeature('explanations')) {
+                            // allow explanations for the session itself even if the
+                            // user's active plan has expired (e.g. plan consumed)
+                            $showExplanation = true;
+                        }
+                    }
+                @endphp
+                @if($showExplanation)
                     <div class="explanation-box">
                         <strong><i class="bi bi-lightbulb-fill"></i> Explanation:</strong>
                         {!! $question->explanation !!}
@@ -378,10 +396,51 @@
             </div>
         @endforeach
 
+        @if($questions->hasPages())
+            <div style="padding: 1.5rem 0; border-top: 2px solid #f0f0f0; margin-top: 2rem;">
+                {{-- Desktop / tablet: full pagination and viewing text --}}
+                <div class="d-none d-md-block" style="margin-bottom: 1rem; font-size: 0.875rem; color: #718096; text-align: center;">
+                    Viewing questions {{ (($currentPage - 1) * $perPage) + 1 }} - {{ min($currentPage * $perPage, $totalQuestions) }} of {{ $totalQuestions }}
+                </div>
+                <div class="d-none d-md-block">
+                    {{ $questions->links('pagination::bootstrap-5') }}
+                </div>
+
+                {{-- Mobile: compact prev/next and simple page indicator --}}
+                <div class="d-block d-md-none text-center">
+                    <div style="font-size: 0.9rem; color: #718096;">
+                        Viewing {{ (($currentPage - 1) * $perPage) + 1 }} - {{ min($currentPage * $perPage, $totalQuestions) }} of {{ $totalQuestions }}
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        @if($questions->previousPageUrl())
+                            <a href="{{ $questions->previousPageUrl() }}" class="btn btn-sm btn-secondary">‹ Prev</a>
+                        @else
+                            <span style="width:56px; display:inline-block;"></span>
+                        @endif
+
+                        <div style="font-size:0.9rem; color:#374151;">
+                            Page {{ $questions->currentPage() }} / {{ $questions->lastPage() }}
+                        </div>
+
+                        @if($questions->nextPageUrl())
+                            <a href="{{ $questions->nextPageUrl() }}" class="btn btn-sm btn-secondary">Next ›</a>
+                        @else
+                            <span style="width:56px; display:inline-block;"></span>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <div class="action-buttons">
             <a href="{{ route('exam.result', $session) }}" class="btn-action btn-primary">
                 <i class="bi bi-arrow-left"></i> Back to Results
             </a>
+            @if($user->hasFeature('leaderboard') || ($session && method_exists($session, 'hasFeature') && $session->hasFeature('leaderboard')))
+            <a href="{{ route('student.leaderboard') }}" class="btn-action btn-primary">
+                <i class="bi bi-trophy-fill"></i> Leaderboard
+            </a>
+            @endif
             <a href="{{ route('student.dashboard') }}" class="btn-action btn-secondary">
                 <i class="bi bi-house-door-fill"></i> Dashboard
             </a>

@@ -9,15 +9,22 @@ return new class extends Migration
 {
     public function up(): void
     {
-        DB::statement("ALTER TABLE exam_sessions MODIFY started_at DATETIME NOT NULL");
-        DB::statement("ALTER TABLE exam_sessions MODIFY completed_at DATETIME NULL");
+        // SQLite does not support MODIFY/ALTER syntax; statements are only
+        // needed on MySQL/MariaDB. Skip when using sqlite connection so tests
+        // running against in-memory DB do not blow up.
+        if (Schema::getConnection()->getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE exam_sessions MODIFY started_at DATETIME NOT NULL");
+            DB::statement("ALTER TABLE exam_sessions MODIFY completed_at DATETIME NULL");
 
-        DB::statement("UPDATE exam_sessions SET started_at = created_at WHERE completed_at IS NOT NULL AND started_at = completed_at");
+            DB::statement("UPDATE exam_sessions SET started_at = created_at WHERE completed_at IS NOT NULL AND started_at = completed_at");
+        }
     }
 
     public function down(): void
     {
-        DB::statement("ALTER TABLE exam_sessions MODIFY started_at TIMESTAMP NOT NULL");
-        DB::statement("ALTER TABLE exam_sessions MODIFY completed_at TIMESTAMP NULL");
+        if (Schema::getConnection()->getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE exam_sessions MODIFY started_at TIMESTAMP NOT NULL");
+            DB::statement("ALTER TABLE exam_sessions MODIFY completed_at TIMESTAMP NULL");
+        }
     }
 };
