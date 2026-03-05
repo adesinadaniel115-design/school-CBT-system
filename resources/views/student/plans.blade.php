@@ -120,6 +120,21 @@
             .sidebar.show {
                 transform: translateX(0) !important;
             }
+            
+            /* Force sidebar to show full content on mobile */
+            .sidebar .sidebar-brand span,
+            .sidebar .sidebar-brand p,
+            .sidebar .menu-label {
+                opacity: 1 !important;
+                transform: none !important;
+                pointer-events: auto !important;
+                width: auto !important;
+                overflow: visible !important;
+            }
+            
+            .sidebar .menu-item {
+                justify-content: flex-start !important;
+            }
         }
 
         .menu-item {

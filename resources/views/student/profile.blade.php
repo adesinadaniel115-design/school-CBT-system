@@ -128,6 +128,14 @@
             justify-content: center;
         }
 
+        /* Sidebar visibility */
+        @media (min-width: 992px) {
+            .sidebar {
+                transform: translateX(0) !important;
+                z-index: 1040;
+            }
+        }
+
         .main-content {
             margin-left: 280px;
             flex: 1;
@@ -321,6 +329,30 @@
             }
             .sidebar.show {
                 transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1.5rem 1rem;
+            }
+
+            .sidebar-toggle {
+                display: flex !important;
+            }
+            
+            /* Force sidebar to show full content on mobile */
+            .sidebar .sidebar-brand span,
+            .sidebar .sidebar-brand p,
+            .sidebar .menu-label {
+                opacity: 1 !important;
+                transform: none !important;
+                pointer-events: auto !important;
+                width: auto !important;
+                overflow: visible !important;
+            }
+            
+            .sidebar .menu-item {
+                justify-content: flex-start !important;
             }
         }
 
@@ -531,6 +563,50 @@
                 });
             }
         })();
+    </script>
+    <script>
+        // Sidebar toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const storageKey = 'studentSidebarCollapsed';
+            const toggle = document.getElementById('studentSidebarToggle');
+            const sidebar = document.querySelector('.sidebar');
+
+            if (localStorage.getItem(storageKey) === 'true') {
+                document.body.classList.add('sidebar-collapsed');
+            }
+
+            if (toggle) {
+                toggle.addEventListener('click', function (e) {
+                    // On mobile (< 991px), show/hide sidebar with `.show` class
+                    if (window.innerWidth < 991) {
+                        sidebar?.classList.toggle('show');
+                        e.stopPropagation();
+                    } else {
+                        // On desktop, use the collapse toggle
+                        document.body.classList.toggle('sidebar-collapsed');
+                        localStorage.setItem(storageKey, document.body.classList.contains('sidebar-collapsed'));
+                    }
+                });
+            }
+            
+            // Close sidebar when clicking outside on mobile
+            if (sidebar) {
+                document.addEventListener('click', function (e) {
+                    if (window.innerWidth < 991) {
+                        if (!sidebar.contains(e.target) && e.target !== toggle && !toggle?.contains(e.target)) {
+                            sidebar.classList.remove('show');
+                        }
+                    }
+                });
+            }
+            
+            // Close sidebar on resize to desktop
+            window.addEventListener('resize', function () {
+                if (window.innerWidth >= 991) {
+                    sidebar?.classList.remove('show');
+                }
+            });
+        });
     </script>
     <script>
         (function () {
