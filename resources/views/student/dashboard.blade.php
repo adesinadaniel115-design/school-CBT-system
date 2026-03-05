@@ -38,17 +38,13 @@
             height: 100vh;
             overflow-y: auto;
             overflow-x: hidden;
-            transition: width 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            transform: translateX(0);
+            z-index: 1040;
         }
 
         body.sidebar-collapsed .sidebar {
-            width: 84px;
-        }
-
-        body.sidebar-collapsed .sidebar-brand,
-        body.sidebar-collapsed .sidebar-menu {
-            padding-left: 0.75rem;
-            padding-right: 0.75rem;
+            transform: translateX(-100%);
         }
 
         .sidebar-brand span,
@@ -56,21 +52,6 @@
         .menu-label {
             transition: opacity 0.2s ease, transform 0.2s ease;
             white-space: nowrap;
-        }
-
-        body.sidebar-collapsed .sidebar-brand span,
-        body.sidebar-collapsed .sidebar-brand p {
-            opacity: 0;
-            transform: translateX(-8px);
-            pointer-events: none;
-        }
-
-        body.sidebar-collapsed .menu-item {
-            justify-content: center;
-        }
-
-        body.sidebar-collapsed .menu-item:hover {
-            transform: none;
         }
 
         .sidebar-brand {
@@ -168,14 +149,10 @@
 
         /* Main Content */
         .main-content {
-            margin-left: 280px;
             flex: 1;
             padding: 2rem;
-            transition: margin-left 0.25s ease;
-        }
-
-        body.sidebar-collapsed .main-content {
-            margin-left: 84px;
+            transition: padding 0.25s ease;
+            width: 100%;
         }
 
         .top-actions {
@@ -581,10 +558,6 @@
             .sidebar.show {
                 transform: translateX(0);
             }
-
-            .main-content {
-                margin-left: 0;
-            }
             
             /* Sidebar backdrop overlay */
             .sidebar::after {
@@ -605,21 +578,6 @@
             
             .sidebar-toggle {
                 display: flex !important;
-            }
-            
-            /* Force sidebar to show full content on mobile */
-            .sidebar .sidebar-brand span,
-            .sidebar .sidebar-brand p,
-            .sidebar .menu-label {
-                opacity: 1 !important;
-                transform: none !important;
-                pointer-events: auto !important;
-                width: auto !important;
-                overflow: visible !important;
-            }
-            
-            .sidebar .menu-item {
-                justify-content: flex-start !important;
             }
         }
 

@@ -33,11 +33,13 @@
             height: 100vh;
             overflow-y: auto;
             overflow-x: hidden;
-            transition: width 0.25s ease;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            transform: translateX(0);
+            z-index: 1040;
         }
 
         body.sidebar-collapsed .sidebar {
-            width: 84px;
+            transform: translateX(-100%);
         }
 
         .sidebar-brand {
@@ -114,20 +116,6 @@
             transition: opacity 0.2s ease, transform 0.2s ease;
         }
 
-        body.sidebar-collapsed .menu-label,
-        body.sidebar-collapsed .sidebar-brand span,
-        body.sidebar-collapsed .sidebar-brand p {
-            opacity: 0;
-            transform: translateX(-6px);
-            width: 0;
-            overflow: hidden;
-            pointer-events: none;
-        }
-
-        body.sidebar-collapsed .menu-item {
-            justify-content: center;
-        }
-
         /* Sidebar visibility */
         @media (min-width: 992px) {
             .sidebar {
@@ -136,15 +124,12 @@
             }
         }
 
+        /* Main Content */
         .main-content {
-            margin-left: 280px;
             flex: 1;
             padding: 2rem;
-            transition: margin-left 0.25s ease;
-        }
-
-        body.sidebar-collapsed .main-content {
-            margin-left: 84px;
+            transition: padding 0.25s ease;
+            width: 100%;
         }
 
         .top-actions {
@@ -331,28 +316,8 @@
                 transform: translateX(0);
             }
 
-            .main-content {
-                margin-left: 0;
-                padding: 1.5rem 1rem;
-            }
-
             .sidebar-toggle {
                 display: flex !important;
-            }
-            
-            /* Force sidebar to show full content on mobile */
-            .sidebar .sidebar-brand span,
-            .sidebar .sidebar-brand p,
-            .sidebar .menu-label {
-                opacity: 1 !important;
-                transform: none !important;
-                pointer-events: auto !important;
-                width: auto !important;
-                overflow: visible !important;
-            }
-            
-            .sidebar .menu-item {
-                justify-content: flex-start !important;
             }
         }
 
