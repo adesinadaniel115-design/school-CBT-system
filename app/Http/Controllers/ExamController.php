@@ -979,10 +979,22 @@ class ExamController extends Controller
                     ->first();
                 
                 if ($studentPlan) {
-                    $resp['plan']['attempts_remaining'] = $studentPlan->attempts_remaining;
+                    // For premium plans, show "Premium Activated" instead of attempts
+                    if (strtolower($token->plan->name) === 'premium' || str_contains(strtolower($token->plan->name), 'premium')) {
+                        $resp['plan']['status'] = 'Premium Activated - Unlimited attempts';
+                        $resp['plan']['attempts_remaining'] = 'Unlimited';
+                    } else {
+                        $resp['plan']['attempts_remaining'] = $studentPlan->attempts_remaining;
+                    }
                 } else {
                     // first time redeeming this plan - show full attempts
-                    $resp['plan']['attempts_remaining'] = $token->plan->attempts_allowed;
+                    // For premium plans, show "Premium Activated" instead of attempts
+                    if (strtolower($token->plan->name) === 'premium' || str_contains(strtolower($token->plan->name), 'premium')) {
+                        $resp['plan']['status'] = 'Premium Activated - Unlimited attempts';
+                        $resp['plan']['attempts_remaining'] = 'Unlimited';
+                    } else {
+                        $resp['plan']['attempts_remaining'] = $token->plan->attempts_allowed;
+                    }
                 }
             }
         }

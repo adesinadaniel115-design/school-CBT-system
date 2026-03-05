@@ -792,7 +792,13 @@
                                 (expires {{ $record->expires_at->diffForHumans() }})
                             @endif
                             <br>
-                            <small>Attempts remaining: {{ $record?->attempts_remaining }}</small>
+                            <small>
+                                @if(strtolower($plan->name) === 'premium' || str_contains(strtolower($plan->name), 'premium'))
+                                    Premium Plan Active - Unlimited attempts
+                                @else
+                                    Attempts remaining: {{ $record?->attempts_remaining ?? 'N/A' }}
+                                @endif
+                            </small>
                         </div>
                     @endif
                     <div class="welcome-subtitle">

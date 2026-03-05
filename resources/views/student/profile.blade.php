@@ -513,23 +513,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        (function () {
-            const storageKey = 'studentSidebarCollapsed';
-            const toggle = document.getElementById('studentSidebarToggle');
-
-            if (localStorage.getItem(storageKey) === 'true') {
-                document.body.classList.add('sidebar-collapsed');
-            }
-
-            if (toggle) {
-                toggle.addEventListener('click', function () {
-                    document.body.classList.toggle('sidebar-collapsed');
-                    localStorage.setItem(storageKey, document.body.classList.contains('sidebar-collapsed'));
-                });
-            }
-        })();
-    </script>
-    <script>
         // Sidebar toggle functionality
         document.addEventListener('DOMContentLoaded', function() {
             const storageKey = 'studentSidebarCollapsed';
