@@ -191,6 +191,22 @@
             z-index: 100;
         }
 
+        /* extra toggle container shown near the bottom of the page (before motivational quote) */
+        .quote-actions {
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .quote-actions .sidebar-toggle {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            background: #ffffff;
+            color: #374151;
+        }
+
         .sidebar-toggle {
             width: 44px;
             height: 44px;
@@ -459,7 +475,7 @@
             border-radius: 16px;
             padding: 2rem;
             color: white;
-            margin-bottom: 2rem;
+            margin: 2rem 0; /* add top and bottom space to separate from preceding content */
             text-align: center;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
         }
@@ -808,6 +824,11 @@
         </div>
 
         <!-- Motivational Quote -->
+        <div class="quote-actions">
+            <button class="sidebar-toggle" type="button">
+                <i class="bi bi-list"></i>
+            </button>
+        </div>
         <div class="motivation-card">
             <div class="motivation-text">
                 <span class="line1">Work work work!!!<br>Now</span>
@@ -827,27 +848,28 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // Sidebar Toggle
+    // Sidebar Toggle (multi-button support)
     document.addEventListener('DOMContentLoaded', function () {
         const sidebar = document.querySelector('.sidebar');
-        const toggle = document.getElementById('sidebarToggle');
+        const toggles = document.querySelectorAll('.sidebar-toggle');
 
-        if (toggle && sidebar) {
-            toggle.addEventListener('click', function (e) {
-                e.stopPropagation();
-                sidebar.classList.toggle('show');
+        if (sidebar && toggles.length) {
+            toggles.forEach(function (toggle) {
+                toggle.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    sidebar.classList.toggle('show');
+                });
             });
 
             // Close sidebar when clicking outside on mobile
-            if (sidebar) {
-                document.addEventListener('click', function (e) {
-                    if (window.innerWidth < 992) {
-                        if (!sidebar.contains(e.target) && e.target !== toggle && !toggle?.contains(e.target)) {
-                            sidebar.classList.remove('show');
-                        }
+            document.addEventListener('click', function (e) {
+                if (window.innerWidth < 992) {
+                    const clickedToggle = Array.from(toggles).some(t => t.contains(e.target));
+                    if (!sidebar.contains(e.target) && !clickedToggle) {
+                        sidebar.classList.remove('show');
                     }
-                });
-            }
+                }
+            });
 
             // Close sidebar on resize to desktop
             window.addEventListener('resize', function () {
