@@ -115,7 +115,7 @@
                 top: 0 !important;
                 bottom: 0 !important;
                 height: 100vh !important;
-                background: #ffffff !important;
+                background: rgba(255, 255, 255, 0.98) !important;
                 transform: translateX(-100%) !important;
                 z-index: 1050;
             }
@@ -819,11 +819,6 @@
         </div>
 
         <!-- Motivational Quote -->
-        <div class="quote-actions">
-            <button class="sidebar-toggle" type="button">
-                <i class="bi bi-list"></i>
-            </button>
-        </div>
         <div class="motivation-card">
             <div class="motivation-text">
                 <span class="line1">Work work work!!!<br>Now</span>

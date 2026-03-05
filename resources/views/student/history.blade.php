@@ -263,6 +263,7 @@
             display: flex;
             align-items: center;
             gap: 1.5rem;
+            flex-wrap: wrap;
         }
 
         .exam-card:hover {
@@ -468,7 +469,7 @@
                 top: 0 !important;
                 bottom: 0 !important;
                 height: 100vh;
-                background: #ffffff;
+                background: rgba(255, 255, 255, 0.98);
                 transform: translateX(-100%);
                 z-index: 1050;
                 width: 280px;
@@ -547,6 +548,19 @@
             .exam-badge {
                 display: inline-block;
                 font-size: 0.75rem;
+            }
+            
+            .score-badge {
+                min-width: auto !important;
+                padding: 0.4rem 0.8rem !important;
+                font-size: 1rem !important;
+                margin: 0.5rem 0 !important;
+            }
+            
+            .btn-view {
+                padding: 0.5rem 1rem !important;
+                font-size: 0.9rem !important;
+                white-space: nowrap;
             }
         }
 

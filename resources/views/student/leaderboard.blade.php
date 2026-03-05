@@ -129,7 +129,7 @@
                 top: 0 !important;
                 bottom: 0 !important;
                 height: 100vh;
-                background: #ffffff;
+                background: rgba(255, 255, 255, 0.98);
                 transform: translateX(-100%) !important;
                 z-index: 1050;
             }
