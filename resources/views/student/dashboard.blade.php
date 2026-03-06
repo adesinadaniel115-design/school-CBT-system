@@ -493,6 +493,44 @@
             box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
         }
 
+        /* Timer Warning Alert */
+        .timer-warning {
+            background: linear-gradient(135deg, #fef3c7 0%, #fcd34d 100%);
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            color: #78350f;
+            box-shadow: 0 4px 20px rgba(245, 158, 11, 0.25);
+        }
+
+        .timer-warning .alert-content {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .timer-warning i {
+            font-size: 1.5rem;
+            color: #d97706;
+            flex-shrink: 0;
+            margin-top: 0.25rem;
+        }
+
+        .timer-warning .alert-text {
+            flex: 1;
+        }
+
+        .timer-warning strong {
+            color: #92400e;
+        }
+
+        .timer-warning p {
+            margin: 0.5rem 0 0 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
         .logout-btn {
             position: absolute;
             top: 2rem;
@@ -679,6 +717,22 @@
             .session-grid {
                 grid-template-columns: 1fr !important;
             }
+
+            .timer-warning {
+                margin-left: -0.75rem;
+                margin-right: -0.75rem;
+                border-radius: 0;
+                padding: 1rem;
+            }
+
+            .timer-warning .alert-content {
+                flex-direction: column;
+            }
+
+            .timer-warning i {
+                font-size: 1.25rem;
+            }
+            
             
             .exam-badge {
                 display: inline-block;
@@ -829,6 +883,15 @@
 
             <!-- Active Sessions -->
             @if($activeSessions->isNotEmpty())
+            <div class="alert alert-warning timer-warning" role="alert">
+                <div class="alert-content">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <div class="alert-text">
+                        <strong>⏱️ Important: Timer Will Auto-Submit!</strong>
+                        <p>When your exam time expires, the system will automatically submit your exam with your current answers. <strong>Don't wait for the timer to end!</strong> Click <strong>"Submit Now"</strong> when you're finished to see your results immediately.</p>
+                    </div>
+                </div>
+            </div>
             <div class="exam-section">
                 <h3><i class="bi bi-play-circle-fill"></i> Continue Your Exams</h3>
                 <div class="session-grid">
