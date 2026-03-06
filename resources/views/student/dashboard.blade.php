@@ -223,6 +223,8 @@
             font-weight: 700;
             color: #1f2937;
             margin-bottom: 0.5rem;
+            word-break: break-word;
+            overflow-wrap: break-word;
         }
 
         .welcome-subtitle {
@@ -831,13 +833,13 @@
                     </div>
                     @if(auth()->user()->student_id)
                         <div style="margin: 1.5rem 0 1.5rem; background: linear-gradient(135deg, rgba(3, 105, 161, 0.08) 0%, rgba(6, 182, 212, 0.08) 100%); padding: 1rem; border-radius: 12px; border-left: 4px solid #0369a1;">
-                            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
-                                <div style="background: linear-gradient(135deg, #0369a1 0%, #06b6d4 100%); color: white; padding: 0.5rem 0.75rem; border-radius: 8px; font-weight: 700; font-size: 1.2rem; min-width: 100px; text-align: center;">
+                            <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                                <div style="background: linear-gradient(135deg, #0369a1 0%, #06b6d4 100%); color: white; padding: 0.75rem 1rem; border-radius: 8px; font-weight: 700; font-size: 1.1rem; white-space: nowrap;">
                                     {{ auth()->user()->student_id }}
                                 </div>
-                                <div>
+                                <div style="flex: 1; min-width: 200px;">
                                     <div style="color: #6b7280; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Your Student ID</div>
-                                    <div style="color: #1f2937; font-weight: 600; font-size: 0.95rem;">{{ auth()->user()->email }}</div>
+                                    <div style="color: #1f2937; font-weight: 600; font-size: 0.95rem; word-break: break-word;">{{ auth()->user()->email }}</div>
                                 </div>
                             </div>
                         </div>
