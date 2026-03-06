@@ -550,6 +550,85 @@ class ExamController extends Controller
         return redirect($redirectTo)->with('status', $message);
     }
 
+    /**
+     * Force-submit an incomplete exam by grading all current answers
+     * Used when a student is done but hasn't clicked submit
+     * Available to students and admins
+     */
+    public function forceSubmit(ExamSession $session)
+    {
+        // Allow admin or the student who owns the session to force-submit
+        if (!auth()->user()->is_admin) {
+            $this->authorizeSession($session);
+        }
+
+        if ($session->completed_at) {
+            return redirect()->route('exam.result', $session)
+                ->with('info', 'This exam has already been submitted.');
+        }
+
+        @set_time_limit(120);
+
+        $questionIds = array_map('intval', $session->question_ids ?? []);
+        if (empty($questionIds)) {
+            abort(400, 'Session has no questions.');
+        }
+
+        $questions = Question::with('subject')->whereIn('id', $questionIds)->get();
+        
+        // Apply shuffle if enabled to get correct shuffled correct_option
+        $shuffleOptions = Cache::get('shuffle_options', true);
+        if ($shuffleOptions) {
+            $questions = $this->shuffleQuestionOptions($questions, $session->id);
+        }
+        
+        $questions = $questions->keyBy('id');
+        
+        // Get all current answers from the database (answers student has saved so far)
+        $answers = $session->answers()->get()->keyBy('question_id');
+        $submittedAnswers = [];
+        
+        foreach ($answers as $questionId => $answer) {
+            $submittedAnswers[$questionId] = $answer->selected_option;
+        }
+
+        try {
+            \Log::info('force submit exam', [
+                'session_id' => $session->id,
+                'student_id' => $session->student_id,
+                'exam_mode' => $session->exam_mode,
+                'submitted_by' => auth()->user()->is_admin ? 'admin' : 'student',
+                'answers_count' => count(array_filter($submittedAnswers, fn($v) => $v !== null))
+            ]);
+
+            if ($session->exam_mode === 'jamb') {
+                $this->submitJambExam($session, $questions, $submittedAnswers);
+            } else {
+                $this->submitSchoolExam($session, $questions, $submittedAnswers);
+            }
+
+            \Log::info('force submit completed', [
+                'session_id' => $session->id,
+                'student_id' => $session->student_id,
+                'score' => $session->fresh()->score
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error('error force submitting exam', [
+                'session_id' => $session->id,
+                'student_id' => $session->student_id,
+                'exception' => $e,
+                'message' => $e->getMessage()
+            ]);
+            
+            $redirectTo = auth()->user()->is_admin ? route('admin.dashboard') : route('student.dashboard');
+            return redirect($redirectTo)
+                ->withErrors('An error occurred while submitting your exam. Please contact support.');
+        }
+
+        return redirect()->route('exam.result', $session)
+            ->with('status', 'Exam submitted successfully!');
+    }
+
     private function submitSchoolExam(ExamSession $session, $questions, $submittedAnswers): void
     {
         $score = 0;

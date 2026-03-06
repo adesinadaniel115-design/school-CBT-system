@@ -472,6 +472,14 @@
             gap: 0.5rem;
         }
 
+        .btn-submit {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+        }
+
+        .btn-submit:hover {
+            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3);
+        }
+
         .btn-terminate {
             background: #ef4444;
         }
@@ -841,10 +849,16 @@
                                 <a href="{{ route('exam.take', $session) }}" class="btn-continue">
                                     <i class="bi bi-play-fill"></i> Continue Exam
                                 </a>
-                                <form method="POST" action="{{ route('exam.terminate', $session) }}" onsubmit="return confirm('Terminate this exam? This will end the session and mark it as completed.');">
+                                <form method="POST" action="{{ route('exam.force-submit', $session) }}" style="display: inline;">
+                                    @csrf
+                                    <button type="submit" class="btn-continue btn-submit" title="Submit your exam with current answers to see your score">
+                                        <i class="bi bi-check-circle-fill"></i> Submit Now
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ route('exam.terminate', $session) }}" style="display: inline;" onsubmit="return confirm('Abandon this exam? This will mark it as completed with 0 score.');">
                                     @csrf
                                     <button type="submit" class="btn-continue btn-terminate">
-                                        <i class="bi bi-x-circle-fill"></i> Terminate Exam
+                                        <i class="bi bi-x-circle-fill"></i> Abandon
                                     </button>
                                 </form>
                             </div>

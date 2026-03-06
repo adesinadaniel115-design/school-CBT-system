@@ -73,6 +73,7 @@ Route::middleware('auto.login')->group(function () {
         Route::post('/exam/{session}/answer', [ExamController::class, 'saveAnswer'])->name('exam.answer');
         Route::post('/exam/{session}/terminate', [ExamController::class, 'terminate'])->name('exam.terminate');
         Route::post('/exam/{session}/submit', [ExamController::class, 'submit'])->name('exam.submit');
+        Route::post('/exam/{session}/force-submit', [ExamController::class, 'forceSubmit'])->name('exam.force-submit');
         Route::get('/exam/{session}/result', [ExamController::class, 'result'])->name('exam.result');
         Route::get('/exam/{session}/review', [ExamController::class, 'review'])->name('exam.review');
     });
