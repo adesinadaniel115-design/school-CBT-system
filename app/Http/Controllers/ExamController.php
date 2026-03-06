@@ -212,6 +212,15 @@ class ExamController extends Controller
                 throw new \Exception('Token cannot be used by this account; it may have been used by another user.');
             }
 
+            // Log token usage for debugging
+            \Log::info('Token used for exam session', [
+                'session_id' => $session->id,
+                'student_id' => $session->student_id,
+                'token_id' => $token->id,
+                'token_has_plan' => $token->plan_id ? true : false,
+                'exam_mode' => $session->exam_mode
+            ]);
+
             // now that the token has been used we can locate the plan record
             if ($token->plan_id) {
                 $record = $request->user()->studentPlans()
@@ -222,7 +231,25 @@ class ExamController extends Controller
                     $record->decrement('attempts_remaining');
                     $session->student_plan_id = $record->id;
                     $session->save();
+                    
+                    \Log::info('StudentPlan updated for exam', [
+                        'session_id' => $session->id,
+                        'student_plan_id' => $record->id,
+                        'attempts_remaining' => $record->attempts_remaining
+                    ]);
+                } else {
+                    \Log::warning('StudentPlan not found after token use', [
+                        'session_id' => $session->id,
+                        'student_id' => $session->student_id,
+                        'token_plan_id' => $token->plan_id
+                    ]);
                 }
+            } else {
+                \Log::info('Token has no plan (legacy token)', [
+                    'session_id' => $session->id,
+                    'token_id' => $token->id,
+                    'student_id' => $session->student_id
+                ]);
             }
 
             return $session;
@@ -389,6 +416,12 @@ class ExamController extends Controller
         // ensure student isn't submitting answers for questions outside of session
         $invalidKeys = array_diff(array_map('intval', array_keys($submittedAnswers)), $questionIds);
         if (!empty($invalidKeys)) {
+            \Log::warning('Invalid answers in submission', [
+                'session_id' => $session->id,
+                'student_id' => $session->student_id,
+                'invalid_keys' => $invalidKeys,
+                'submitted_keys' => array_keys($submittedAnswers)
+            ]);
             return back()->withErrors(['answers' => 'Invalid question answered.'])->withInput();
         }
 
@@ -403,15 +436,39 @@ class ExamController extends Controller
         $questions = $questions->keyBy('id');
         $submittedAnswers = $request->input('answers', []);
 
+        // Log submission attempt
+        \Log::info('exam submission started', [
+            'session_id' => $session->id,
+            'student_id' => $session->student_id,
+            'student_plan_id' => $session->student_plan_id,
+            'exam_mode' => $session->exam_mode,
+            'total_questions' => $session->total_questions,
+            'submitted_answers_count' => count(array_filter($submittedAnswers, fn($v) => $v !== null))
+        ]);
+
         try {
             if ($session->exam_mode === 'jamb') {
                 $this->submitJambExam($session, $questions, $submittedAnswers);
             } else {
                 $this->submitSchoolExam($session, $questions, $submittedAnswers);
             }
+            
+            // Log successful submission
+            \Log::info('exam submission completed successfully', [
+                'session_id' => $session->id,
+                'student_id' => $session->student_id,
+                'score' => $session->fresh()->score
+            ]);
         } catch (\Throwable $e) {
             // log it so administrators can investigate rather than dropping to 500
-            \Log::error('error submitting exam session '.$session->id, ['exception' => $e]);
+            \Log::error('error submitting exam session '.$session->id, [
+                'exception' => $e,
+                'student_id' => $session->student_id,
+                'student_plan_id' => $session->student_plan_id,
+                'exam_mode' => $session->exam_mode,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return redirect()->route('student.dashboard')
                          ->withErrors('An error occurred while submitting your exam. Please try again or contact support.');
         }
@@ -908,7 +965,25 @@ class ExamController extends Controller
                     $record->decrement('attempts_remaining');
                     $session->student_plan_id = $record->id;
                     $session->save();
+                    
+                    \Log::info('JAMB StudentPlan updated for exam', [
+                        'session_id' => $session->id,
+                        'student_plan_id' => $record->id,
+                        'attempts_remaining' => $record->attempts_remaining
+                    ]);
+                } else {
+                    \Log::warning('JAMB StudentPlan not found after token use', [
+                        'session_id' => $session->id,
+                        'student_id' => $session->student_id,
+                        'token_plan_id' => $token->plan_id
+                    ]);
                 }
+            } else {
+                \Log::info('JAMB Token has no plan (legacy token)', [
+                    'session_id' => $session->id,
+                    'token_id' => $token->id,
+                    'student_id' => $session->student_id
+                ]);
             }
 
             return $session;

@@ -836,7 +836,17 @@
             });
         }
         
+        // Add form submit handler to catch errors
+        form.addEventListener('submit', function handleSubmitError(e) {
+            console.error('Form submission completed or encountered an issue. Monitoring...', {
+                timestamp: new Date().toISOString(),
+                formId: form.id
+            });
+            form.removeEventListener('submit', handleSubmitError);
+        }, { once: true });
+        
         // Submit the form
+        console.log('Submitting exam form', { timestamp: new Date().toISOString() });
         form.submit();
     }
 
@@ -994,8 +1004,37 @@
 
             if (remainingSeconds <= 0) {
                 timerText.textContent = '0:00';
-                // Automatically submit without alert
-                form.submit();
+                // Stop the interval to prevent multiple submission attempts
+                if (tickInterval) {
+                    clearInterval(tickInterval);
+                }
+                
+                // Show visual feedback that exam is being auto-submitted
+                timerEl.style.color = '#ef4444';
+                timerEl.style.fontWeight = 'bold';
+                timerEl.innerHTML = '<i class="bi bi-warning"></i> <span>Auto-submitting...</span>';
+                
+                console.warn('Time expired - auto-submitting exam', {
+                    timestamp: new Date().toISOString(),
+                    remainingSeconds: remainingSeconds
+                });
+                
+                // Attempt submission - add slight delay to ensure DOM is ready
+                setTimeout(() => {
+                    try {
+                        if (!form) {
+                            console.error('Form element not found for auto-submit');
+                            timerEl.textContent = 'ERROR: Form not found';
+                            return;
+                        }
+                        console.log('Executing auto-submit', { formId: form.id });
+                        form.submit();
+                    } catch (error) {
+                        console.error('Error during auto-submit:', error);
+                        timerEl.innerHTML = '<i class="bi bi-exclamation-triangle"></i> <span>Submission failed - please try manually</span>';
+                        timerEl.style.color = '#dc2626';
+                    }
+                }, 100);
                 return;
             }
 
