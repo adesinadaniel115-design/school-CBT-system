@@ -514,131 +514,26 @@
     <form method="POST" action="{{ route('exam.submit', $session) }}" id="exam-form">
         @csrf
         
-        @foreach($questions as $index => $question)
-            @php
-                $answer = $answers->get($question->id);
-                $selected = $answer ? $answer->selected_option : null;
-                
-                // Check if this is the first question in a passage group
-                $showPassage = false;
-                if ($question->passage_text) {
-                    if ($index === 0) {
-                        $showPassage = true;
-                    } else {
-                        $prevQuestion = $questions[$index - 1];
-                        if ($prevQuestion->passage_group !== $question->passage_group) {
-                            $showPassage = true;
-                        }
-                    }
-                }
-            @endphp
-            
-            <div class="question-card" 
-                 data-question-index="{{ $index }}" 
-                 style="{{ $index === 0 ? '' : 'display: none;' }}">
-                
-                <div class="question-header">
-                    <div class="question-meta">
-                        <span class="question-chip">
-                            <i class="bi bi-journal-text"></i>
-                            Question {{ $index + 1 }} of {{ $session->total_questions }}
-                        </span>
-                        @if($session->exam_mode === 'jamb')
-                            <span class="question-chip alt">
-                                <i class="bi bi-book"></i>
-                                {{ $question->subject->name }}
-                            </span>
-                        @endif
-                    </div>
-                    @if($allowFlagging ?? true)
-                        <button type="button" 
-                                class="btn-flag" 
-                                data-question="{{ $index }}"
-                                onclick="toggleFlag({{ $index }})">
-                            <i class="bi bi-flag-fill"></i> <span class="flag-text">Flag for Review</span>
-                        </button>
-                    @endif
-                </div>
+        @php
+            $groupedQuestions = $questions->groupBy('subject.name');
+        @endphp
 
-                {{-- Display passage if this is the first question in a group --}}
-                @if($showPassage && $question->passage_text)
-                    <div class="passage-container">
-                        <div class="passage-header">
-                            <i class="bi bi-file-text-fill"></i>
-                            <span>Reading Passage / Context</span>
-                        </div>
-                        <div class="passage-content">
-                            {!! $question->passage_text !!}
-                        </div>
-                    </div>
-                @endif
-
-                <div class="question-text">
-                    {!! $question->question_text !!}
-                </div>
-                <div class="question-instruction">Choose the best answer.</div>
-
-                <div class="options-container">
-                    <label class="option-label">
-                        <input type="radio" 
-                               name="answers[{{ $question->id }}]" 
-                               value="A" 
-                               {{ $selected === 'A' ? 'checked' : '' }}
-                               onchange="updateAnswerStatus({{ $index }}); saveAnswer({{ $question->id }}, {{ $index }});">
-                        <span class="option-letter">A</span>
-                        <span class="option-text">{!! $question->option_a !!}</span>
-                    </label>
-
-                    <label class="option-label">
-                        <input type="radio" 
-                               name="answers[{{ $question->id }}]" 
-                               value="B" 
-                               {{ $selected === 'B' ? 'checked' : '' }}
-                               onchange="updateAnswerStatus({{ $index }}); saveAnswer({{ $question->id }}, {{ $index }});">
-                        <span class="option-letter">B</span>
-                        <span class="option-text">{!! $question->option_b !!}</span>
-                    </label>
-
-                    <label class="option-label">
-                        <input type="radio" 
-                               name="answers[{{ $question->id }}]" 
-                               value="C" 
-                               {{ $selected === 'C' ? 'checked' : '' }}
-                               onchange="updateAnswerStatus({{ $index }}); saveAnswer({{ $question->id }}, {{ $index }});">
-                        <span class="option-letter">C</span>
-                        <span class="option-text">{!! $question->option_c !!}</span>
-                    </label>
-
-                    <label class="option-label">
-                        <input type="radio" 
-                               name="answers[{{ $question->id }}]" 
-                               value="D" 
-                               {{ $selected === 'D' ? 'checked' : '' }}
-                               onchange="updateAnswerStatus({{ $index }}); saveAnswer({{ $question->id }}, {{ $index }});">
-                        <span class="option-letter">D</span>
-                        <span class="option-text">{!! $question->option_d !!}</span>
-                    </label>
-                </div>
-
-                <div class="navigation-buttons">
-                    @if($index > 0)
-                        <button type="button" class="btn btn-outline-primary btn-lg" onclick="navigateQuestion({{ $index - 1 }})">
-                            <i class="bi bi-arrow-left"></i> Previous
-                        </button>
-                    @endif
-                    
-                    <div class="ms-auto d-flex gap-2">
-                        @if($index < count($questions) - 1)
-                            <button type="button" class="btn btn-primary btn-lg" onclick="navigateQuestion({{ $index + 1 }})">
-                                Next <i class="bi bi-arrow-right"></i>
-                            </button>
-                        @else
-                            <button type="button" class="btn btn-success btn-lg" onclick="confirmSubmit()">
-                                <i class="bi bi-check-circle-fill"></i> Submit Exam
-                            </button>
-                        @endif
-                    </div>
-                </div>
+        @foreach($groupedQuestions as $subjectName => $subjectQuestions)
+            <div class="subject-group">
+                <h3>{{ $subjectName }}</h3>
+                @foreach($subjectQuestions->shuffle() as $index => $question)
+                    @php
+                        $answer = $answers->get($question->id);
+                        $selected = $answer ? $answer->selected_option : null;
+                    @endphp
+                    <button type="button" 
+                            class="question-num {{ $selected ? 'answered' : '' }} {{ $loop->first ? 'current' : '' }}" 
+                            data-question="{{ $index }}"
+                            data-answered="{{ $selected ? 'true' : 'false' }}"
+                            onclick="navigateQuestion({{ $index }})">
+                        {{ $loop->iteration }}
+                    </button>
+                @endforeach
             </div>
         @endforeach
     </form>
