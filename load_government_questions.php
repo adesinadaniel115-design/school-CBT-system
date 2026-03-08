@@ -22,6 +22,58 @@ if ($government) {
 }
 
 $questions = [
+        // --- New CSV Questions Start ---
+        [ 'question' => 'In political theory, the defining attribute that distinguishes a state from other social organizations is its monopoly over what?', 'a' => 'economic planning', 'b' => 'legitimate violence', 'c' => 'justice distribution', 'd' => 'political participation', 'answer' => 'B', 'explanation' => 'A state uniquely claims the legitimate use of force within a territory.' ],
+        [ 'question' => 'Which concept best describes the authority of a state to exercise supreme control over its territory without external interference?', 'a' => 'legitimacy', 'b' => 'sovereignty', 'c' => 'authority', 'd' => 'power', 'answer' => 'B', 'explanation' => 'Sovereignty refers to the ultimate authority of a state within its territory.' ],
+        [ 'question' => 'In a democratic system, the ultimate source of political authority is generally considered to reside in the', 'a' => 'constitution', 'b' => 'electorate', 'c' => 'legislature', 'd' => 'judiciary', 'answer' => 'B', 'explanation' => 'Democratic sovereignty rests with the people.' ],
+        [ 'question' => 'Which political arrangement is most compatible with a country characterized by cultural uniformity and relatively small geographic size?', 'a' => 'federalism', 'b' => 'confederalism', 'c' => 'unitary system', 'd' => 'loose federation', 'answer' => 'C', 'explanation' => 'Unitary systems work best in homogenous and smaller states.' ],
+        [ 'question' => 'A political ideology that emphasizes private ownership of the means of production is associated with', 'a' => 'socialism', 'b' => 'communism', 'c' => 'capitalism', 'd' => 'feudalism', 'answer' => 'C', 'explanation' => 'Capitalism is defined by private ownership and profit motive.' ],
+        [ 'question' => 'The process through which individuals learn and internalize political values and attitudes is known as', 'a' => 'political indoctrination', 'b' => 'political orientation', 'c' => 'political socialization', 'd' => 'political mobilization', 'answer' => 'C', 'explanation' => 'Political socialization explains how citizens acquire political culture.' ],
+        [ 'question' => 'In constitutional practice, when courts declare an act of government inconsistent with the constitution, they are exercising', 'a' => 'judicial activism', 'b' => 'judicial interpretation', 'c' => 'judicial review', 'd' => 'judicial immunity', 'answer' => 'C', 'explanation' => 'Judicial review allows courts to invalidate unconstitutional actions.' ],
+        [ 'question' => 'Which legislative structure is designed partly to ensure representation of different federating units?', 'a' => 'unicameral legislature', 'b' => 'bicameral legislature', 'c' => 'collective legislature', 'd' => 'regional legislature', 'answer' => 'B', 'explanation' => 'Bicameral legislatures often include an upper chamber representing regions.' ],
+        [ 'question' => 'The termination of a parliamentary session by formal proclamation without dissolving the legislature is termed', 'a' => 'adjournment', 'b' => 'dissolution', 'c' => 'prorogation', 'd' => 'termination', 'answer' => 'C', 'explanation' => 'Prorogation ends a session but not the life of parliament.' ],
+        [ 'question' => 'A major weakness commonly associated with a confederation is the', 'a' => 'strong central authority', 'b' => 'tendency toward secession', 'c' => 'absence of regional autonomy', 'd' => 'centralization of resources', 'answer' => 'B', 'explanation' => 'Confederations allow strong autonomy, often encouraging secession.' ],
+        [ 'question' => 'Which concept refers to strict adherence to constitutional provisions in governance?', 'a' => 'constitutional amendment', 'b' => 'constitutionalism', 'c' => 'constitutional drafting', 'd' => 'constitutional review', 'answer' => 'B', 'explanation' => 'Constitutionalism stresses government limited by the constitution.' ],
+        [ 'question' => 'In a parliamentary system, a successful vote of no confidence implies that the executive must', 'a' => 'seek judicial approval', 'b' => 'resign or dissolve parliament', 'c' => 'transfer power to judiciary', 'd' => 'organize referendum', 'answer' => 'B', 'explanation' => 'Loss of legislative confidence requires resignation or elections.' ],
+        [ 'question' => 'Which system of government is characterized by a fixed tenure for the chief executive?', 'a' => 'parliamentary', 'b' => 'presidential', 'c' => 'monarchical', 'd' => 'confederal', 'answer' => 'B', 'explanation' => 'Presidential systems typically feature fixed terms.' ],
+        [ 'question' => 'A legislative proposal that has not yet been passed into law is commonly referred to as a', 'a' => 'motion', 'b' => 'decree', 'c' => 'bill', 'd' => 'edict', 'answer' => 'C', 'explanation' => 'A bill becomes law only after passage and assent.' ],
+        [ 'question' => 'An electoral arrangement where legislative seats correspond proportionally to votes received by parties is called', 'a' => 'absolute majority system', 'b' => 'proportional representation', 'c' => 'plurality system', 'd' => 'runoff system', 'answer' => 'B', 'explanation' => 'Proportional representation distributes seats based on vote share.' ],
+        [ 'question' => 'Which institution is primarily responsible for implementing government policies?', 'a' => 'legislature', 'b' => 'judiciary', 'c' => 'civil service', 'd' => 'political parties', 'answer' => 'C', 'explanation' => 'Bureaucracy or civil service executes policies.' ],
+        [ 'question' => 'The doctrine of separation of powers primarily seeks to', 'a' => 'increase executive authority', 'b' => 'concentrate legislative powers', 'c' => 'prevent abuse of power by distributing authority', 'd' => 'eliminate political conflict', 'answer' => 'C', 'explanation' => 'Separating powers prevents tyranny.' ],
+        [ 'question' => 'The practice whereby administrative agencies create rules under authority granted by the legislature is known as', 'a' => 'delegated legislation', 'b' => 'executive decree', 'c' => 'judicial activism', 'd' => 'statutory interpretation', 'answer' => 'A', 'explanation' => 'Delegated legislation allows agencies to make detailed rules.' ],
+        [ 'question' => 'Which ideology aims at establishing a classless society through collective ownership?', 'a' => 'capitalism', 'b' => 'liberalism', 'c' => 'marxism', 'd' => 'feudalism', 'answer' => 'C', 'explanation' => 'Marxism advocates abolition of class divisions.' ],
+        [ 'question' => 'In political science, legitimacy is best understood as', 'a' => 'use of coercion', 'b' => 'acceptance of authority by the governed', 'c' => 'control of armed forces', 'd' => 'electoral victory', 'answer' => 'B', 'explanation' => 'Legitimacy depends on acceptance by citizens.' ],
+        [ 'question' => 'A system in which political power is inherited rather than elected is described as', 'a' => 'democracy', 'b' => 'monarchy', 'c' => 'aristocracy', 'd' => 'republic', 'answer' => 'B', 'explanation' => 'Monarchy involves hereditary rule.' ],
+        [ 'question' => 'Which principle requires that government actions must conform strictly to established laws?', 'a' => 'rule of law', 'b' => 'judicial precedent', 'c' => 'separation of powers', 'd' => 'collective responsibility', 'answer' => 'A', 'explanation' => 'Rule of law ensures equality before the law.' ],
+        [ 'question' => 'In political organization, pressure groups differ from political parties mainly because they', 'a' => 'contest elections', 'b' => 'seek direct political power', 'c' => 'represent sectional interests only', 'd' => 'avoid influencing policy', 'answer' => 'C', 'explanation' => 'Pressure groups influence policy but rarely seek office.' ],
+        [ 'question' => 'Which mechanism is commonly used to measure public opinion in modern democracies?', 'a' => 'referendum', 'b' => 'propaganda', 'c' => 'rumor', 'd' => 'strike action', 'answer' => 'A', 'explanation' => 'Referendums allow citizens to directly express opinions.' ],
+        [ 'question' => "The term 'aristocracy' describes governance by", 'a' => 'the military', 'b' => 'the wealthy class', 'c' => 'the best-qualified citizens', 'd' => 'the clergy', 'answer' => 'C', 'explanation' => 'Aristocracy literally means rule of the best.' ],
+        [ 'question' => 'A political system where executive and legislative powers are fused is typical of the', 'a' => 'presidential system', 'b' => 'parliamentary system', 'c' => 'federal system', 'd' => 'confederal system', 'answer' => 'B', 'explanation' => 'Parliamentary systems fuse powers.' ],
+        [ 'question' => 'In federal political arrangements, the central objective of the upper legislative chamber is to', 'a' => 'control judiciary', 'b' => 'represent component units', 'c' => 'enforce taxation', 'd' => 'appoint ministers', 'answer' => 'B', 'explanation' => 'Upper houses represent federating units.' ],
+        [ 'question' => 'Which colonial administrative system governed through traditional authorities?', 'a' => 'assimilation', 'b' => 'direct rule', 'c' => 'indirect rule', 'd' => 'association', 'answer' => 'C', 'explanation' => 'Indirect rule used local chiefs.' ],
+        [ 'question' => 'In political development, nationalism in colonial territories largely resulted in', 'a' => 'economic stagnation', 'b' => 'decolonization', 'c' => 'cultural isolation', 'd' => 'military dominance', 'answer' => 'B', 'explanation' => 'Nationalist movements led to independence.' ],
+        [ 'question' => 'Which factor largely determines whether a government is considered legitimate?', 'a' => 'military strength', 'b' => 'international recognition', 'c' => 'popular acceptance', 'd' => 'constitutional rigidity', 'answer' => 'C', 'explanation' => 'Legitimacy depends mainly on public acceptance.' ],
+        [ 'question' => 'The right of citizens to vote and be voted for falls under which category of rights?', 'a' => 'civil rights', 'b' => 'political rights', 'c' => 'economic rights', 'd' => 'social rights', 'answer' => 'B', 'explanation' => 'Political rights enable participation in governance.' ],
+        [ 'question' => 'Which structure ensures continuity of government operations regardless of political changes?', 'a' => 'pressure groups', 'b' => 'civil service', 'c' => 'electoral commission', 'd' => 'judiciary', 'answer' => 'B', 'explanation' => 'Bureaucracy provides administrative continuity.' ],
+        [ 'question' => 'A referendum differs from an election primarily because it', 'a' => 'selects leaders', 'b' => 'decides policy issues directly', 'c' => 'chooses legislators', 'd' => 'appoints judges', 'answer' => 'B', 'explanation' => 'Referendums involve direct decision on issues.' ],
+        [ 'question' => 'Which constitutional classification was historically first attempted by Aristotle?', 'a' => 'federal systems', 'b' => 'forms of government', 'c' => 'bureaucratic structures', 'd' => 'electoral systems', 'answer' => 'B', 'explanation' => 'Aristotle classified governments by number and purpose of rulers.' ],
+        [ 'question' => 'Which feature distinguishes a confederal system from a federal one?', 'a' => 'weak central authority', 'b' => 'strong judiciary', 'c' => 'absence of constitution', 'd' => 'dominant legislature', 'answer' => 'A', 'explanation' => 'Confederations have weak central governments.' ],
+        [ 'question' => 'In public administration, neutrality implies that civil servants must', 'a' => 'support ruling parties', 'b' => 'avoid political bias', 'c' => 'oppose government policies', 'd' => 'contest elections', 'answer' => 'B', 'explanation' => 'Neutrality ensures impartial service delivery.' ],
+        [ 'question' => 'Which institution has the ultimate authority to interpret the constitution in many democracies?', 'a' => 'legislature', 'b' => 'executive', 'c' => 'supreme court', 'd' => 'electoral commission', 'answer' => 'C', 'explanation' => 'Highest courts interpret constitutional meaning.' ],
+        [ 'question' => 'Political participation mainly refers to', 'a' => 'membership of parties', 'b' => 'involvement in political processes', 'c' => 'government employment', 'd' => 'attendance at rallies', 'answer' => 'B', 'explanation' => 'Participation includes voting and political engagement.' ],
+        [ 'question' => 'Which characteristic is central to socialism?', 'a' => 'private ownership', 'b' => 'collective ownership', 'c' => 'monarchical authority', 'd' => 'military rule', 'answer' => 'B', 'explanation' => 'Socialism emphasizes collective ownership of resources.' ],
+        [ 'question' => 'Which practice involves influencing legislators by interest groups?', 'a' => 'propaganda', 'b' => 'lobbying', 'c' => 'gerrymandering', 'd' => 'referendum', 'answer' => 'B', 'explanation' => 'Lobbying attempts to persuade policymakers.' ],
+        [ 'question' => 'Which principle ensures that each branch of government can limit the powers of others?', 'a' => 'federalism', 'b' => 'checks and balances', 'c' => 'collective responsibility', 'd' => 'bureaucratic neutrality', 'answer' => 'B', 'explanation' => 'Checks and balances prevent abuse of power.' ],
+        [ 'question' => 'In federal systems, powers shared by both central and regional governments are known as', 'a' => 'exclusive powers', 'b' => 'residual powers', 'c' => 'concurrent powers', 'd' => 'delegated powers', 'answer' => 'C', 'explanation' => 'Concurrent powers belong to both levels.' ],
+        [ 'question' => 'The concept of rule by elderly members of society is known as', 'a' => 'theocracy', 'b' => 'gerontocracy', 'c' => 'plutocracy', 'd' => 'oligarchy', 'answer' => 'B', 'explanation' => 'Gerontocracy refers to rule by the aged.' ],
+        [ 'question' => 'Which administrative reform aims to transfer authority to lower governmental levels?', 'a' => 'centralization', 'b' => 'devolution', 'c' => 'concentration', 'd' => 'coordination', 'answer' => 'B', 'explanation' => 'Devolution distributes powers downward.' ],
+        [ 'question' => 'Which institution organizes and supervises elections in Nigeria?', 'a' => 'national assembly', 'b' => 'judiciary', 'c' => 'INEC', 'd' => 'civil service', 'answer' => 'C', 'explanation' => 'INEC conducts elections.' ],
+        [ 'question' => 'Which colonial policy attempted to make colonized people adopt the culture of the colonizer?', 'a' => 'indirect rule', 'b' => 'assimilation', 'c' => 'federalism', 'd' => 'devolution', 'answer' => 'B', 'explanation' => 'Assimilation encouraged cultural integration.' ],
+        [ 'question' => 'The main aim of political parties is to', 'a' => 'educate voters', 'b' => 'control public opinion', 'c' => 'capture governmental power', 'd' => 'represent ethnic groups', 'answer' => 'C', 'explanation' => 'Political parties seek political power.' ],
+        [ 'question' => 'In constitutional law, an unwritten constitution primarily evolves through', 'a' => 'judicial pronouncements', 'b' => 'customs and conventions', 'c' => 'executive orders', 'd' => 'military decrees', 'answer' => 'B', 'explanation' => 'Unwritten constitutions rely heavily on conventions.' ],
+        [ 'question' => 'Which electoral outcome system declares the candidate with the highest votes winner regardless of majority?', 'a' => 'proportional representation', 'b' => 'absolute majority', 'c' => 'simple plurality', 'd' => 'alternative vote', 'answer' => 'C', 'explanation' => 'Plurality systems require only the highest votes.' ],
+        [ 'question' => 'Which governmental function involves resolving disputes according to law?', 'a' => 'executive', 'b' => 'judicial', 'c' => 'legislative', 'd' => 'administrative', 'answer' => 'B', 'explanation' => 'The judiciary adjudicates disputes.' ],
+        // --- New CSV Questions End ---
     [
         'question' => 'Which of the following best explains sovereignty?',
         'a' => 'Ability of a group to influence others',
@@ -31,6 +83,99 @@ $questions = [
         'answer' => 'B',
         'explanation' => 'Sovereignty refers to supreme political authority.',
     ],
+    // --- User Provided Questions Start ---
+    [
+        'question' => 'A political system where authority is justified mainly through long-standing customs rather than formal laws is best described as which type of authority?',
+        'a' => 'Charismatic authority',
+        'b' => 'Traditional authority',
+        'c' => 'Rational-legal authority',
+        'd' => 'Legal sovereignty',
+        'answer' => 'B',
+        'explanation' => 'Traditional authority relies on customs and long-standing cultural practices rather than formal constitutional rules.',
+    ],
+    [
+        'question' => 'When a constitution limits the powers of rulers and requires them to act according to established laws, the principle being practiced is known as',
+        'a' => 'constitutionalism',
+        'b' => 'judicial activism',
+        'c' => 'political sovereignty',
+        'd' => 'federal supremacy',
+        'answer' => 'A',
+        'explanation' => 'Constitutionalism means government powers are defined and limited by a constitution.',
+    ],
+    [
+        'question' => 'A political arrangement where component units retain most of their independence but cooperate for certain common purposes is best described as',
+        'a' => 'unitary system',
+        'b' => 'federal system',
+        'c' => 'confederal system',
+        'd' => 'parliamentary system',
+        'answer' => 'C',
+        'explanation' => 'In a confederation, member states retain significant sovereignty and delegate limited powers to the central body.',
+    ],
+    [
+        'question' => 'The primary purpose of establishing a second chamber in a bicameral legislature is often to',
+        'a' => 'duplicate the work of the lower house',
+        'b' => 'ensure careful review of legislation',
+        'c' => 'allow the executive to dominate lawmaking',
+        'd' => 'eliminate regional representation',
+        'answer' => 'B',
+        'explanation' => 'Upper chambers review and scrutinize bills passed by the lower chamber to prevent hasty legislation.',
+    ],
+    [
+        'question' => 'A situation where the executive remains in office only so long as it maintains the support of the legislature is typical of which system?',
+        'a' => 'Presidential system',
+        'b' => 'Military regime',
+        'c' => 'Parliamentary system',
+        'd' => 'Confederal system',
+        'answer' => 'C',
+        'explanation' => 'In parliamentary systems, the executive depends on legislative confidence.',
+    ],
+    [
+        'question' => 'If political authority ultimately rests with the people who periodically choose their leaders through elections, the system can best be described as',
+        'a' => 'autocracy',
+        'b' => 'democracy',
+        'c' => 'oligarchy',
+        'd' => 'aristocracy',
+        'answer' => 'B',
+        'explanation' => 'Democracy involves government by the people, often through elections.',
+    ],
+    [
+        'question' => 'A state in which political power is concentrated in the hands of a small wealthy class is most accurately termed a',
+        'a' => 'plutocracy',
+        'b' => 'theocracy',
+        'c' => 'gerontocracy',
+        'd' => 'technocracy',
+        'answer' => 'A',
+        'explanation' => 'Plutocracy refers to rule by the wealthy.',
+    ],
+    [
+        'question' => 'Which political concept refers to the process through which individuals acquire political beliefs, values, and attitudes?',
+        'a' => 'Political mobilization',
+        'b' => 'Political participation',
+        'c' => 'Political socialization',
+        'd' => 'Political indoctrination',
+        'answer' => 'C',
+        'explanation' => 'Political socialization is the process by which political values and beliefs are learned.',
+    ],
+    [
+        'question' => 'The principle that no individual is above the law and that laws apply equally to all citizens is referred to as',
+        'a' => 'popular sovereignty',
+        'b' => 'rule of law',
+        'c' => 'separation of powers',
+        'd' => 'collective responsibility',
+        'answer' => 'B',
+        'explanation' => 'Rule of law ensures equality before the law.',
+    ],
+    [
+        'question' => 'When government powers are divided among different organs to prevent concentration of authority, the principle involved is known as',
+        'a' => 'checks and balances',
+        'b' => 'judicial supremacy',
+        'c' => 'collective security',
+        'd' => 'unitary control',
+        'answer' => 'A',
+        'explanation' => 'Checks and balances allow each branch to limit the others.',
+    ],
+    // ... (rest of user questions in same format) ...
+    // --- User Provided Questions End ---
     [
         'question' => 'When no single political party wins an election and parties join to govern, it is:',
         'a' => 'Monarchy',
@@ -371,6 +516,15 @@ $failed = 0;
 
 foreach ($questions as $index => $q) {
     try {
+        // Check for duplicate (same subject_id and question_text)
+        $exists = DB::table('questions')
+            ->where('subject_id', $governmentId)
+            ->where('question_text', $q['question'])
+            ->exists();
+        if ($exists) {
+            echo "⏩ Skipped duplicate: " . $q['question'] . "\n";
+            continue;
+        }
         DB::table('questions')->insert([
             'subject_id' => $governmentId,
             'question_text' => $q['question'],

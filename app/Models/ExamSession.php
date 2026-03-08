@@ -12,6 +12,7 @@ class ExamSession extends Model
     protected $fillable = [
         'student_id',
         'subject_id',
+        'student_plan_id',
         'exam_mode',
         'total_questions',
         'duration_minutes',
@@ -42,6 +43,31 @@ class ExamSession extends Model
     public function answers()
     {
         return $this->hasMany(ExamAnswer::class);
+    }
+
+    /**
+     * The student plan that was granted when this session began, if any.
+     */
+    public function studentPlan()
+    {
+        return $this->belongsTo(StudentPlan::class);
+    }
+
+    /**
+     * Determine whether this session was started under a plan that grants
+     * a given feature (e.g. explanations, leaderboard, streak).
+     *
+     * This allows review/result pages to continue showing premium features
+     * even if the user's currently active plan record has run out of
+     * attempts.
+     */
+    public function hasFeature(string $feature): bool
+    {
+        if ($this->studentPlan && $this->studentPlan->plan) {
+            $attribute = 'has_' . $feature;
+            return (bool) ($this->studentPlan->plan->{$attribute} ?? false);
+        }
+        return false;
     }
 
     public function examSubjectScores()

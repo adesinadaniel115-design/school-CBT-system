@@ -198,6 +198,36 @@ A fully functional scientific calculator integrated into the JAMB exam interface
 - [x] Exponential: e^x
 - [x] Power: x^y
 - [x] Root: √
+<<<<<<< HEAD
+=======
+
+---
+
+## 📦 New Subscription/Plan Support (March 2026)
+
+### Summary
+A new additive access control layer was introduced to support
+subscription-style plans for exam features. Plans are optionally
+attached to tokens and granted to students upon token redemption.
+
+### Key Components
+- **Database**: new `plans` and `student_plans` tables; nullable
+  `plan_id` on `exam_tokens`.
+- **Models**: `Plan` and `StudentPlan` with relationships; `User`
+  helper methods (`activePlan()`, `hasFeature()`).
+- **Token Logic**: `ExamToken::use()` now creates a student plan when
+  a plan-bearing token is redeemed.
+- **Views**: admin UI for managing plans; plan selection when
+  generating tokens; plan details shown on tokens list/print.
+- **Feature Gating**: examples implemented in exam review view
+  (explanations shown only if allowed by plan).
+- **Backwards Compatibility**: existing tokens continue to work with
+  no plan; absence of a plan is treated as unrestricted access.
+
+### Testing
+Unit tests added (`PlanAccessTest`) to verify plan creation,
+helper methods, and feature flag behaviour.
+>>>>>>> origin/backup-main
 - [x] Constants: π
 - [x] Factorial: n!
 - [x] Clear function

@@ -10,6 +10,10 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+<<<<<<< HEAD
+=======
+use Illuminate\Support\Facades\Schema;
+>>>>>>> origin/backup-main
 
 class AdminExportReportController extends Controller
 {
@@ -31,22 +35,50 @@ class AdminExportReportController extends Controller
         }
 
         $students = $query->orderBy('name')->get();
+<<<<<<< HEAD
         $centers = \App\Models\Center::orderBy('name')->get();
+=======
+
+        // Only query centers if the table exists to avoid crashing when DB isn't migrated
+        if (Schema::hasTable('centers')) {
+            $centers = \App\Models\Center::orderBy('name')->get();
+        } else {
+            $centers = collect();
+        }
+>>>>>>> origin/backup-main
 
         return view('admin.export_reports.index', compact('students', 'centers'));
     }
 
     public function generate(Request $request)
     {
+<<<<<<< HEAD
         $data = $request->validate([
             'student_ids' => 'required|array|min:1',
             'student_ids.*' => 'integer|exists:users,id',
             'center_id' => 'nullable|integer|exists:centers,id',
+=======
+        // Build validation rules; avoid `exists:centers,id` if centers table doesn't exist yet
+        $rules = [
+            'student_ids' => 'required|array|min:1',
+            'student_ids.*' => 'integer|exists:users,id',
+            'center_id' => 'nullable|integer',
+>>>>>>> origin/backup-main
             'school_name' => 'nullable|string|max:255',
             'school_address' => 'nullable|string|max:500',
             'school_logo' => 'nullable|image|mimes:jpeg,png,gif|max:2048',
             'watermark_font_size' => 'nullable|integer|min:20|max:120',
+<<<<<<< HEAD
         ]);
+=======
+        ];
+
+        if (Schema::hasTable('centers')) {
+            $rules['center_id'] = 'nullable|integer|exists:centers,id';
+        }
+
+        $data = $request->validate($rules);
+>>>>>>> origin/backup-main
 
         $schoolName = $data['school_name'] ?? null;
         $schoolAddress = $data['school_address'] ?? null;
@@ -69,7 +101,11 @@ class AdminExportReportController extends Controller
             ->get();
 
         $centerName = null;
+<<<<<<< HEAD
         if (!empty($data['center_id'])) {
+=======
+        if (!empty($data['center_id']) && Schema::hasTable('centers')) {
+>>>>>>> origin/backup-main
             $center = \App\Models\Center::find($data['center_id']);
             $centerName = $center?->name;
         }

@@ -1,0 +1,176 @@
+<?php
+
+$projectRoot = dirname(__DIR__);
+require $projectRoot . '/vendor/autoload.php';
+
+$app = require_once $projectRoot . '/bootstrap/app.php';
+$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+$kernel->bootstrap();
+
+use App\Models\Subject;
+use App\Models\Question;
+
+$subject = Subject::firstOrCreate(['name' => 'COMMERCE']);
+
+$rows = [
+    ['question_text' => 'A contract of insurance is a contract of "Uberrimae Fidei." This means:',
+     'option_a' => 'The insurer must pay the full amount of the loss.',
+     'option_b' => 'Both parties must disclose all material facts related to the contract.',
+     'option_c' => 'The insured must have a financial interest in the property.',
+     'option_d' => 'The insurer cannot subrogate the rights of the insured.',
+     'correct_option' => 'B',
+     'explanation' => 'Utmost Good Faith (Uberrimae Fidei) requires total honesty. If you hide a medical condition when buying life insurance, the contract is void.'],
+    ['question_text' => 'When a stockbroker buys or sells shares on behalf of a client without disclosing the client\'s identity, he is acting as a/an:',
+     'option_a' => 'Del Credere Agent',
+     'option_b' => 'Factor',
+     'option_c' => 'Broker',
+     'option_d' => 'Jobber',
+     'correct_option' => 'C',
+     'explanation' => 'A Broker is an agent who brings buyers and sellers together. A Jobber (now mostly obsolete) traded on their own account.'],
+    ['question_text' => 'In international trade, the term "F.O.B" (Free on Board) means the price quoted includes:',
+     'option_a' => 'Cost of goods and insurance only.',
+     'option_b' => 'Cost of goods and delivery to the port of loading.',
+     'option_c' => 'Cost of goods, insurance, and freight to the destination.',
+     'option_d' => 'Only the cost of the goods at the factory.',
+     'correct_option' => 'B',
+     'explanation' => 'FOB means the seller\'s responsibility ends once the goods are "on board" the ship at the origin port.'],
+    ['question_text' => '"Constructive Total Loss" in marine insurance occurs when:',
+     'option_a' => 'The ship is completely destroyed by fire.',
+     'option_b' => 'The cost of repairing the ship exceeds its value after repair.',
+     'option_c' => 'The ship is missing for more than a year.',
+     'option_d' => 'Only the cargo is damaged by seawater.',
+     'correct_option' => 'B',
+     'explanation' => 'Even if the ship exists, if it\'s uneconomical to repair, it is treated as a total loss.'],
+    ['question_text' => 'Which of the following is a "Bull" in the Stock Exchange?',
+     'option_a' => 'A speculator who expects share prices to fall.',
+     'option_b' => 'A speculator who expects share prices to rise.',
+     'option_c' => 'A person who refuses to sell their shares.',
+     'option_d' => 'An official of the Securities and Exchange Commission.',
+     'correct_option' => 'B',
+     'explanation' => 'Bulls buy now to sell later at a higher price. Bears expect prices to drop.'],
+    ['question_text' => 'The "Articles of Association" of a company primarily regulates:',
+     'option_a' => 'The relationship between the company and the public.',
+     'option_b' => 'The internal management and rules of the company.',
+     'option_c' => 'The name and registered office of the company.',
+     'option_d' => 'The maximum amount of capital the company can raise.',
+     'correct_option' => 'B',
+     'explanation' => 'While the Memorandum of Association is for the "outside world," the Articles are the "internal handbook."'],
+    ['question_text' => 'A "Consignment Note" is used in transport when:',
+     'option_a' => 'The goods are carried by the owner\'s own vehicle.',
+     'option_b' => 'The carrier acts as an agent for the seller.',
+     'option_c' => 'The goods are sent through a common carrier.',
+     'option_d' => 'The buyer pays for the goods in advance.',
+     'correct_option' => 'C',
+     'explanation' => 'It is the document of title and contract of carriage when using a third-party transporter.'],
+    ['question_text' => '"Window Dressing" in the presentation of final accounts is a practice used to:',
+     'option_a' => 'Show the actual financial position of the company.',
+     'option_b' => 'Make the company\'s financial position look better than it actually is.',
+     'option_c' => 'Hide the company\'s assets from tax authorities.',
+     'option_d' => 'Distribute more dividends to shareholders.',
+     'correct_option' => 'B',
+     'explanation' => 'Window dressing is a form of creative accounting to attract investors by hiding weaknesses.'],
+    ['question_text' => 'Which of the following is an "invisible" export for Nigeria?',
+     'option_a' => 'Sale of Crude Oil to the USA.',
+     'option_b' => 'Cocoa sold to Europe.',
+     'option_c' => 'Banking services provided by a Nigerian bank in Ghana.',
+     'option_d' => 'Solid minerals exported to China.',
+     'correct_option' => 'C',
+     'explanation' => 'Invisible trade refers to the export and import of services (banking, tourism, shipping).'],
+    ['question_text' => 'A "Pro-forma Invoice" is sent to a potential buyer to:',
+     'option_a' => 'Demand immediate payment for goods delivered.',
+     'option_b' => 'Correct an undercharge in a previous invoice.',
+     'option_c' => 'Inform the buyer of the terms of sale before a formal order is placed.',
+     'option_d' => 'Confirm that the goods have been shipped.',
+     'correct_option' => 'C',
+     'explanation' => 'It acts as a quotation and is often used for customs purposes in international trade.'],
+    ['question_text' => 'The "Turnover" of a business is calculated as:',
+     'option_a' => 'Gross Profit minus Expenses.',
+     'option_b' => 'Total Sales minus Returns Inwards.',
+     'option_c' => 'Opening Stock plus Purchases.',
+     'option_d' => 'Current Assets minus Current Liabilities.',
+     'correct_option' => 'B',
+     'explanation' => 'Turnover is the net sales value of a business during a specific period.'],
+    ['question_text' => 'Under the "Principle of Indemnity," the insured is:',
+     'option_a' => 'Allowed to make a profit from a loss.',
+     'option_b' => 'Restored to the same financial position they were in before the loss.',
+     'option_c' => 'Paid double if they have two insurance policies on the same item.',
+     'option_d' => 'Guaranteed a refund of all premiums if no loss occurs.',
+     'correct_option' => 'B',
+     'explanation' => 'Insurance is for protection, not profit. Indemnity ensures you only get back what you lost.'],
+    ['question_text' => 'Which of the following is a function of the Nigerian Export Promotion Council (NEPC)?',
+     'option_a' => 'Regulating the price of imported goods.',
+     'option_b' => 'Providing information on foreign markets to local producers.',
+     'option_c' => 'Collecting customs duties at the borders.',
+     'option_d' => 'Printing the national currency.',
+     'correct_option' => 'B',
+     'explanation' => 'The NEPC\'s goal is to diversify the economy by encouraging non-oil exports.'],
+    ['question_text' => 'A "Debenture" holder is a/an:',
+     'option_a' => 'Part-owner of the company.',
+     'option_b' => 'Creditor to the company.',
+     'option_c' => 'Director of the company.',
+     'option_d' => 'Employee of the company.',
+     'correct_option' => 'B',
+     'explanation' => 'Unlike shareholders, debenture holders lend money to the company at a fixed interest rate.'],
+    ['question_text' => 'The document that gives a carrier the right to sell goods that have not been claimed is the:',
+     'option_a' => 'Bill of Lading.',
+     'option_b' => 'Waybill.',
+     'option_c' => 'Lien.',
+     'option_d' => 'Delivery Note.',
+     'correct_option' => 'C',
+     'explanation' => 'A Lien is a legal right to keep or sell property belonging to another person until a debt is paid.'],
+    ['question_text' => 'In a "Hire Purchase" agreement, ownership of the goods passes to the buyer:',
+     'option_a' => 'When the first installment is paid.',
+     'option_b' => 'When the goods are delivered.',
+     'option_c' => 'When the final installment is paid.',
+     'option_d' => 'Halfway through the payment period.',
+     'correct_option' => 'C',
+     'explanation' => 'Until the last payment is made, the buyer is only "hiring" the goods.'],
+    ['question_text' => 'Which of the following describes "Subrogation" in insurance?',
+     'option_a' => 'The transfer of the insurer\'s rights to the insured.',
+     'option_b' => 'The right of the insurer to step into the shoes of the insured after paying a claim.',
+     'option_c' => 'The sharing of a loss between two insurers.',
+     'option_d' => 'The cancellation of a policy due to fraud.',
+     'correct_option' => 'B',
+     'explanation' => 'If a third party damages your car and your insurer pays you, the insurer can then sue the third party to recover the money.'],
+    ['question_text' => 'A "Public Limited Company" (PLC) must have a minimum of how many directors?',
+     'option_a' => '1',
+     'option_b' => '2',
+     'option_c' => '7',
+     'option_d' => '50',
+     'correct_option' => 'B',
+     'explanation' => 'According to the CAMA (Companies and Allied Matters Act) in Nigeria, a public company must have at least two directors.'],
+    ['question_text' => 'The "Rate of Stock Turnover" is calculated as:',
+     'option_a' => 'Sales / Average Stock.',
+     'option_b' => 'Cost of Goods Sold / Average Stock.',
+     'option_c' => 'Closing Stock / Opening Stock.',
+     'option_d' => 'Gross Profit / Sales.',
+     'correct_option' => 'B',
+     'explanation' => 'This ratio shows how many times a business replaces its inventory in a year.'],
+    ['question_text' => '"Caveat Emptor" is a legal principle which means:',
+     'option_a' => 'The seller is always right.',
+     'option_b' => 'Let the buyer beware.',
+     'option_c' => 'The government controls all prices.',
+     'option_d' => 'Goods once sold cannot be returned.',
+     'correct_option' => 'B',
+     'explanation' => 'Caveat Emptor warns that the buyer is responsible for checking the quality of goods before purchasing.'],
+];
+
+foreach ($rows as $row) {
+    // skip duplicates if already exist
+    $exists = Question::where('subject_id', $subject->id)
+        ->where('question_text', $row['question_text'])
+        ->exists();
+    if ($exists) {
+        echo "skipped duplicate: " . substr($row['question_text'], 0, 60) . "...\n";
+        continue;
+    }
+
+    Question::create(array_merge($row, [
+        'subject_id' => $subject->id,
+        'difficulty_level' => 'hard',
+    ]));
+    echo "inserted: " . substr($row['question_text'], 0, 60) . "...\n";
+}
+
+$count = Question::where('subject_id', $subject->id)->count();
+echo "Done loading commerce questions. total now: {$count}\n";

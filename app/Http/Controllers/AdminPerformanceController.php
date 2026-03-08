@@ -6,11 +6,16 @@ use App\Models\ExamSession;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+<<<<<<< HEAD
+=======
+use Illuminate\Support\Facades\Schema;
+>>>>>>> origin/backup-main
 
 class AdminPerformanceController extends Controller
 {
     public function index(Request $request)
     {
+<<<<<<< HEAD
         $centerId = $request->query('center_id');
 
         $query = User::where('is_admin', false)
@@ -19,30 +24,128 @@ class AdminPerformanceController extends Controller
             })
             ->withCount(['examSessions as submitted_exam_sessions_count' => function ($q) {
                 $q->whereNotNull('completed_at');
+=======
+        // Validate filter inputs
+        $filters = $request->validate([
+            'center_id' => 'nullable|integer',
+            'date_from' => 'nullable|date',
+            'date_to' => 'nullable|date',
+        ]);
+
+        $centerId = $filters['center_id'] ?? null;
+        $dateFrom = $filters['date_from'] ?? null;
+        $dateTo = $filters['date_to'] ?? null;
+
+        // Build the query to get students with completed sessions on the selected date(s)
+        $query = User::where('is_admin', false)
+            ->whereHas('examSessions', function ($q) use ($dateFrom, $dateTo) {
+                $q->where('exam_mode', 'jamb')->whereNotNull('completed_at');
+                
+                // Handle date filtering
+                if ($dateFrom && $dateTo) {
+                    $q->whereDate('completed_at', '>=', $dateFrom)
+                      ->whereDate('completed_at', '<=', $dateTo);
+                } elseif ($dateFrom) {
+                    $q->whereDate('completed_at', $dateFrom);
+                } elseif ($dateTo) {
+                    $q->whereDate('completed_at', $dateTo);
+                }
+            })
+            ->withCount(['examSessions as submitted_exam_sessions_count' => function ($q) use ($dateFrom, $dateTo) {
+                $q->where('exam_mode', 'jamb')->whereNotNull('completed_at');
+                
+                if ($dateFrom && $dateTo) {
+                    $q->whereDate('completed_at', '>=', $dateFrom)
+                      ->whereDate('completed_at', '<=', $dateTo);
+                } elseif ($dateFrom) {
+                    $q->whereDate('completed_at', $dateFrom);
+                } elseif ($dateTo) {
+                    $q->whereDate('completed_at', $dateTo);
+                }
+>>>>>>> origin/backup-main
             }]);
 
         if ($centerId) {
             $query->where('center_id', $centerId);
         }
 
+<<<<<<< HEAD
         $students = $query->orderBy('name')->get();
         $centers = \App\Models\Center::orderBy('name')->get();
 
         return view('admin.performance.index', compact('students', 'centers'));
+=======
+        // Use pagination to avoid loading large datasets into memory at once
+        $students = $query->orderBy('name')->paginate(50);
+
+        // Get summary stats for the selected date range
+        $statsQuery = ExamSession::where('exam_mode', 'jamb')->whereNotNull('completed_at');
+        
+        if ($dateFrom && $dateTo) {
+            $statsQuery->whereDate('completed_at', '>=', $dateFrom)
+                       ->whereDate('completed_at', '<=', $dateTo);
+        } elseif ($dateFrom) {
+            $statsQuery->whereDate('completed_at', $dateFrom);
+        } elseif ($dateTo) {
+            $statsQuery->whereDate('completed_at', $dateTo);
+        }
+        
+        if ($centerId) {
+            $statsQuery->whereHas('student', function ($q) use ($centerId) {
+                $q->where('center_id', $centerId);
+            });
+        }
+
+        $stats = [
+            'total_sessions' => $statsQuery->count(),
+            'avg_score' => round($statsQuery->avg('score'), 1),
+            'highest_score' => $statsQuery->max('score') ?? 0,
+            'date_range' => $dateFrom || $dateTo 
+                ? ($dateFrom && $dateTo ? "{$dateFrom} to {$dateTo}" : ($dateFrom ?? $dateTo))
+                : 'All dates',
+        ];
+
+        if (Schema::hasTable('centers')) {
+            $centers = \App\Models\Center::orderBy('name')->get();
+        } else {
+            $centers = collect();
+        }
+
+        return view('admin.performance.index', compact('students', 'centers', 'filters', 'stats'));
+>>>>>>> origin/backup-main
     }
 
     public function generate(Request $request)
     {
+<<<<<<< HEAD
         $data = $request->validate([
             'student_ids' => 'nullable|array',
             'student_ids.*' => 'integer|exists:users,id',
             'all' => 'nullable|boolean',
             'center_id' => 'nullable|integer|exists:centers,id',
+=======
+        // Build validation rules; avoid `exists:centers,id` if centers table doesn't exist
+        $rules = [
+            'student_ids' => 'nullable|array',
+            'student_ids.*' => 'integer|exists:users,id',
+            'all' => 'nullable|boolean',
+            'center_id' => 'nullable|integer',
+>>>>>>> origin/backup-main
             'school_name' => 'nullable|string|max:255',
             'school_address' => 'nullable|string|max:500',
             'school_logo' => 'nullable|image|mimes:jpeg,png,gif|max:2048',
             'watermark_font_size' => 'nullable|integer|min:20|max:120',
+<<<<<<< HEAD
         ]);
+=======
+        ];
+
+        if (Schema::hasTable('centers')) {
+            $rules['center_id'] = 'nullable|integer|exists:centers,id';
+        }
+
+        $data = $request->validate($rules);
+>>>>>>> origin/backup-main
 
         $schoolName = $data['school_name'] ?? null;
         $schoolAddress = $data['school_address'] ?? null;
@@ -65,16 +168,33 @@ class AdminPerformanceController extends Controller
             })
             ->with(['examSessions' => function ($q) {
                 $q->whereNotNull('completed_at');
+<<<<<<< HEAD
             }]);
+=======
+            }])
+            ->with('center');
+>>>>>>> origin/backup-main
 
         if (!empty($data['student_ids'])) {
             $query->whereIn('id', $data['student_ids']);
         }
 
+<<<<<<< HEAD
         $students = $query->get();
 
         $centerName = null;
         if (!empty($data['center_id'])) {
+=======
+        // Filter by center if provided
+        if (!empty($data['center_id'])) {
+            $query->where('center_id', $data['center_id']);
+        }
+
+        $students = $query->get();
+
+        $centerName = null;
+        if (!empty($data['center_id']) && Schema::hasTable('centers')) {
+>>>>>>> origin/backup-main
             $center = \App\Models\Center::find($data['center_id']);
             $centerName = $center?->name;
         }
@@ -82,6 +202,7 @@ class AdminPerformanceController extends Controller
         $reports = [];
 
         foreach ($students as $student) {
+<<<<<<< HEAD
             // Get the latest JAMB exam session for this student
             $session = $student->examSessions()->where('exam_mode', 'jamb')->latest('completed_at')->first();
 
@@ -140,6 +261,72 @@ class AdminPerformanceController extends Controller
                 'time_spent' => $timeSpent,
                 'completed_at' => $session->completed_at,
             ];
+=======
+            // Get ALL completed JAMB exam sessions for this student (not just the latest)
+            $sessions = $student->examSessions()
+                ->where('exam_mode', 'jamb')
+                ->whereNotNull('completed_at')
+                ->orderByDesc('completed_at')
+                ->get();
+
+            if ($sessions->isEmpty()) {
+                continue;
+            }
+
+            foreach ($sessions as $session) {
+                // Get 4 subject scores from examSubjectScores (JAMB format)
+                $subjectScores = $session->examSubjectScores()
+                    ->with('subject')
+                    ->orderBy('subject_id')
+                    ->limit(4)
+                    ->get();
+
+                // Calculate total score (sum of individual subject scores)
+                $totalScore = $subjectScores->sum('score_over_100');
+
+                // Calculate time spent
+                $timeSpent = null;
+                if ($session->started_at && $session->completed_at) {
+                    $timeSpent = $session->started_at->diffInMinutes($session->completed_at);
+                }
+
+                // Generate performance remark based on total score
+                if ($totalScore >= 300) {
+                    $remark = 'Excellent';
+                } elseif ($totalScore >= 240) {
+                    $remark = 'Very Good';
+                } elseif ($totalScore >= 180) {
+                    $remark = 'Good';
+                } elseif ($totalScore >= 120) {
+                    $remark = 'Average';
+                } else {
+                    $remark = 'Fair';
+                }
+
+                // Generate performance comment based on total score
+                if ($totalScore >= 300) {
+                    $comment = 'Outstanding performance. Excellent grasp of all subjects.';
+                } elseif ($totalScore >= 240) {
+                    $comment = 'Very good performance. Strong understanding across subjects.';
+                } elseif ($totalScore >= 180) {
+                    $comment = 'Good performance. Solid understanding of major concepts.';
+                } elseif ($totalScore >= 120) {
+                    $comment = 'Average performance. Reasonable understanding but needs improvement.';
+                } else {
+                    $comment = 'Below average. Significant improvement needed in studies.';
+                }
+
+                $reports[] = [
+                    'student' => $student,
+                    'subject_scores' => $subjectScores,
+                    'total_score' => (int) $totalScore,
+                    'remark' => $remark,
+                    'comment' => $comment,
+                    'time_spent' => $timeSpent,
+                    'completed_at' => $session->completed_at,
+                ];
+            }
+>>>>>>> origin/backup-main
         }
 
         try {

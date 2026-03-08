@@ -18,6 +18,11 @@ class AdminStudentController extends Controller
                 $q->whereNotNull('completed_at');
             }]);
 
+        // filter by center if requested
+        if ($request->filled('center_id')) {
+            $query->where('center_id', $request->center_id);
+        }
+
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {

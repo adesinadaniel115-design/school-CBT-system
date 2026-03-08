@@ -38,17 +38,13 @@
             height: 100vh;
             overflow-y: auto;
             overflow-x: hidden;
-            transition: width 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            transform: translateX(0);
+            z-index: 1040;
         }
 
         body.sidebar-collapsed .sidebar {
-            width: 84px;
-        }
-
-        body.sidebar-collapsed .sidebar-brand,
-        body.sidebar-collapsed .sidebar-menu {
-            padding-left: 0.75rem;
-            padding-right: 0.75rem;
+            transform: translateX(-100%);
         }
 
         .sidebar-brand span,
@@ -56,21 +52,6 @@
         .menu-label {
             transition: opacity 0.2s ease, transform 0.2s ease;
             white-space: nowrap;
-        }
-
-        body.sidebar-collapsed .sidebar-brand span,
-        body.sidebar-collapsed .sidebar-brand p {
-            opacity: 0;
-            transform: translateX(-8px);
-            pointer-events: none;
-        }
-
-        body.sidebar-collapsed .menu-item {
-            justify-content: center;
-        }
-
-        body.sidebar-collapsed .menu-item:hover {
-            transform: none;
         }
 
         .sidebar-brand {
@@ -168,14 +149,10 @@
 
         /* Main Content */
         .main-content {
-            margin-left: 280px;
             flex: 1;
             padding: 2rem;
-            transition: margin-left 0.25s ease;
-        }
-
-        body.sidebar-collapsed .main-content {
-            margin-left: 84px;
+            transition: padding 0.25s ease;
+            width: 100%;
         }
 
         .top-actions {
@@ -246,6 +223,8 @@
             font-weight: 700;
             color: #1f2937;
             margin-bottom: 0.5rem;
+            word-break: break-word;
+            overflow-wrap: break-word;
         }
 
         .welcome-subtitle {
@@ -495,6 +474,14 @@
             gap: 0.5rem;
         }
 
+        .btn-submit {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+        }
+
+        .btn-submit:hover {
+            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3);
+        }
+
         .btn-terminate {
             background: #ef4444;
         }
@@ -506,6 +493,44 @@
         .btn-continue:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Timer Warning Alert */
+        .timer-warning {
+            background: linear-gradient(135deg, #fef3c7 0%, #fcd34d 100%);
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            color: #78350f;
+            box-shadow: 0 4px 20px rgba(245, 158, 11, 0.25);
+        }
+
+        .timer-warning .alert-content {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .timer-warning i {
+            font-size: 1.5rem;
+            color: #d97706;
+            flex-shrink: 0;
+            margin-top: 0.25rem;
+        }
+
+        .timer-warning .alert-text {
+            flex: 1;
+        }
+
+        .timer-warning strong {
+            color: #92400e;
+        }
+
+        .timer-warning p {
+            margin: 0.5rem 0 0 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
         }
 
         .logout-btn {
@@ -567,12 +592,40 @@
 
         @media (max-width: 991px) {
             .sidebar {
+                /* Span full height and width on mobile */
+                top: 0 !important;
+                bottom: 0 !important;
+                height: 100vh;
+                background: rgba(255, 255, 255, 0.98);
                 transform: translateX(-100%);
-                z-index: 1000;
+                z-index: 1050;
+                width: 280px;
+                box-shadow: 2px 0 20px rgba(0, 0, 0, 0.15);
             }
 
-            .main-content {
-                margin-left: 0;
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            /* Sidebar backdrop overlay */
+            .sidebar::after {
+                content: '';
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.5);
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.25s ease;
+                z-index: -1;
+            }
+            
+            .sidebar.show::after {
+                opacity: 1;
+                pointer-events: all;
+            }
+            
+            .sidebar-toggle {
+                display: flex !important;
             }
         }
 
@@ -587,12 +640,18 @@
             }
 
             .top-actions {
-                flex-direction: column;
-                align-items: stretch;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                gap: 0.75rem;
+            }
+
+            .sidebar-toggle {
+                flex-shrink: 0;
             }
 
             .profile-chip {
-                width: 100%;
+                flex: 1;
                 justify-content: center;
             }
 
@@ -646,10 +705,49 @@
                 padding: 0.5rem 1rem;
                 font-size: 0.95rem;
             }
+            
+            .btn-exam {
+                padding: 0.75rem 1rem;
+                font-size: 0.95rem;
+            }
+            
+            .btn-continue {
+                padding: 0.6rem 1rem;
+                font-size: 0.85rem;
+            }
+            
+            .session-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            .timer-warning {
+                margin-left: -0.75rem;
+                margin-right: -0.75rem;
+                border-radius: 0;
+                padding: 1rem;
+            }
+
+            .timer-warning .alert-content {
+                flex-direction: column;
+            }
+
+            .timer-warning i {
+                font-size: 1.25rem;
+            }
+            
+            
+            .exam-badge {
+                display: inline-block;
+                font-size: 0.75rem;
+            }
         }
 
         /* Small Mobile (max-width: 480px) */
         @media (max-width: 480px) {
+            .main-content {
+                padding: 0.75rem;
+            }
+
             .welcome-card {
                 padding: 1rem !important;
             }
@@ -694,41 +792,12 @@
 <body>
     <div class="dashboard-container">
         <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-brand">
-                <h4><i class="bi bi-mortarboard-fill"></i> <span>School CBT</span></h4>
-                <p>Computer Based Testing Platform</p>
-            </div>
-
-            <nav class="sidebar-menu">
-                <a href="{{ route('student.dashboard') }}" class="menu-item active">
-                    <span class="menu-icon"><i class="bi bi-house-door-fill"></i></span>
-                    <span class="menu-label">Dashboard</span>
-                </a>
-                <a href="{{ route('student.history') }}" class="menu-item">
-                    <span class="menu-icon"><i class="bi bi-clock-history"></i></span>
-                    <span class="menu-label">Exam History</span>
-                </a>
-                <a href="{{ route('student.profile.edit') }}" class="menu-item">
-                    <span class="menu-icon"><i class="bi bi-person-circle"></i></span>
-                    <span class="menu-label">Profile</span>
-                </a>
-                <div style="margin-top: 2rem; padding: 0 1rem;">
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="menu-item logout w-100 border-0">
-                            <span class="menu-icon"><i class="bi bi-box-arrow-right"></i></span>
-                            <span class="menu-label">Logout</span>
-                        </button>
-                    </form>
-                </div>
-            </nav>
-        </aside>
+        @include('student.partials.sidebar')
 
         <!-- Main Content -->
         <main class="main-content">
             <div class="top-actions">
-                <button type="button" class="sidebar-toggle" id="studentSidebarToggle" aria-label="Toggle sidebar">
+                <button type="button" class="sidebar-toggle" id="studentSidebarToggle" aria-label="Toggle sidebar" style="display: flex !important;">
                     <i class="bi bi-list"></i>
                 </button>
                 <a href="{{ route('student.profile.edit') }}" class="profile-chip">
@@ -764,15 +833,30 @@
                     </div>
                     @if(auth()->user()->student_id)
                         <div style="margin: 1.5rem 0 1.5rem; background: linear-gradient(135deg, rgba(3, 105, 161, 0.08) 0%, rgba(6, 182, 212, 0.08) 100%); padding: 1rem; border-radius: 12px; border-left: 4px solid #0369a1;">
-                            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
-                                <div style="background: linear-gradient(135deg, #0369a1 0%, #06b6d4 100%); color: white; padding: 0.5rem 0.75rem; border-radius: 8px; font-weight: 700; font-size: 1.2rem; min-width: 100px; text-align: center;">
+                            <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                                <div style="background: linear-gradient(135deg, #0369a1 0%, #06b6d4 100%); color: white; padding: 0.75rem 1rem; border-radius: 8px; font-weight: 700; font-size: 1.1rem; white-space: nowrap;">
                                     {{ auth()->user()->student_id }}
                                 </div>
-                                <div>
+                                <div style="flex: 1; min-width: 200px;">
                                     <div style="color: #6b7280; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Your Student ID</div>
-                                    <div style="color: #1f2937; font-weight: 600; font-size: 0.95rem;">{{ auth()->user()->email }}</div>
+                                    <div style="color: #1f2937; font-weight: 600; font-size: 0.95rem; word-break: break-word;">{{ auth()->user()->email }}</div>
                                 </div>
                             </div>
+                        </div>
+                    @endif
+
+                    @php $plan = auth()->user()->activePlan(); @endphp
+                    @if($plan)
+                        <div style="margin-bottom: 1rem; padding: 1rem; border-radius: 12px; background: #e0f2fe; border-left: 4px solid #3b82f6;">
+                            <strong>Active plan:</strong> {{ $plan->name }}
+                            @php
+                                $record = auth()->user()->studentPlans()->where('plan_id',$plan->id)->latest()->first();
+                            @endphp
+                            @if($record && $record->expires_at)
+                                (expires {{ $record->expires_at->diffForHumans() }})
+                            @endif
+                            <br>
+                            <small>Attempts remaining: {{ $record?->attempts_remaining ?? 'N/A' }} - Please track your usage carefully</small>
                         </div>
                     @endif
                     <div class="welcome-subtitle">
@@ -801,6 +885,15 @@
 
             <!-- Active Sessions -->
             @if($activeSessions->isNotEmpty())
+            <div class="alert alert-warning timer-warning" role="alert">
+                <div class="alert-content">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <div class="alert-text">
+                        <strong>⏱️ Important: Timer Will Auto-Submit!</strong>
+                        <p>When your exam time expires, the system will automatically submit your exam with your current answers. <strong>Don't wait for the timer to end!</strong> Click <strong>"Submit Now"</strong> when you're finished to see your results immediately.</p>
+                    </div>
+                </div>
+            </div>
             <div class="exam-section">
                 <h3><i class="bi bi-play-circle-fill"></i> Continue Your Exams</h3>
                 <div class="session-grid">
@@ -821,10 +914,16 @@
                                 <a href="{{ route('exam.take', $session) }}" class="btn-continue">
                                     <i class="bi bi-play-fill"></i> Continue Exam
                                 </a>
-                                <form method="POST" action="{{ route('exam.terminate', $session) }}" onsubmit="return confirm('Terminate this exam? This will end the session and mark it as completed.');">
+                                <form method="POST" action="{{ route('exam.force-submit', $session) }}" style="display: inline;">
+                                    @csrf
+                                    <button type="submit" class="btn-continue btn-submit" title="Submit your exam with current answers to see your score">
+                                        <i class="bi bi-check-circle-fill"></i> Submit Now
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ route('exam.terminate', $session) }}" style="display: inline;" onsubmit="return confirm('Abandon this exam? This will mark it as completed with 0 score.');">
                                     @csrf
                                     <button type="submit" class="btn-continue btn-terminate">
-                                        <i class="bi bi-x-circle-fill"></i> Terminate Exam
+                                        <i class="bi bi-x-circle-fill"></i> Abandon
                                     </button>
                                 </form>
                             </div>
@@ -985,17 +1084,43 @@
 
             const storageKey = 'studentSidebarCollapsed';
             const toggle = document.getElementById('studentSidebarToggle');
+            const sidebar = document.querySelector('.sidebar');
 
             if (localStorage.getItem(storageKey) === 'true') {
                 document.body.classList.add('sidebar-collapsed');
             }
 
             if (toggle) {
-                toggle.addEventListener('click', function () {
-                    document.body.classList.toggle('sidebar-collapsed');
-                    localStorage.setItem(storageKey, document.body.classList.contains('sidebar-collapsed'));
+                toggle.addEventListener('click', function (e) {
+                    // On mobile (< 991px), show/hide sidebar with `.show` class
+                    if (window.innerWidth < 991) {
+                        sidebar?.classList.toggle('show');
+                        e.stopPropagation();
+                    } else {
+                        // On desktop, use the collapse toggle
+                        document.body.classList.toggle('sidebar-collapsed');
+                        localStorage.setItem(storageKey, document.body.classList.contains('sidebar-collapsed'));
+                    }
                 });
             }
+            
+            // Close sidebar when clicking outside on mobile
+            if (sidebar) {
+                document.addEventListener('click', function (e) {
+                    if (window.innerWidth < 991) {
+                        if (!sidebar.contains(e.target) && e.target !== toggle && !toggle?.contains(e.target)) {
+                            sidebar.classList.remove('show');
+                        }
+                    }
+                });
+            }
+            
+            // Close sidebar on resize to desktop
+            window.addEventListener('resize', function () {
+                if (window.innerWidth >= 991) {
+                    sidebar?.classList.remove('show');
+                }
+            });
         });
     </script>
     <script>

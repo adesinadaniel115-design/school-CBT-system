@@ -16,13 +16,22 @@ class AdminReportController extends Controller
         $subjects = Subject::orderBy('name')->get();
         $students = User::where('is_admin', false)->orderBy('name')->get();
         
-        // Get filter parameters
+        // validate inputs (mostly dates) so malformed values don't break queries
+        $validated = $request->validate([
+            'exam_mode' => 'nullable|in:school,jamb',
+            'subject_id' => 'nullable|exists:subjects,id',
+            'student_id' => 'nullable|exists:users,id',
+            'date_from' => 'nullable|date',
+            'date_to' => 'nullable|date',
+        ]);
+
+        // Get filter parameters (use validated where available)
         $filters = [
-            'exam_mode' => $request->input('exam_mode'),
-            'subject_id' => $request->input('subject_id'),
-            'student_id' => $request->input('student_id'),
-            'date_from' => $request->input('date_from'),
-            'date_to' => $request->input('date_to'),
+            'exam_mode' => $validated['exam_mode'] ?? null,
+            'subject_id' => $validated['subject_id'] ?? null,
+            'student_id' => $validated['student_id'] ?? null,
+            'date_from' => $validated['date_from'] ?? null,
+            'date_to' => $validated['date_to'] ?? null,
         ];
 
         // Build query with eager loading
@@ -50,12 +59,14 @@ class AdminReportController extends Controller
             $query->where('student_id', $filters['student_id']);
         }
 
-        if ($filters['date_from']) {
-            $query->whereDate('completed_at', '>=', $filters['date_from']);
-        }
-
-        if ($filters['date_to']) {
-            $query->whereDate('completed_at', '<=', $filters['date_to']);
+        // date filtering: both from+to makes a range, single value matches exact day
+        if ($filters['date_from'] && $filters['date_to']) {
+            $query->whereDate('completed_at', '>=', $filters['date_from'])
+                  ->whereDate('completed_at', '<=', $filters['date_to']);
+        } elseif ($filters['date_from']) {
+            $query->whereDate('completed_at', $filters['date_from']);
+        } elseif ($filters['date_to']) {
+            $query->whereDate('completed_at', $filters['date_to']);
         }
 
         // Paginate results
@@ -121,12 +132,14 @@ class AdminReportController extends Controller
         // Build base query for analytics
         $query = ExamSession::whereNotNull('completed_at');
 
-        if ($filters['date_from']) {
-            $query->whereDate('completed_at', '>=', $filters['date_from']);
-        }
-
-        if ($filters['date_to']) {
-            $query->whereDate('completed_at', '<=', $filters['date_to']);
+        // analytics date filtering mirrors the reporting query logic
+        if ($filters['date_from'] && $filters['date_to']) {
+            $query->whereDate('completed_at', '>=', $filters['date_from'])
+                  ->whereDate('completed_at', '<=', $filters['date_to']);
+        } elseif ($filters['date_from']) {
+            $query->whereDate('completed_at', $filters['date_from']);
+        } elseif ($filters['date_to']) {
+            $query->whereDate('completed_at', $filters['date_to']);
         }
 
         // Total sessions
@@ -153,12 +166,13 @@ class AdminReportController extends Controller
                 ->orderByDesc('score')
                 ->limit(10);
 
-            if ($filters['date_from']) {
-                $topPerformersQuery->whereDate('completed_at', '>=', $filters['date_from']);
-            }
-
-            if ($filters['date_to']) {
-                $topPerformersQuery->whereDate('completed_at', '<=', $filters['date_to']);
+            if ($filters['date_from'] && $filters['date_to']) {
+                $topPerformersQuery->whereDate('completed_at', '>=', $filters['date_from'])
+                                   ->whereDate('completed_at', '<=', $filters['date_to']);
+            } elseif ($filters['date_from']) {
+                $topPerformersQuery->whereDate('completed_at', $filters['date_from']);
+            } elseif ($filters['date_to']) {
+                $topPerformersQuery->whereDate('completed_at', $filters['date_to']);
             }
 
             $analytics['top_performers'] = $topPerformersQuery->get();
@@ -175,11 +189,13 @@ class AdminReportController extends Controller
             // Apply date filters through exam_session relationship
             if ($filters['date_from'] || $filters['date_to']) {
                 $subjectPerfQuery->whereHas('examSession', function ($q) use ($filters) {
-                    if ($filters['date_from']) {
-                        $q->whereDate('completed_at', '>=', $filters['date_from']);
-                    }
-                    if ($filters['date_to']) {
-                        $q->whereDate('completed_at', '<=', $filters['date_to']);
+                    if ($filters['date_from'] && $filters['date_to']) {
+                        $q->whereDate('completed_at', '>=', $filters['date_from'])
+                          ->whereDate('completed_at', '<=', $filters['date_to']);
+                    } elseif ($filters['date_from']) {
+                        $q->whereDate('completed_at', $filters['date_from']);
+                    } elseif ($filters['date_to']) {
+                        $q->whereDate('completed_at', $filters['date_to']);
                     }
                 });
             }

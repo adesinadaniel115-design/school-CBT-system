@@ -228,15 +228,28 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="center_id" class="form-label">Select Center</label>
+                    <i class="bi bi-building input-icon" style="left:1rem;"></i>
+                    <select id="center_id" name="center_id" class="form-control">
+                        <option value="">-- No center / Not listed --</option>
+                        @forelse($centers as $center)
+                            <option value="{{ $center->id }}" {{ old('center_id') == $center->id ? 'selected' : '' }}>{{ $center->name }}</option>
+                        @empty
+                            <option value="" disabled>(no centers defined yet)</option>
+                        @endforelse
+                    </select>
+                </div>
+
+                <div class="form-group">
                     <label for="password" class="form-label">Password</label>
                     <i class="bi bi-lock input-icon"></i>
-                    <input id="password" type="password" name="password" class="form-control" placeholder="Create a password" required>
+                    <input id="password" type="password" name="password" class="form-control" placeholder="Create a password" autocomplete="new-password" value="" required>
                 </div>
 
                 <div class="form-group">
                     <label for="password_confirmation" class="form-label">Confirm Password</label>
                     <i class="bi bi-shield-lock input-icon"></i>
-                    <input id="password_confirmation" type="password" name="password_confirmation" class="form-control" placeholder="Confirm your password" required>
+                    <input id="password_confirmation" type="password" name="password_confirmation" class="form-control" placeholder="Confirm your password" autocomplete="new-password" value="" required>
                 </div>
 
                 <button type="submit" class="btn-submit">

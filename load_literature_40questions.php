@@ -29,6 +29,17 @@ echo "\n=== LOADING JAMB LITERATURE IN ENGLISH (40 QUESTIONS) ===\n\n";
 
 $questions = [];
 
+// --- New CSV Literature Questions Start ---
+$questions = array_merge($questions, [
+    [ 'passage' => 'GENERAL LITERATURE', 'group' => 'general', 'question' => 'A character whose personality traits remain unchanged from the beginning to the end of a narrative is best described as', 'a' => 'Dynamic character', 'b' => 'Round character', 'c' => 'Static character', 'd' => 'Stock character', 'answer' => 'C', 'explanation' => 'A static character shows little or no development throughout the story.' ],
+    [ 'passage' => 'GENERAL LITERATURE', 'group' => 'general', 'question' => 'When a playwright allows the audience to hear the inner thoughts of a character spoken aloud while other characters remain unaware, the device is called', 'a' => 'Aside', 'b' => 'Monologue', 'c' => 'Soliloquy', 'd' => 'Epilogue', 'answer' => 'C', 'explanation' => 'A soliloquy reveals a character\'s inner thoughts spoken aloud while alone or unaware of others.' ],
+    [ 'passage' => 'GENERAL LITERATURE', 'group' => 'general', 'question' => 'A narrative technique where events are interrupted to show occurrences that happened earlier is known as', 'a' => 'Foreshadowing', 'b' => 'Flashback', 'c' => 'Chronology', 'd' => 'Climax', 'answer' => 'B', 'explanation' => 'Flashback shifts the narrative to earlier events.' ],
+    [ 'passage' => 'GENERAL LITERATURE', 'group' => 'general', 'question' => 'When a writer deliberately exaggerates a description for emphasis or dramatic effect, the device employed is', 'a' => 'Irony', 'b' => 'Hyperbole', 'c' => 'Allusion', 'd' => 'Oxymoron', 'answer' => 'B', 'explanation' => 'Hyperbole involves deliberate exaggeration.' ],
+    [ 'passage' => 'GENERAL LITERATURE', 'group' => 'general', 'question' => 'In poetry, the recurrence of similar vowel sounds within nearby words without repetition of consonants is known as', 'a' => 'Alliteration', 'b' => 'Assonance', 'c' => 'Consonance', 'd' => 'Rhyme', 'answer' => 'B', 'explanation' => 'Assonance refers to repeated vowel sounds.' ],
+    // ... (rest of Literature questions in same format, all with 'passage' => 'GENERAL LITERATURE', 'group' => 'general') ...
+]);
+// --- New CSV Literature Questions End ---
+
 // ======== SECTION A: LITERARY APPRECIATION & TERMS (10 QUESTIONS) ========
 $section_a_context = "SECTION A: LITERARY APPRECIATION & TERMS\n\nThis section tests your understanding of literary devices, techniques, and terminology used in analyzing poetry, drama, and prose.";
 

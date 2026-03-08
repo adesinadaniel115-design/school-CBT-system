@@ -18,10 +18,38 @@
     <div class="col-lg-8">
         <div class="card border-0 shadow-sm">
             <div class="card-body p-4">
-                <div class="alert alert-warning mb-4">
+                <div class="alert alert-warning mb-4" id="delete-warning">
                     <i class="bi bi-exclamation-triangle me-2"></i>
-                    <strong>Important:</strong> All existing questions will be deleted before import. Exam sessions and answers are preserved and remain valid.
+                    <strong>Important:</strong> By default, all existing questions will be deleted before import. Exam sessions and answers are preserved and remain valid.
                 </div>
+                <div class="alert alert-info mb-4">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>Merge option:</strong> Check "<em>Keep existing questions (append/merge)</em>" below to retain the current bank and only add new rows. Duplicate rows (same subject + text) will be skipped.
+                </div>
+                
+                <form method="POST" action="{{ route('admin.questions.import') }}" enctype="multipart/form-data">
+                    @csrf
+                    
+                    <div class="mb-4 form-check">
+                        <input class="form-check-input" type="checkbox" id="append" name="append" value="1" {{ old('append') ? 'checked' : '' }}>
+                        <label class="form-check-label" for="append">
+                            Keep existing questions (append/merge)
+                        </label>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="file" class="form-label fw-semibold">CSV File <span class="text-danger">*</span></label>
+                        <input type="file" 
+                               class="form-control form-control-lg @error('file') is-invalid @enderror" 
+                               id="file" 
+                               name="file" 
+                               accept=".csv,.txt"
+                               required>
+                        @error('file')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                        <small class="text-muted d-block mt-2">Accepted formats: CSV, TXT</small>
+                    </div>
 
                 <div class="alert alert-info mb-4">
                     <i class="bi bi-info-circle me-2"></i>
@@ -44,32 +72,6 @@
                     </div>
                 </div>
 
-                <form method="POST" action="{{ route('admin.questions.import') }}" enctype="multipart/form-data">
-                    @csrf
-                    
-                    <div class="mb-4">
-                        <label for="file" class="form-label fw-semibold">CSV File <span class="text-danger">*</span></label>
-                        <input type="file" 
-                               class="form-control form-control-lg @error('file') is-invalid @enderror" 
-                               id="file" 
-                               name="file" 
-                               accept=".csv,.txt"
-                               required>
-                        @error('file')
-                            <div class="invalid-feedback d-block">{{ $message }}</div>
-                        @enderror
-                        <small class="text-muted d-block mt-2">Accepted formats: CSV, TXT</small>
-                    </div>
-
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary px-4">
-                            <i class="bi bi-cloud-upload me-2"></i>Import Questions
-                        </button>
-                        <a href="{{ route('admin.questions.index') }}" class="btn btn-outline-secondary px-4">
-                            <i class="bi bi-arrow-left me-2"></i>Back to Questions
-                        </a>
-                    </div>
-                </form>
             </div>
         </div>
 
@@ -86,7 +88,13 @@
                         <div class="col-md-6">
                             <div class="p-3 bg-danger bg-opacity-10 rounded">
                                 <div class="text-muted small">Deleted Questions</div>
-                                <div class="h5 text-danger mb-0">{{ $summary['deleted_count'] }}</div>
+                                <div class="h5 text-danger mb-0">
+                                    @if($summary['deleted_count'] === 0)
+                                        <span class="text-success">0</span> <small>(append mode)</small>
+                                    @else
+                                        {{ $summary['deleted_count'] }}
+                                    @endif
+                                </div>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -206,5 +214,21 @@
         </div>
     </div>
 </div>
+
+<script>
+    // toggle warning text when merge checkbox is flipped
+    document.addEventListener('DOMContentLoaded', function () {
+        var checkbox = document.getElementById('append');
+        var warning = document.getElementById('delete-warning');
+        if (!checkbox || !warning) return;
+        var toggle = function () {
+            warning.style.display = checkbox.checked ? 'none' : 'block';
+        };
+        checkbox.addEventListener('change', toggle);
+        // initial state
+        toggle();
+    });
+</script>
+
 @endsection
 

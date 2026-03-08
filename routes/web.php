@@ -13,8 +13,22 @@ use App\Http\Controllers\ExamController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\StudentDashboardController;
 use App\Http\Controllers\SubjectController;
+use App\Http\Controllers\PlanController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+
+
+// public authentication routes (login, register, password reset)
+Route::get('/login', [App\Http\Controllers\AuthController::class, 'showLogin'])->name('login');
+Route::post('/login', [App\Http\Controllers\AuthController::class, 'login'])->name('login.submit');
+Route::get('/register', [App\Http\Controllers\AuthController::class, 'showRegister'])->name('register');
+Route::post('/register', [App\Http\Controllers\AuthController::class, 'register'])->name('register.submit');
+
+// password reset URLs outside admin guard
+Route::get('/forgot-password', [App\Http\Controllers\PasswordResetController::class, 'showForgotPasswordForm'])->name('password.request');
+Route::post('/forgot-password', [App\Http\Controllers\PasswordResetController::class, 'sendResetLink'])->name('password.email');
+Route::get('/reset-password/{email}/{token}', [App\Http\Controllers\PasswordResetController::class, 'showResetForm'])->name('password.reset');
+Route::post('/reset-password', [App\Http\Controllers\PasswordResetController::class, 'reset'])->name('password.update');
 
 Route::middleware('auto.login')->group(function () {
     Route::get('/', function () {
@@ -25,10 +39,7 @@ Route::middleware('auto.login')->group(function () {
         return redirect('/login');
     });
 
-    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
-    // Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
-    // Route::post('/register', [AuthController::class, 'register'])->name('register.submit');
+    // authentication routes are declared above outside this middleware group
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     Route::middleware('auth')->group(function () {
@@ -42,18 +53,27 @@ Route::middleware('auto.login')->group(function () {
         // Student Routes
         Route::get('/student/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
         Route::get('/history', [StudentDashboardController::class, 'history'])->name('student.history');
+        // Plans & Tokens informational page for students
+        Route::get('/plans', [StudentDashboardController::class, 'plans'])->name('student.plans');
+        // leaderboard for paid plans
+        Route::get('/leaderboard', [\App\Http\Controllers\StudentLeaderboardController::class, 'index'])
+            ->name('student.leaderboard');
         Route::post('/history/clear', [StudentDashboardController::class, 'clearHistory'])->name('student.history.clear');
+        // export selected/all history results as PDF
+        Route::post('/history/generate', [StudentDashboardController::class, 'generateHistoryPdf'])->name('student.history.generate');
         Route::get('/student/profile', [ProfileController::class, 'editStudent'])->name('student.profile.edit');
         Route::post('/student/profile', [ProfileController::class, 'updateStudent'])->name('student.profile.update');
 
-        Route::post('/exam/start', [ExamController::class, 'start'])->name('exam.start');
+        Route::post('/exam/start', [ExamController::class, 'startSchool'])->name('exam.start');
         Route::post('/exam/start-jamb', [ExamController::class, 'startJamb'])->name('exam.start.jamb');
+        Route::post('/exam/confirm-school', [ExamController::class, 'confirmSchool'])->name('exam.confirm.school');
         Route::post('/exam/confirm', [ExamController::class, 'confirmJamb'])->name('exam.confirm.jamb');
         Route::post('/exam/validate-token', [ExamController::class, 'validateToken'])->name('exam.validate.token');
         Route::get('/exam/{session}', [ExamController::class, 'take'])->name('exam.take');
         Route::post('/exam/{session}/answer', [ExamController::class, 'saveAnswer'])->name('exam.answer');
         Route::post('/exam/{session}/terminate', [ExamController::class, 'terminate'])->name('exam.terminate');
         Route::post('/exam/{session}/submit', [ExamController::class, 'submit'])->name('exam.submit');
+        Route::post('/exam/{session}/force-submit', [ExamController::class, 'forceSubmit'])->name('exam.force-submit');
         Route::get('/exam/{session}/result', [ExamController::class, 'result'])->name('exam.result');
         Route::get('/exam/{session}/review', [ExamController::class, 'review'])->name('exam.review');
     });
@@ -86,6 +106,9 @@ Route::middleware('auto.login')->group(function () {
             // Subject & Question Management
             Route::resource('subjects', SubjectController::class);
             Route::resource('questions', QuestionController::class)->except(['show']);
+
+            // Plan Management (for subscription features)
+            Route::resource('plans', PlanController::class)->except(['show']);
             Route::get('questions-import/download-template', [QuestionController::class, 'downloadTemplate'])->name('questions.import.template');
             Route::get('questions-import', [QuestionController::class, 'showImportForm'])->name('questions.import.form');
             Route::post('questions-import', [QuestionController::class, 'import'])->name('questions.import');
@@ -101,6 +124,12 @@ Route::middleware('auto.login')->group(function () {
             // Performance Analytics
             Route::get('performance', [AdminPerformanceController::class, 'index'])->name('performance.index');
             Route::post('performance/generate', [AdminPerformanceController::class, 'generate'])->name('performance.generate');
+<<<<<<< HEAD
+=======
+
+
+
+>>>>>>> origin/backup-main
             // Settings
             Route::get('settings', [AdminSettingsController::class, 'index'])->name('settings.index');
             Route::post('settings', [AdminSettingsController::class, 'update'])->name('settings.update');

@@ -23,11 +23,17 @@ English,Past tense of go?,Goes,Going,Went,Gone,C,easy,The past tense is went
 
 ### 2. Upload the CSV
 
+There is a new checkbox on the form:
+
+- **Keep existing questions (append/merge)** – if checked the import will not truncate the table. Instead it adds new rows from the CSV. Duplicate questions (same subject and text) are skipped with a warning. When unchecked (default) the old behaviour of deleting all questions still applies.
+
+
 1. Log in as Admin
 2. Go to **Admin Dashboard** (left sidebar)
 3. Click **Questions** → **Import**
-4. Click **Choose File** and select your CSV
-5. Click **Import Questions**
+4. (Optional) Tick **Keep existing questions (append/merge)** if you want to keep the current bank and only add new entries. Duplicate rows will be skipped.
+5. Click **Choose File** and select your CSV
+6. Click **Import Questions**
 
 ### 3. View Results
 
@@ -131,7 +137,7 @@ Save as `.csv` file (not `.txt`)
 
 ✅ **Error recovery** - Failed rows don't prevent successful ones from importing
 
-⚠️ **Deletes all questions** - Backup first if you want to keep old questions
+⚠️ **Deletes all questions (unless you tick the “keep existing” option)** - Backup first if you want to revert or preserve the previous bank
 
 ---
 
@@ -154,6 +160,7 @@ A sample CSV file (`sample_questions.csv`) is included in the project:
 | "The question text field is required" | Ensure no empty cells in required columns |
 | File won't upload | Save as `.csv` not `.xls` or `.xlsx` |
 | No questions imported | Check "Skipped (Errors)" section for details |
+| Duplicates skipped when appending | Turn off append checkbox if you want fresh set |
 
 ---
 

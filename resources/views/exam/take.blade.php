@@ -259,6 +259,24 @@
         .calc-screen {
             font-size: 1.25rem;
         }
+<<<<<<< HEAD
+=======
+        
+        .autosave-toast {
+            right: 1rem;
+            bottom: 1rem;
+            font-size: 0.85rem;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .autosave-toast {
+            right: 0.75rem;
+            bottom: 0.75rem;
+            padding: 0.6rem 0.8rem;
+            font-size: 0.75rem;
+        }
+>>>>>>> origin/backup-main
     }
 </style>
 @endpush
@@ -670,11 +688,6 @@
         if (currentBtn) {
             currentBtn.classList.add('current');
         }
-        
-        // Close sidebar on mobile
-        if (window.innerWidth <= 991) {
-            toggleSidebar();
-        }
     }
 
     function updateAnswerStatus(index) {
@@ -825,12 +838,18 @@
                 window.history.pushState(null, '', window.location.href);
             });
         }
-
-        // Clear timer state so new sessions start fresh
-        sessionStorage.removeItem(`exam_remaining_${{ $session->id }}`);
-        sessionStorage.removeItem(`exam_pause_${{ $session->id }}`);
+        
+        // Add form submit handler to catch errors
+        form.addEventListener('submit', function handleSubmitError(e) {
+            console.error('Form submission completed or encountered an issue. Monitoring...', {
+                timestamp: new Date().toISOString(),
+                formId: form.id
+            });
+            form.removeEventListener('submit', handleSubmitError);
+        }, { once: true });
         
         // Submit the form
+        console.log('Submitting exam form', { timestamp: new Date().toISOString() });
         form.submit();
     }
 
@@ -946,7 +965,7 @@
         updateCounts();
     });
 
-    // Timer functionality with REAL pause capability
+    // Timer functionality - continuous countdown with automatic submission
     (function () {
         const timerEl = document.getElementById('timer');
         const timerText = document.getElementById('timer-text');
@@ -955,19 +974,9 @@
         const durationMinutes = parseInt(timerEl.getAttribute('data-duration-minutes'), 10);
         const totalSeconds = durationMinutes * 60;
 
-        let isPaused = false;
-        let pausedAt = null;
         let tickInterval = null;
-        const remainingKey = `exam_remaining_${{ $session->id }}`;
-        const pauseKey = `exam_pause_${{ $session->id }}`;
 
-        const storedRemaining = sessionStorage.getItem(remainingKey);
-        const parsedRemaining = storedRemaining ? parseInt(storedRemaining, 10) : null;
-        let remainingSeconds = Number.isNaN(parsedRemaining) || parsedRemaining === null
-            ? Math.max(totalSeconds - Math.floor((Date.now() - startedAt.getTime()) / 1000), 0)
-            : parsedRemaining;
-
-        function render(seconds, showPaused = false) {
+        function render(seconds) {
             const hours = Math.floor(seconds / 3600);
             const minutes = Math.floor((seconds % 3600) / 60);
             const secs = seconds % 60;
@@ -979,106 +988,64 @@
                 timeStr = `${minutes}:${secs.toString().padStart(2, '0')}`;
             }
             
-            if (showPaused) {
-                timerText.innerHTML = `<i class="bi bi-pause-circle-fill"></i> ${timeStr} (PAUSED)`;
+            timerText.textContent = timeStr;
+            
+            // Change color based on remaining time
+            if (seconds < 300) { // Less than 5 minutes
+                timerEl.style.color = '#ef4444';
+            } else if (seconds < 600) { // Less than 10 minutes
                 timerEl.style.color = '#f59e0b';
             } else {
-                timerText.textContent = timeStr;
-                
-                // Change color based on remaining time
-                if (seconds < 300) { // Less than 5 minutes
-                    timerEl.style.color = '#ef4444';
-                } else if (seconds < 600) { // Less than 10 minutes
-                    timerEl.style.color = '#f59e0b';
-                } else {
-                    timerEl.style.color = '';
-                }
+                timerEl.style.color = '';
             }
         }
 
         function tick() {
-            if (isPaused) {
-                return; // Don't tick when paused
-            }
+            // Calculate elapsed time from server start time
+            const elapsedSeconds = Math.floor((Date.now() - startedAt.getTime()) / 1000);
+            const remainingSeconds = Math.max(totalSeconds - elapsedSeconds, 0);
 
             if (remainingSeconds <= 0) {
                 timerText.textContent = '0:00';
-                alert('Time is up! Your exam will be submitted automatically.');
-                form.submit();
+                // Stop the interval to prevent multiple submission attempts
+                if (tickInterval) {
+                    clearInterval(tickInterval);
+                }
+                
+                // Show visual feedback that exam is being auto-submitted
+                timerEl.style.color = '#ef4444';
+                timerEl.style.fontWeight = 'bold';
+                timerEl.innerHTML = '<i class="bi bi-warning"></i> <span>Auto-submitting...</span>';
+                
+                console.warn('Time expired - auto-submitting exam', {
+                    timestamp: new Date().toISOString(),
+                    remainingSeconds: remainingSeconds
+                });
+                
+                // Attempt submission - add slight delay to ensure DOM is ready
+                setTimeout(() => {
+                    try {
+                        if (!form) {
+                            console.error('Form element not found for auto-submit');
+                            timerEl.textContent = 'ERROR: Form not found';
+                            return;
+                        }
+                        console.log('Executing auto-submit', { formId: form.id });
+                        form.submit();
+                    } catch (error) {
+                        console.error('Error during auto-submit:', error);
+                        timerEl.innerHTML = '<i class="bi bi-exclamation-triangle"></i> <span>Submission failed - please try manually</span>';
+                        timerEl.style.color = '#dc2626';
+                    }
+                }, 100);
                 return;
             }
 
-            remainingSeconds = Math.max(remainingSeconds - 1, 0);
-            render(remainingSeconds, false);
-            sessionStorage.setItem(remainingKey, String(remainingSeconds));
+            render(remainingSeconds);
         }
 
-        function pause() {
-            if (isPaused) {
-                return;
-            }
-
-            isPaused = true;
-            pausedAt = Date.now();
-            sessionStorage.setItem(pauseKey, String(pausedAt));
-            sessionStorage.setItem(remainingKey, String(remainingSeconds));
-            render(remainingSeconds, true);
-            timerEl.classList.add('paused'); // Add visual paused state
-        }
-
-        function resume() {
-            if (!isPaused || !pausedAt) {
-                return;
-            }
-
-            isPaused = false;
-            pausedAt = null;
-            sessionStorage.removeItem(pauseKey);
-            timerEl.classList.remove('paused'); // Remove visual paused state
-            render(remainingSeconds, false);
-        }
-
-        // Detect when user leaves/returns to the page
-        document.addEventListener('visibilitychange', function() {
-            if (document.hidden) {
-                pause();
-            } else {
-                resume();
-            }
-        });
-
-        // Handle window blur/focus (when switching tabs)
-        window.addEventListener('blur', function() {
-            pause();
-        });
-
-        window.addEventListener('focus', function() {
-            resume();
-        });
-
-        // Handle page unload (closing tab/browser)
-        window.addEventListener('beforeunload', function() {
-            if (!isPaused) {
-                pause();
-            }
-        });
-
-        // Persist pause for bfcache navigation
-        window.addEventListener('pagehide', function() {
-            if (!isPaused) {
-                pause();
-            }
-        });
-
-        window.addEventListener('pageshow', function(event) {
-            if (event.persisted) {
-                resume();
-            }
-        });
-
-        // Start the timer with 1 second intervals
-        render(remainingSeconds, false);
-        sessionStorage.setItem(remainingKey, String(remainingSeconds));
+        // Start the timer with 1 second intervals - timer will NOT pause regardless of page visibility
+        render(totalSeconds);
         tickInterval = setInterval(tick, 1000);
     })();
 

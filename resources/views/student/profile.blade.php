@@ -33,11 +33,13 @@
             height: 100vh;
             overflow-y: auto;
             overflow-x: hidden;
-            transition: width 0.25s ease;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            transform: translateX(0);
+            z-index: 1040;
         }
 
         body.sidebar-collapsed .sidebar {
-            width: 84px;
+            transform: translateX(-100%);
         }
 
         .sidebar-brand {
@@ -114,29 +116,20 @@
             transition: opacity 0.2s ease, transform 0.2s ease;
         }
 
-        body.sidebar-collapsed .menu-label,
-        body.sidebar-collapsed .sidebar-brand span,
-        body.sidebar-collapsed .sidebar-brand p {
-            opacity: 0;
-            transform: translateX(-6px);
-            width: 0;
-            overflow: hidden;
-            pointer-events: none;
+        /* Sidebar visibility */
+        @media (min-width: 992px) {
+            .sidebar {
+                transform: translateX(0) !important;
+                z-index: 1040;
+            }
         }
 
-        body.sidebar-collapsed .menu-item {
-            justify-content: center;
-        }
-
+        /* Main Content */
         .main-content {
-            margin-left: 280px;
             flex: 1;
             padding: 2rem;
-            transition: margin-left 0.25s ease;
-        }
-
-        body.sidebar-collapsed .main-content {
-            margin-left: 84px;
+            transition: padding 0.25s ease;
+            width: 100%;
         }
 
         .top-actions {
@@ -306,8 +299,29 @@
             background: #d1d5db;
         }
 
-        /* Mobile Responsive (max-width: 768px) */
-        @media (max-width: 768px) {
+        /* Mobile sidebar - full height */
+        @media (max-width: 991px) {
+            .sidebar {
+                /* Span full height and width on mobile */
+                top: 0 !important;
+                bottom: 0 !important;
+                height: 100vh;
+                background: #ffffff;
+                transform: translateX(-100%);
+                z-index: 1050;
+                width: 280px;
+                box-shadow: 2px 0 20px rgba(0, 0, 0, 0.15);
+            }
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .sidebar-toggle {
+                display: flex !important;
+            }
+        }
+
+        
             body {
                 padding: 0;
             }
@@ -373,36 +387,7 @@
 </head>
 <body>
     <div class="dashboard-container">
-        <aside class="sidebar">
-            <div class="sidebar-brand">
-                <h4><i class="bi bi-mortarboard-fill"></i> <span>School CBT</span></h4>
-                <p>Computer Based Testing Platform</p>
-            </div>
-
-            <nav class="sidebar-menu">
-                <a href="{{ route('student.dashboard') }}" class="menu-item">
-                    <span class="menu-icon"><i class="bi bi-house-door-fill"></i></span>
-                    <span class="menu-label">Dashboard</span>
-                </a>
-                <a href="{{ route('student.history') }}" class="menu-item">
-                    <span class="menu-icon"><i class="bi bi-clock-history"></i></span>
-                    <span class="menu-label">Exam History</span>
-                </a>
-                <a href="{{ route('student.profile.edit') }}" class="menu-item active">
-                    <span class="menu-icon"><i class="bi bi-person-circle"></i></span>
-                    <span class="menu-label">Profile</span>
-                </a>
-                <div style="margin-top: 2rem; padding: 0 1rem;">
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="menu-item logout w-100 border-0">
-                            <span class="menu-icon"><i class="bi bi-box-arrow-right"></i></span>
-                            <span class="menu-label">Logout</span>
-                        </button>
-                    </form>
-                </div>
-            </nav>
-        </aside>
+        @include('student.partials.sidebar')
 
         <main class="main-content">
             <div class="top-actions">
@@ -528,21 +513,48 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        (function () {
+        // Sidebar toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
             const storageKey = 'studentSidebarCollapsed';
             const toggle = document.getElementById('studentSidebarToggle');
+            const sidebar = document.querySelector('.sidebar');
 
             if (localStorage.getItem(storageKey) === 'true') {
                 document.body.classList.add('sidebar-collapsed');
             }
 
             if (toggle) {
-                toggle.addEventListener('click', function () {
-                    document.body.classList.toggle('sidebar-collapsed');
-                    localStorage.setItem(storageKey, document.body.classList.contains('sidebar-collapsed'));
+                toggle.addEventListener('click', function (e) {
+                    // On mobile (< 991px), show/hide sidebar with `.show` class
+                    if (window.innerWidth < 991) {
+                        sidebar?.classList.toggle('show');
+                        e.stopPropagation();
+                    } else {
+                        // On desktop, use the collapse toggle
+                        document.body.classList.toggle('sidebar-collapsed');
+                        localStorage.setItem(storageKey, document.body.classList.contains('sidebar-collapsed'));
+                    }
                 });
             }
-        })();
+            
+            // Close sidebar when clicking outside on mobile
+            if (sidebar) {
+                document.addEventListener('click', function (e) {
+                    if (window.innerWidth < 991) {
+                        if (!sidebar.contains(e.target) && e.target !== toggle && !toggle?.contains(e.target)) {
+                            sidebar.classList.remove('show');
+                        }
+                    }
+                });
+            }
+            
+            // Close sidebar on resize to desktop
+            window.addEventListener('resize', function () {
+                if (window.innerWidth >= 991) {
+                    sidebar?.classList.remove('show');
+                }
+            });
+        });
     </script>
     <script>
         (function () {

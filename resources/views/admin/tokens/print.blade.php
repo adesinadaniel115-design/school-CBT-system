@@ -187,18 +187,43 @@
         }
 
         /* Scratch Card Design */
+        /* plan label colours */
+        .detail-item.plan .detail-value {
+            padding: 2px 4px;
+            border-radius: 4px;
+            color: #fff;
+        }
+        .detail-item.plan.basic .detail-value { background-color: #8BC34A; color: #fff; }
+        .detail-item.plan.smart .detail-value { background-color: #1e40af; color: #fff; }
+        .detail-item.plan.premium .detail-value { background: linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%); }
+
+        /* Scratch Card - Base Structure */
         .scratch-card {
             width: 100%;
             aspect-ratio: 85 / 57;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            /* Basic plan colour - green with high visibility */
+            background: linear-gradient(135deg, #8BC34A 0%, #7CB342 100%);
             border-radius: 8px;
-            padding: 2px;
+            padding: 3px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
             position: relative;
             overflow: hidden;
+            border: 2px solid #8BC34A;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
             color-adjust: exact;
+        }
+
+        /* Smart Plan - Deep Professional Blue */
+        .scratch-card.smart {
+            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+            border: 2px solid #1e40af;
+        }
+
+        /* Premium Plan - Royal Deep Purple */
+        .scratch-card.premium {
+            background: linear-gradient(135deg, #6d28d9 0%, #5b21b6 100%);
+            border: 2px solid #6d28d9;
         }
 
         .scratch-card::before {
@@ -247,6 +272,19 @@
             color-adjust: exact;
         }
 
+        /* Plan-specific header colors */
+        .scratch-card.basic .card-header-section {
+            background: linear-gradient(135deg, #8BC34A 0%, #7CB342 100%);
+        }
+
+        .scratch-card.smart .card-header-section {
+            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+        }
+
+        .scratch-card.premium .card-header-section {
+            background: linear-gradient(135deg, #6d28d9 0%, #5b21b6 100%);
+        }
+
         .card-logo {
             display: flex;
             align-items: center;
@@ -284,11 +322,24 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            background: linear-gradient(to bottom, #ffffff 0%, #f9fafb 100%);
+            background: #ffffff;
             font-size: 0.75rem;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
             color-adjust: exact;
+        }
+
+        /* Subtle plan-tinted background for better plan recognition */
+        .scratch-card.basic .card-body-section {
+            background-image: linear-gradient(to bottom, #ffffff 0%, #f7fdf2 100%);
+        }
+
+        .scratch-card.smart .card-body-section {
+            background-image: linear-gradient(to bottom, #ffffff 0%, #f0f4ff 100%);
+        }
+
+        .scratch-card.premium .card-body-section {
+            background-image: linear-gradient(to bottom, #ffffff 0%, #faf5ff 100%);
         }
 
         .token-label {
@@ -365,19 +416,52 @@
             color-adjust: exact;
         }
 
+        /* Plan-specific footer colors with white text for better contrast */
+        .scratch-card.basic .card-footer-section {
+            background: linear-gradient(to bottom, #8BC34A, #7CB342);
+            border-top: 1px solid #6b9c1e;
+            color: white;
+        }
+
+        .scratch-card.smart .card-footer-section {
+            background: linear-gradient(to bottom, #1e40af, #1e3a8a);
+            border-top: 1px solid #1e3a8a;
+            color: white;
+        }
+
+        .scratch-card.premium .card-footer-section {
+            background: linear-gradient(to bottom, #6d28d9, #5b21b6);
+            border-top: 1px solid #5b21b6;
+            color: white;
+        }
+
         .footer-top {
             padding: 3px 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             font-size: 0.7rem;
+            color: #ffffff;
         }
 
         .serial-number {
             font-size: 5px;
-            color: #6b7280;
+            color: rgba(255, 255, 255, 0.85);
             font-family: 'Courier New', monospace;
             font-weight: 600;
+        }
+
+        /* Ensure footer text is visible on colored backgrounds */
+        .scratch-card.basic .footer-top,
+        .scratch-card.smart .footer-top,
+        .scratch-card.premium .footer-top {
+            color: #ffffff;
+        }
+
+        .scratch-card.basic .serial-number,
+        .scratch-card.smart .serial-number,
+        .scratch-card.premium .serial-number {
+            color: rgba(255, 255, 255, 0.85);
         }
 
         .card-status {
@@ -439,17 +523,24 @@
 
         /* Copyright Notice on Card */
         .card-copyright {
-            background: #e5e7eb;
             padding: 2px 6px;
             text-align: center;
             font-size: 5px;
-            color: #1f2937;
-            border-top: 1px solid #d1d5db;
+            color: rgba(255, 255, 255, 0.85);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
             font-weight: 700;
             letter-spacing: 0.3px;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
             color-adjust: exact;
+        }
+
+        /* Plan-specific copyright color ensure visibility */
+        .scratch-card.basic .card-copyright,
+        .scratch-card.smart .card-copyright,
+        .scratch-card.premium .card-copyright {
+            color: rgba(255, 255, 255, 0.85);
+            border-top-color: rgba(255, 255, 255, 0.2);
         }
 
         /* Back Link */
@@ -517,7 +608,13 @@
 
         <div class="tokens-grid">
             @foreach($tokens as $token)
-                <div class="scratch-card">
+                @php
+                    $planClass = 'basic';
+                    if (\Schema::hasTable('plans') && $token->plan) {
+                        $planClass = strtolower($token->plan->name);
+                    }
+                @endphp
+                <div class="scratch-card {{ $planClass }}">
                     <div class="card-inner">
                         <!-- Card Header -->
                         <div class="card-header-section">
@@ -539,22 +636,48 @@
                             </div>
 
                             <div class="card-details">
+                                @if(\Schema::hasTable('plans') && $token->plan)
+                                <div class="detail-item">
+                                    <div class="detail-label">Grants</div>
+                                    <div class="detail-value">{{ $token->plan->attempts_allowed }} attempts</div>
+                                </div>
+                                @else
                                 <div class="detail-item">
                                     <div class="detail-label">Max Uses</div>
                                     <div class="detail-value">{{ $token->max_uses }}</div>
                                 </div>
+<<<<<<< HEAD
+=======
+                                @endif
+>>>>>>> origin/backup-main
                                 @if($token->center)
                                 <div class="detail-item">
                                     <div class="detail-label">Center</div>
                                     <div class="detail-value" style="font-size:9px;">{{ $token->center->name }}</div>
                                 </div>
                                 @endif
+<<<<<<< HEAD
+=======
+                                @if(\Schema::hasTable('plans') && $token->plan)
+                                @php $planSlug = strtolower($token->plan->name); @endphp
+                                <div class="detail-item plan {{ $planSlug }}">
+                                    <div class="detail-label">Plan</div>
+                                    <div class="detail-value" style="font-size:9px;">{{ $token->plan->name }}</div>
+                                </div>
+                                @endif
+>>>>>>> origin/backup-main
                                 <div class="detail-item">
                                     <div class="detail-label">Remaining</div>
                                     <div class="detail-value" style="color: {{ $token->remainingUses() > 0 ? '#10b981' : '#ef4444' }};">
                                         {{ $token->remainingUses() }}
                                     </div>
                                 </div>
+                                @if(\Schema::hasTable('plans') && $token->plan)
+                                <div class="detail-item">
+                                    <div class="detail-label">Plan Attempts</div>
+                                    <div class="detail-value">{{ $token->plan->attempts_allowed }}</div>
+                                </div>
+                                @endif
                                 <div class="detail-item">
                                     <div class="detail-label">Expires</div>
                                     <div class="detail-value" style="font-size: 8px;">

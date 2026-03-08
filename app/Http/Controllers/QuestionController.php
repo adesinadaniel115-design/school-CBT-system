@@ -195,12 +195,14 @@ class QuestionController extends Controller
 
     public function import(Request $request)
     {
-        // Validate file
+        // Validate file and options
         $request->validate([
             'file' => ['required', 'file', 'mimes:csv,txt'],
+            'append' => ['nullable', 'boolean'], // if true we keep existing questions and just add/merge
         ]);
 
         $file = $request->file('file');
+        $append = $request->boolean('append'); // new flag to merge/append instead of wipe
 
         try {
             // Read CSV file
@@ -220,15 +222,18 @@ class QuestionController extends Controller
                 }
             }
 
-            // Delete existing questions and start fresh
-            $deletedCount = Question::count();
-            
-            // Disable foreign key checks for truncate, then re-enable
-            DB::statement('SET FOREIGN_KEY_CHECKS=0');
-            Question::truncate();
-            DB::statement('SET FOREIGN_KEY_CHECKS=1');
+            // Determine deletion behaviour
+            $deletedCount = 0;
+            if (! $append) {
+                // Delete existing questions and start fresh
+                $deletedCount = Question::count();
+                // Disable foreign key checks for truncate, then re-enable
+                DB::statement('SET FOREIGN_KEY_CHECKS=0');
+                Question::truncate();
+                DB::statement('SET FOREIGN_KEY_CHECKS=1');
+            }
 
-            $summary = DB::transaction(function () use ($rows) {
+            $summary = DB::transaction(function () use ($rows, $append) {
                 $inserted = 0;
                 $skipped = 0;
                 $errors = [];
@@ -277,6 +282,18 @@ class QuestionController extends Controller
                             $imagePath = $this->handleImageUpload($normalizedRow['image'], $subject->id, $lineNumber);
                         }
 
+                        // If we're appending/merging, skip duplicates based on text+subject
+                        if ($append) {
+                            $exists = Question::where('subject_id', $subject->id)
+                                ->where('question_text', $normalizedRow['question_text'])
+                                ->exists();
+                            if ($exists) {
+                                $skipped++;
+                                $errors[$lineNumber] = ['duplicate question exists'];
+                                continue;
+                            }
+                        }
+
                         // Create question
                         Question::create([
                             'subject_id' => $subject->id,
@@ -310,6 +327,7 @@ class QuestionController extends Controller
                 'deleted_count' => $deletedCount,
                 'inserted_count' => $summary['inserted'],
                 'skipped_count' => $summary['skipped'],
+                'append' => $append,
             ];
 
             if (!empty($summary['errors'])) {

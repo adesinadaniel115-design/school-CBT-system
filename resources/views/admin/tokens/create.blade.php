@@ -35,6 +35,25 @@
                 </div>
 
                 <div class="form-group">
+<<<<<<< HEAD
+=======
+                    <label for="plan_id" class="form-label">Plan *</label>
+                    <select id="plan_id" name="plan_id" class="form-control @error('plan_id') is-invalid @enderror" required>
+                        <option value="">-- select plan --</option>
+                        @foreach($plans as $plan)
+                            <option value="{{ $plan->id }}" {{ old('plan_id') == $plan->id ? 'selected' : '' }}>
+                                {{ $plan->name }} ({{ $plan->attempts_allowed }} attempts) - ${{ number_format($plan->price,2) }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('plan_id')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                    <small style="color: #6b7280;">Select the plan to assign to generated tokens. The token usage limits will inherit from the selected plan.</small>
+                </div>
+
+                <div class="form-group">
+>>>>>>> origin/backup-main
                     <label for="quantity" class="form-label">Number of Tokens to Generate *</label>
                     <input type="number" id="quantity" name="quantity" class="form-control @error('quantity') is-invalid @enderror" 
                            value="{{ old('quantity', 1) }}" min="1" max="100" required>
@@ -44,15 +63,7 @@
                     <small style="color: #6b7280;">Generate between 1 and 100 tokens at once (updated by center below)</small>
                 </div>
 
-                <div class="form-group">
-                    <label for="max_uses" class="form-label">Maximum Uses Per Token *</label>
-                    <input type="number" id="max_uses" name="max_uses" class="form-control @error('max_uses') is-invalid @enderror" 
-                           value="{{ old('max_uses', 1) }}" min="1" max="1000" required>
-                    @error('max_uses')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                    <small style="color: #6b7280;">How many times can each token be used? (1 = single use)</small>
-                </div>
+                <!-- max_uses removed: tokens now inherit usage limits from selected Plan -->
 
                 <div class="form-group">
                     <label for="expires_at" class="form-label">Expiration Date (Optional)</label>

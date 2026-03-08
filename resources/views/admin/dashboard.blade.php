@@ -24,6 +24,18 @@
             <p>Subjects</p>
         </div>
     </a>
+
+    @if(\Schema::hasTable('plans'))
+    <a href="{{ route('admin.plans.index') }}" class="stat-card text-decoration-none" style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)'">
+        <div class="stat-icon silver">
+            <i class="bi bi-card-list"></i>
+        </div>
+        <div class="stat-content">
+            <h3>Plans</h3>
+            <p>Subscription Plans</p>
+        </div>
+    </a>
+    @endif
     <a href="{{ route('admin.all-questions') }}" class="stat-card text-decoration-none" style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)'">
         <div class="stat-icon yellow">
             <i class="bi bi-question-circle-fill"></i>
@@ -164,6 +176,7 @@
                             <th>Started</th>
                             <th>Duration</th>
                             <th>Status</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -186,6 +199,14 @@
                                     <span class="badge badge-success" style="animation: pulse 2s infinite;">
                                         <i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i> In Progress
                                     </span>
+                                </td>
+                                <td>
+                                    <form method="POST" action="{{ route('exam.terminate', $session) }}" style="display:inline;" onsubmit="return confirm('Terminate this exam session?');">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Terminate exam">
+                                            <i class="bi bi-stop-fill"></i> Terminate
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                         @endforeach

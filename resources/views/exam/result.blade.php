@@ -424,7 +424,11 @@
             <a href="{{ route('student.dashboard') }}" class="btn-action btn-secondary">
                 <i class="bi bi-plus-circle-fill"></i> Start New Exam
             </a>
-            @if($allowReview ?? false)
+            @php
+                $hasPremium = auth()->user()->activePlan() !== null;
+                $reviewAllowed = ($allowReview ?? false) || $hasPremium;
+            @endphp
+            @if($reviewAllowed)
                 <a href="{{ route('exam.review', $session) }}" class="btn-action btn-info">
                     <i class="bi bi-eye-fill"></i> Review Answers
                 </a>

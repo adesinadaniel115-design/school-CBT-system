@@ -36,6 +36,10 @@ class AdminDashboardController extends Controller
                 ->count(),
         ];
 
+        if (\Schema::hasTable('plans')) {
+            $stats['total_plans'] = \App\Models\Plan::count();
+        }
+
         // Recent activity
         $recentExams = ExamSession::with(['student', 'subject'])
             ->whereNotNull('completed_at')

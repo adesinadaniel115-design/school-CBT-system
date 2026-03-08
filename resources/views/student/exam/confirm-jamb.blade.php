@@ -421,7 +421,7 @@
                     <div class="subject-item">
                         <div class="subject-icon"><i class="bi bi-book-fill"></i></div>
                         <div class="subject-name">{{ $englishSubject->name }}</div>
-                        <div class="subject-count">{{ $englishQuestionCount }} questions</div>
+                        <div class="subject-count">{{ $englishQuestionsAvailable }} questions (actual)</div>
                     </div>
                     @foreach($selectedSubjects as $subject)
                         <div class="subject-item">
@@ -530,7 +530,14 @@
                 if (data.valid) {
                     tokenValid = true;
                     startBtn.disabled = false;
-                    showStatus(`✓ Token verified! ${data.remaining_uses} use(s) remaining.`, 'success');
+                    if (data.plan_token) {
+                        const attemptsText = data.plan.attempts_remaining === 1 
+                            ? '1 attempt' 
+                            : `${data.plan.attempts_remaining} attempts`;
+                        showStatus(`✓ Token grants the ${data.plan.name} plan (${attemptsText} remaining)`, 'success');
+                    } else {
+                        showStatus(`✓ Token verified! ${data.remaining_uses} use(s) remaining.`, 'success');
+                    }
                     input.classList.remove('is-invalid');
                     input.classList.add('is-valid');
                 } else {

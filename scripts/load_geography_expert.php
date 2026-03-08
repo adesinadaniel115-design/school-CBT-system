@@ -1,0 +1,176 @@
+<?php
+
+$projectRoot = dirname(__DIR__);
+require $projectRoot . '/vendor/autoload.php';
+
+$app = require_once $projectRoot . '/bootstrap/app.php';
+$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+$kernel->bootstrap();
+
+use App\Models\Subject;
+use App\Models\Question;
+
+$subject = Subject::firstOrCreate(['name' => 'GEOGRAPHY']);
+
+$rows = [
+    ['question_text' => 'If the time at the Greenwich Meridian (0°) is 12:00 noon, what is the longitude of a town where the local time is 4:40 PM on the same day?',
+     'option_a' => '70°E',
+     'option_b' => '70°W',
+     'option_c' => '60°E',
+     'option_d' => '40°E',
+     'correct_option' => 'A',
+     'explanation' => 'The time difference is 4 hours 40 minutes (280 minutes). Since 1° = 4 minutes, 280/4 = 70°. Since the town\'s time is ahead of Greenwich, it is in the East.'],
+    ['question_text' => 'A map with a scale of 1:50,000 is reduced to half its original size. What is the new scale?',
+     'option_a' => '1:25,000',
+     'option_b' => '1:100,000',
+     'option_c' => '1:75,000',
+     'option_d' => '1:50,500',
+     'correct_option' => 'B',
+     'explanation' => 'When a map is reduced, the denominator of the scale increases. Reducing by half means multiplying the denominator by 2 (50,000 × 2 = 100,000).'],
+    ['question_text' => 'In the "Cycle of Erosion" by W.M. Davis, the stage where a river valley is wide, floor is flat, and ox-bow lakes are common is the:',
+     'option_a' => 'Youthful stage',
+     'option_b' => 'Mature stage',
+     'option_c' => 'Old stage',
+     'option_d' => 'Rejuvenation stage',
+     'correct_option' => 'C',
+     'explanation' => 'The Old Stage is characterized by lateral erosion and deposition, creating broad floodplains and ox-bow lakes.'],
+    ['question_text' => 'Which of the following cloud types is most likely to produce "Halo" effects around the sun or moon?',
+     'option_a' => 'Cumulonimbus',
+     'option_b' => 'Cirrostratus',
+     'option_c' => 'Altocumulus',
+     'option_d' => 'Nimbostratus',
+     'correct_option' => 'B',
+     'explanation' => 'Cirrostratus clouds are thin, high-level ice-crystal clouds that refract light to create a circular halo.'],
+    ['question_text' => 'A traveler crosses the International Date Line (180°) moving from West to East. What happens to the date?',
+     'option_a' => 'They gain a day (repeat the same day).',
+     'option_b' => 'They lose a day (skip one day).',
+     'option_c' => 'The time changes but the date remains the same.',
+     'option_d' => 'The year changes.',
+     'correct_option' => 'A',
+     'explanation' => 'Moving East across the International Date Line means you go back 24 hours in time, effectively repeating the same calendar day.'],
+    ['question_text' => 'The "Great Barrier Reef" in Australia is an example of a:',
+     'option_a' => 'Fringing reef',
+     'option_b' => 'Barrier reef',
+     'option_c' => 'Atoll',
+     'option_d' => 'Coral island',
+     'correct_option' => 'B',
+     'explanation' => 'A barrier reef is separated from the mainland by a deep lagoon, unlike a fringing reef which is attached to the coast.'],
+    ['question_text' => 'The instrument used to measure the specific gravity of a soil sample is the:',
+     'option_a' => 'Hygrometer',
+     'option_b' => 'Anemometer',
+     'option_c' => 'Pycnometer',
+     'option_d' => 'Lysimeter',
+     'correct_option' => 'C',
+     'explanation' => 'A Pycnometer is used to determine the density or specific gravity of solids and liquids.'],
+    ['question_text' => 'Which of the following is a "Block Mountain" formed by faulting?',
+     'option_a' => 'The Alps',
+     'option_b' => 'The Himalayas',
+     'option_c' => 'The Vosges',
+     'option_d' => 'The Andes',
+     'correct_option' => 'C',
+     'explanation' => 'The Vosges (France) and the Black Forest (Germany) are classic Horsts or block mountains. The others are Fold Mountains.'],
+    ['question_text' => 'In the "Koppen Climate Classification," the symbol \'Af\' represents:',
+     'option_a' => 'Tropical Monsoon Climate',
+     'option_b' => 'Tropical Rainforest Climate',
+     'option_c' => 'Tropical Savanna Climate',
+     'option_d' => 'Mediterranean Climate',
+     'correct_option' => 'B',
+     'explanation' => '\'A\' stands for Tropical and \'f\' stands for feucht (wet/moist throughout the year), indicating a Rainforest.'],
+    ['question_text' => 'A temperature of 30°C at sea level would be approximately what value at the top of a mountain 2,000 meters high?',
+     'option_a' => '10°C',
+     'option_b' => '17°C',
+     'option_c' => '23.5°C',
+     'option_d' => '43°C',
+     'correct_option' => 'B',
+     'explanation' => 'Using the Normal Lapse Rate (6.5°C per 1,000m): Temperature drop = 6.5 × 2 = 13°C. New temperature = 30 - 13 = 17°C.'],
+    ['question_text' => 'The "Mediterranean" vegetation is uniquely adapted to survive:',
+     'option_a' => 'Heavy winter snow',
+     'option_b' => 'Intense summer drought',
+     'option_c' => 'Year-round flooding',
+     'option_d' => 'Permafrost',
+     'correct_option' => 'B',
+     'explanation' => 'Plants in the Mediterranean biome have thick, leathery leaves (sclerophyllous) to prevent water loss during hot, dry summers.'],
+    ['question_text' => 'Which of the following features is produced by "Wind Deposition" in a desert?',
+     'option_a' => 'Zeugen',
+     'option_b' => 'Yardang',
+     'option_c' => 'Barchan',
+     'option_d' => 'Mushroom rock',
+     'correct_option' => 'C',
+     'explanation' => 'Barchans are crescent-shaped sand dunes formed by deposition. The others are erosional features.'],
+    ['question_text' => 'In Nigeria, the "Cross River Basin" is most famous for the production of:',
+     'option_a' => 'Groundnuts',
+     'option_b' => 'Limestone',
+     'option_c' => 'Tin',
+     'option_d' => 'Rubber',
+     'correct_option' => 'B',
+     'explanation' => 'This region is a major hub for Limestone mining, essential for cement production (e.g., Calabar/Mfamosing).'],
+    ['question_text' => 'The term "Isostasy" refers to:',
+     'option_a' => 'The movement of ocean currents.',
+     'option_b' => 'The state of gravitational equilibrium between the Earth\'s crust and mantle.',
+     'option_c' => 'The process of soil formation.',
+     'option_d' => 'The study of ancient fossils.',
+     'correct_option' => 'B',
+     'explanation' => 'Isostasy explains why mountains "float" higher in the mantle than the denser oceanic crust.'],
+    ['question_text' => 'Which of the following statistics is used to show the "Concentration" of a population in a given area?',
+     'option_a' => 'Crude birth rate',
+     'option_b' => 'Population Density',
+     'option_c' => 'Dependency ratio',
+     'option_d' => 'Life expectancy',
+     'correct_option' => 'B',
+     'explanation' => 'Population density is calculated as Total Population / Total Land Area.'],
+    ['question_text' => 'The "Roaring Forties" refers to:',
+     'option_a' => 'Violent thunderstorms in the tropics.',
+     'option_b' => 'Strong westerly winds between latitudes 40° and 50° South.',
+     'option_c' => 'A period of high birth rates in the 1940s.',
+     'option_d' => 'Fast-flowing rivers in the Amazon.',
+     'correct_option' => 'B',
+     'explanation' => 'These Westerly winds are very strong because there is little landmass in the Southern Hemisphere to slow them down.'],
+    ['question_text' => 'If a map has an RF of 1:25,000, what is the area of a square on the ground if it measures 4 cm on the map?',
+     'option_a' => '100 hectares',
+     'option_b' => '10 hectares',
+     'option_c' => '16 hectares',
+     'option_d' => '25 hectares',
+     'correct_option' => 'A',
+     'explanation' => '4 cm on map = 4 × 25,000 cm = 100,000 cm = 1,000 m on ground. Area = 1,000 × 1,000 = 1,000,000 m² = 100 hectares.'],
+    ['question_text' => 'The "Central Business District" (CBD) of a city typically has the:',
+     'option_a' => 'Lowest land value',
+     'option_b' => 'Highest building density and tallest skyscrapers',
+     'option_c' => 'Most residential houses',
+     'option_d' => 'Largest agricultural farms',
+     'correct_option' => 'B',
+     'explanation' => 'Due to high land competition, the CBD maximizes space by building vertically.'],
+    ['question_text' => 'Which of the following is a "Metamorphic" equivalent of Limestone?',
+     'option_a' => 'Slate',
+     'option_b' => 'Quartzite',
+     'option_c' => 'Marble',
+     'option_d' => 'Gneiss',
+     'correct_option' => 'C',
+     'explanation' => 'When Limestone is subjected to heat and pressure, it recrystallizes into Marble.'],
+    ['question_text' => 'The "Great Rift Valley" of East Africa was formed by:',
+     'option_a' => 'Folding of the crust',
+     'option_b' => 'Horizontal compression',
+     'option_c' => 'Tensional forces causing the crust to pull apart',
+     'option_d' => 'Volcanic eruptions only',
+     'correct_option' => 'C',
+     'explanation' => 'The East African Rift is a divergent plate boundary where the African plate is splitting into the Somalian and Nubian plates.'],
+];
+
+foreach ($rows as $row) {
+    // skip duplicates if already exist
+    $exists = Question::where('subject_id', $subject->id)
+        ->where('question_text', $row['question_text'])
+        ->exists();
+    if ($exists) {
+        echo "skipped duplicate: " . substr($row['question_text'], 0, 60) . "...\n";
+        continue;
+    }
+
+    Question::create(array_merge($row, [
+        'subject_id' => $subject->id,
+        'difficulty_level' => 'hard',
+    ]));
+    echo "inserted: " . substr($row['question_text'], 0, 60) . "...\n";
+}
+
+$count = Question::where('subject_id', $subject->id)->count();
+echo "Done loading geography questions. total now: {$count}\n";
