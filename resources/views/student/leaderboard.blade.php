@@ -44,7 +44,7 @@
         }
 
         body.sidebar-collapsed .sidebar {
-            transform: translateX(-100%);
+            transform: translateX(-100%) !important;
         }
 
         .sidebar-brand {
@@ -142,11 +142,30 @@
         .main-content {
             flex: 1;
             padding: 2rem;
-            transition: padding 0.25s ease;
+            transition: padding 0.25s ease, margin 0.25s ease;
             width: 100%;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+        }
+
+        /* Desktop layout: reserve space for sidebar and support collapsing */
+        @media (min-width: 992px) {
+            .main-content {
+                margin-left: 280px;
+            }
+
+            body.sidebar-collapsed .main-content {
+                margin-left: 0;
+            }
+
+            .sidebar {
+                z-index: 1040;
+            }
+
+            body.sidebar-collapsed .sidebar {
+                transform: translateX(-100%);
+            }
         }
 
         .top-actions {

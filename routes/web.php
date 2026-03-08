@@ -123,14 +123,9 @@ Route::middleware('auto.login')->group(function () {
 
             // Performance Analytics
             Route::get('performance', [AdminPerformanceController::class, 'index'])->name('performance.index');
-            Route::post('performance/generate', [AdminPerformanceController::class, 'generate'])->name('performance.generate');
-<<<<<<< HEAD
-=======
+ Route::post('performance/generate', [AdminPerformanceController::class, 'generate'])->name('performance.generate');
 
-
-
->>>>>>> origin/backup-main
-            // Settings
+// Settings
             Route::get('settings', [AdminSettingsController::class, 'index'])->name('settings.index');
             Route::post('settings', [AdminSettingsController::class, 'update'])->name('settings.update');
             Route::post('settings/clear-exam-sessions', [AdminSettingsController::class, 'clearExamSessions'])->name('settings.clear-exam-sessions');
