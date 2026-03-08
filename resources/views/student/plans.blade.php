@@ -557,10 +557,10 @@
             color: #1f2937;
         }
 
-        /* Desktop - Sidebar always visible, toggle hidden */
+        /* Desktop - Sidebar always visible, toggle shown for recovery */
         @media (min-width: 992px) {
             .sidebar-toggle {
-                display: none !important;
+                display: flex !important;
             }
         }
 
@@ -703,7 +703,7 @@
     <!-- Main Content -->
     <div class="main-content">
         <div class="top-actions">
-            <button class="sidebar-toggle" id="sidebarToggle" type="button">
+            <button class="sidebar-toggle" id="sidebarToggle" type="button" style="display: flex !important;">
                 <i class="bi bi-list"></i>
             </button>
         </div>

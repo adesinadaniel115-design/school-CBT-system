@@ -8,22 +8,10 @@ $app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();
 use Illuminate\Support\Facades\DB;
 
 // Get English Language subject ID
-$english = DB::table('subjects')
-    ->where('name', 'LIKE', '%English%')
-    ->orWhere('name', 'LIKE', '%ENGLISH%')
-    ->first();
 
-if (!$english) {
-    echo "Creating ENGLISH LANGUAGE subject...\n";
-    $englishId = DB::table('subjects')->insertGetId([
-        'name' => 'ENGLISH LANGUAGE',
-        'created_at' => now(),
-        'updated_at' => now(),
-    ]);
-} else {
-    $englishId = $english->id;
-    echo "English Language subject found with ID: {$englishId}\n";
-}
+// Force use of subject_id = 3 for English
+$englishId = 3;
+echo "Using subject_id = 3 (ENGLISH LANGUAGE) for all English/novel questions.\n";
 
 echo "\n=== LOADING JAMB USE OF ENGLISH (60 QUESTIONS) ===\n\n";
 
@@ -45,6 +33,118 @@ $questions[] = [
     'answer' => 'A',
     'explanation' => 'Mr. Adebepo Adewale is the dedicated headmaster of Stardom Schools who serves as the novel\'s protagonist.',
 ];
+
+    // Additional Lekki Headmaster questions from user (March 7, 2026)
+    $questions[] = [
+        'passage' => $lekki_context,
+        'group' => 'lekki_headmaster',
+        'question' => 'In Chapter 1, what was the primary reason Mr. Bepo Adewale was unable to address the students during the morning assembly?',
+        'a' => 'He was physically ill and needed the school nurse.',
+        'b' => 'He was overwhelmed with emotion regarding his planned relocation to the UK.',
+        'c' => 'He was angry with the students for their poor performance in WASSCE.',
+        'd' => 'He had lost his voice due to excessive shouting.',
+        'answer' => 'B',
+        'explanation' => 'The novel opens with Bepo\'s emotional breakdown at the assembly. He was torn between his dedication to Stardom Schools and the pressure from his wife, Seri, to join her in London.',
+    ];
+    $questions[] = [
+        'passage' => $lekki_context,
+        'group' => 'lekki_headmaster',
+        'question' => 'How did Stardom Schools cleverly restructure its fees to increase revenue without appearing to hike tuition?',
+        'a' => 'By increasing the price of school uniforms and books.',
+        'b' => 'By doubling the cost of the school bus service.',
+        'c' => 'By reducing boarding fees while significantly raising "Excursion and Other Items" fees.',
+        'd' => 'By introducing a mandatory "Infrastructure Development" levy for all parents.',
+        'answer' => 'C',
+        'explanation' => 'Management reduced boarding fees from ₦250,000 to ₦165,000 to attract more boarders, but then added a ₦93,000 hike to other miscellaneous items.',
+    ];
+    $questions[] = [
+        'passage' => $lekki_context,
+        'group' => 'lekki_headmaster',
+        'question' => 'What was the "Snake in the Roof" metaphor used by the MD to describe?',
+        'a' => 'A literal snake found in the principal\'s office ceiling.',
+        'b' => 'The hidden threat of staff using cooperative funds to start a rival school.',
+        'c' => 'The danger of unqualified teachers handling senior classes.',
+        'd' => 'The risk of a student protest during the Open Day.',
+        'answer' => 'B',
+        'explanation' => 'The Managing Director (MD) discovered that the staff cooperative had ₦95 million in its account. She feared that teachers could pool these resources to establish their own competing institution.',
+    ];
+    $questions[] = [
+        'passage' => $lekki_context,
+        'group' => 'lekki_headmaster',
+        'question' => 'Why was the teacher Mr. Fafore nearly sacked by the Managing Director?',
+        'a' => 'He was caught sleeping in the staff room during lessons.',
+        'b' => 'A parent complained about a grammatical rule he taught that was actually correct.',
+        'c' => 'He was accused of taking bribes from parents on Open Day.',
+        'd' => 'He arrived late to school despite living far away in Ifo.',
+        'answer' => 'B',
+        'explanation' => 'A parent, Mr. Guta, complained about the sentence "Ade as well as Jide comes early". The MD initially agreed with the parent, but Principal Bepo later proved that Fafore was grammatically correct using the "subjunctive mood".',
+    ];
+    $questions[] = [
+        'passage' => $lekki_context,
+        'group' => 'lekki_headmaster',
+        'question' => 'The "Point of No Return" in Badagry serves as a significant literary symbol in the novel for:',
+        'a' => 'The irreversible decision of students to join the boarding house.',
+        'b' => 'The finality of the MD\'s decision to fire staff.',
+        'c' => 'The connection between historical forced slavery and modern voluntary migration ("Japa").',
+        'd' => 'The difficulty of traveling to the UK without a valid visa.',
+        'answer' => 'C',
+        'explanation' => 'The author uses the historical site in Badagry to metaphorically compare modern Nigerians "desperately walking into the workforce" of foreign lands to the historical slave trade.',
+    ];
+    $questions[] = [
+        'passage' => $lekki_context,
+        'group' => 'lekki_headmaster',
+        'question' => 'Which narrative technique is most extensively used by the author to provide context for the various "migration tales"?',
+        'a' => 'Foreshadowing',
+        'b' => 'Flashback',
+        'c' => 'Epistolary (letter-writing)',
+        'd' => 'First-person narration',
+        'answer' => 'B',
+        'explanation' => 'The novel uses flashbacks to share the experiences of characters like Sola, Akindele, and Hope who relocated abroad with mixed outcomes.',
+    ];
+    $questions[] = [
+        'passage' => $lekki_context,
+        'group' => 'lekki_headmaster',
+        'question' => 'The ending of the novel, titled "Dawn," is considered ironic because:',
+        'a' => 'Bepo\'s plane crashes on the way to the UK.',
+        'b' => 'Bepo arrives in London only to find his wife has left him.',
+        'c' => 'Bepo never actually travels; he returns to his school to continue his mission.',
+        'd' => 'Stardom Schools closes down immediately after Bepo\'s departure.',
+        'answer' => 'C',
+        'explanation' => 'Despite an elaborate farewell and a $10,000 gift, the novel ends with Bepo back at Stardom on a Monday morning, choosing his identity as a teacher over migration.',
+    ];
+    $questions[] = [
+        'passage' => $lekki_context,
+        'group' => 'lekki_headmaster',
+        'question' => 'Who among the following characters is known as the "comic relief" in the story?',
+        'a' => 'Mr. Audu',
+        'b' => 'Mr. Wande',
+        'c' => 'Mrs. Beke Egbin',
+        'd' => 'Mr. Justus Anabel',
+        'answer' => 'A',
+        'explanation' => 'Mr. Audu, the Fine Art teacher, uses wit and humor to lighten tense moments, notably saving the MD\'s embarrassment during the grammar controversy.',
+    ];
+    $questions[] = [
+        'passage' => $lekki_context,
+        'group' => 'lekki_headmaster',
+        'question' => 'What physical characteristic of Mr. Ayesoro led to his transfer to the Stardom Hub?',
+        'a' => 'His extreme height which intimidated students.',
+        'b' => 'His loud, booming voice that disrupted other classes.',
+        'c' => 'His prominent tribal marks that gave a student nightmares.',
+        'd' => 'His constant use of a walking stick.',
+        'answer' => 'C',
+        'explanation' => 'A student named Bibi Ladele had nightmares about "Mr. Wala" (referring to his tribal marks), leading her mother to complain and causing his transfer.',
+    ];
+    $questions[] = [
+        'passage' => $lekki_context,
+        'group' => 'lekki_headmaster',
+        'question' => 'What medical condition does the Managing Director, Mrs. Ibidun Gloss, suffer from?',
+        'a' => 'Chronic migraines that worsen during assemblies.',
+        'b' => 'A painful buttocks condition that makes sitting for long periods difficult.',
+        'c' => 'Type 2 diabetes that requires regular insulin injections.',
+        'd' => 'High blood pressure caused by the school\'s financial debts.',
+        'answer' => 'B',
+        'explanation' => 'She experiences a "peppery pain" that forces her to take secret breaks from her desk.',
+    ];
 
 $questions[] = [
     'passage' => $lekki_context,
@@ -201,6 +301,118 @@ $questions[] = [
     'answer' => 'B',
     'explanation' => 'The novel concludes with a victory for moral standards.',
 ];
+
+    // Additional Lekki Headmaster questions from user (March 7, 2026)
+    $questions[] = [
+        'passage' => $lekki_context,
+        'group' => 'lekki_headmaster',
+        'question' => 'What was the specific "subjunctive mood" error that Mr. Guta wrongly attributed to Mr. Fafore?',
+        'a' => 'Ade and Jide is coming early',
+        'b' => 'Ade as well as Jide come early',
+        'c' => 'Ade as well as Jide comes early',
+        'd' => 'Ade alongside Jide are coming early',
+        'answer' => 'C',
+        'explanation' => 'The irony is that the sentence "Ade as well as Jide comes early" is grammatically correct because "as well as" does not create a compound subject. Mr. Guta thought it was an error, but Bepo used it to prove Fafore’s competence.',
+    ];
+    $questions[] = [
+        'passage' => $lekki_context,
+        'group' => 'lekki_headmaster',
+        'question' => 'Why was Mr. Ayesoro\'s transfer to the "Stardom Hub" considered a strategic move by the MD rather than a simple disciplinary action?',
+        'a' => 'To punish him for his terrifying appearance.',
+        'b' => 'To prevent a high-paying parent, Mrs. Ladele, from withdrawing her children.',
+        'c' => 'To promote him to a more administrative role in the property division.',
+        'd' => 'To satisfy a government directive on staff appearance.',
+        'answer' => 'B',
+        'explanation' => 'While the nightmare caused by his tribal marks was the trigger, the MD\'s primary motivation was to retain the fees of Mrs. Ladele’s children.',
+    ];
+    $questions[] = [
+        'passage' => $lekki_context,
+        'group' => 'lekki_headmaster',
+        'question' => 'In the "Snake in the Roof" incident, what was the MD’s greatest fear regarding the ₦95 million in the cooperative fund?',
+        'a' => 'That the staff would embezzle the money and flee to the UK.',
+        'b' => 'That the teachers would use the capital to establish a rival school.',
+        'c' => 'That the cooperative was a front for money laundering.',
+        'd' => 'That the government would tax the school\'s "hidden" revenue.',
+        'answer' => 'B',
+        'explanation' => 'The "Snake in the Roof" is a metaphor for a hidden internal threat. She feared the teachers were pooling resources to become her competitors.',
+    ];
+    $questions[] = [
+        'passage' => $lekki_context,
+        'group' => 'lekki_headmaster',
+        'question' => 'What did Bepo witness at the "Beesway Group of Schools" at 2:30 AM that led to his immediate resignation?',
+        'a' => 'The principal stealing student records.',
+        'b' => 'The burial of a live cow on school premises for ritual purposes.',
+        'c' => 'A secret meeting between the board and a rival institution.',
+        'd' => 'The director physically assaulting a junior teacher.',
+        'answer' => 'B',
+        'explanation' => 'This event highlights the "Ethical vs. Unethical" theme. Bepo refused to work in an environment that prioritized superstition over academic effort.',
+    ];
+    $questions[] = [
+        'passage' => $lekki_context,
+        'group' => 'lekki_headmaster',
+        'question' => 'What is the significance of the word "Salamo" in Bepo\'s self-description?',
+        'a' => 'It is his ancestral name from the Idoma tribe.',
+        'b' => 'It refers to the yellow ant, whose color matches his fair complexion.',
+        'c' => 'It is a mocking nickname given to him by the MD.',
+        'd' => 'It is the name of the village headmaster he used to imitate.',
+        'answer' => 'B',
+        'explanation' => 'Bepo jokes that yellow ants (salamo) never bit him because they mistook him for one of their own due to his skin tone.',
+    ];
+    $questions[] = [
+        'passage' => $lekki_context,
+        'group' => 'lekki_headmaster',
+        'question' => 'How much did Bepo actually pay the agent, Tai, for his passport renewal, and what was the official price?',
+        'a' => 'Paid ₦70,000; Official ₦50,000',
+        'b' => 'Paid ₦100,000; Official ₦70,000',
+        'c' => 'Paid ₦150,000; Official ₦100,000',
+        'd' => 'Paid ₦50,000; Official ₦35,000',
+        'answer' => 'B',
+        'explanation' => 'This detail critiques the systemic corruption and "red-tapism" in Nigerian bureaucracy.',
+    ];
+    $questions[] = [
+        'passage' => $lekki_context,
+        'group' => 'lekki_headmaster',
+        'question' => 'Which character is described as a "pastor and physics teacher" who often leads school prayers?',
+        'a' => 'Mr. Justus Anabel',
+        'b' => 'Mr. Ope Wande',
+        'c' => 'Mr. Audu',
+        'd' => 'Mr. Obong Ukake',
+        'answer' => 'B',
+        'explanation' => 'Pastor Wande is a specific minor character often tested for his dual role in the school.',
+    ];
+    $questions[] = [
+        'passage' => $lekki_context,
+        'group' => 'lekki_headmaster',
+        'question' => 'What was the "Breath Project" initiated by the school\'s Invention Club?',
+        'a' => 'A scheme to provide free oxygen masks to local hospitals.',
+        'b' => 'A project to manufacture mobile phones using recycled panels and chips.',
+        'c' => 'A tree-planting exercise to combat Lekki’s air pollution.',
+        'd' => 'A meditation program for students facing exam anxiety.',
+        'answer' => 'B',
+        'explanation' => 'This project represents the innovation and potential within Nigeria that Bepo was afraid to abandon.',
+    ];
+    $questions[] = [
+        'passage' => $lekki_context,
+        'group' => 'lekki_headmaster',
+        'question' => 'The legal battle between the families of Banky and Tosh was sparked during prefect elections when Banky called Tosh:',
+        'a' => 'A ritualist\'s child',
+        'b' => 'The son of an ex-convict',
+        'c' => 'An academic fraud',
+        'd' => 'A traitor to the school',
+        'answer' => 'B',
+        'explanation' => 'This refers to the history of Chief Didi Ogba, who had been detained for misappropriation of funds.',
+    ];
+    $questions[] = [
+        'passage' => $lekki_context,
+        'group' => 'lekki_headmaster',
+        'question' => 'What is the symbolic meaning of the chapter titles "Dusk" and "Dawn"?',
+        'a' => 'The literal time Bepo arrives and leaves the school.',
+        'b' => 'The transition from Bepo’s despair to his eventual hope and decision to stay.',
+        'c' => 'The rise and fall of the Stardom School\'s financial status.',
+        'd' => 'The aging process of the Headmaster over his 24-year career.',
+        'answer' => 'B',
+        'explanation' => '"Dusk" (Chapter 1) opens with his emotional "darkness," while "Dawn" (Chapter 12) signifies his renewed commitment to his mission.',
+    ];
 
 // SECTION B: COMPREHENSION PASSAGE (Questions 21-25)
 $digital_economy_passage = "SECTION B: COMPREHENSION PASSAGE\n\nThe digital economy in Nigeria is growing at an unprecedented rate. However, this growth is threatened by unstable power supply and high data costs. If the government does not intervene, the 'Silicon Lagoon' dream may remain a mirage.";
@@ -626,11 +838,14 @@ $failed = 0;
 
 foreach ($questions as $index => $q) {
     try {
+        $exists = DB::table('questions')->where('subject_id', $englishId)->where('question_text', $q['question'])->exists();
+        if ($exists) {
+            echo "Skipped duplicate: " . $q['question'] . "\n";
+            continue;
+        }
         DB::table('questions')->insert([
             'subject_id' => $englishId,
             'question_text' => $q['question'],
-            'passage_text' => $q['passage'],
-            'passage_group' => $q['group'],
             'option_a' => $q['a'],
             'option_b' => $q['b'],
             'option_c' => $q['c'],

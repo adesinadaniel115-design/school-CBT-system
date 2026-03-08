@@ -797,7 +797,7 @@
         <!-- Main Content -->
         <main class="main-content">
             <div class="top-actions">
-                <button type="button" class="sidebar-toggle" id="studentSidebarToggle" aria-label="Toggle sidebar">
+                <button type="button" class="sidebar-toggle" id="studentSidebarToggle" aria-label="Toggle sidebar" style="display: flex !important;">
                     <i class="bi bi-list"></i>
                 </button>
                 <a href="{{ route('student.profile.edit') }}" class="profile-chip">

@@ -13,6 +13,11 @@ use App\Models\Question;
 $subject = Subject::firstOrCreate(['name' => 'Geography']);
 
 $rows = [
+    ['question_text' => 'If the distance between two towns on a map with a scale of 1:50,000 is 4cm, what is the actual ground distance?', 'option_a' => '2 km', 'option_b' => '20 km', 'option_c' => '200 m', 'option_d' => '4 km', 'correct_option' => 'A', 'explanation' => 'Scale 1:50,000 means 1cm = 50,000cm. Since 100,000cm = 1km, then 1cm = 0.5km. Therefore, 4cm = 2km.'],
+    ['question_text' => 'Which GIS data source involves the conversion of paper maps into digital format using a cursor?', 'option_a' => 'Remote Sensing', 'option_b' => 'Scanning', 'option_c' => 'Digitizing', 'option_d' => 'Geocoding', 'correct_option' => 'C', 'explanation' => 'Digitizing is the manual process of tracing geographical features from a paper map into a digital vector format.'],
+    ['question_text' => 'A map scale is reduced from 1:25,000 to 1:50,000. What happens to the map area?', 'option_a' => 'It is doubled', 'option_b' => 'It is halved', 'option_c' => 'It is reduced to one-quarter', 'option_d' => 'It remains the same', 'correct_option' => 'C', 'explanation' => 'When a linear scale is reduced by half (denominator doubles), the area is reduced by the square of that factor.'],
+    ['question_text' => 'In prismatic surveying, the bearing of a line is measured from:', 'option_a' => 'Magnetic North', 'option_b' => 'True North', 'option_c' => 'Grid North', 'option_d' => 'The Equator', 'correct_option' => 'A', 'explanation' => 'Prismatic compasses use a magnetized needle to align with the Earth\'s magnetic field, measuring magnetic bearings.'],
+    ['question_text' => 'Which of these is a secondary source of data for a geographer?', 'option_a' => 'Field observation', 'option_b' => 'Interviewing locals', 'option_c' => 'Census reports', 'option_d' => 'Direct measurement', 'correct_option' => 'C', 'explanation' => 'Census reports are pre-collected data by other agencies, making them secondary.'],
     // Batch 2: Questions 11-30
     ['question_text' => 'If a football match starts in London (0°) at 4:00 PM on Saturday, what will be the time and day in a city located on longitude 180°?',
      'option_a' => '4:00 AM, Sunday',
@@ -296,6 +301,370 @@ $rows = [
      'correct_option' => 'B',
      'explanation' => 'The 0° longitude line passes through Greenwich (London) and Accra (Ghana).'],
 ];
+
+// Additional questions from user (March 7, 2026)
+$rows = array_merge($rows, [
+    [
+        'question_text' => 'If the bearing of point A from point B is X°, what is the bearing of B from A?',
+        'option_a' => 'X°',
+        'option_b' => 'X° + 90°',
+        'option_c' => 'X° + 180°',
+        'option_d' => 'X° - 90°',
+        'correct_option' => 'C',
+        'explanation' => 'To find a back-bearing, if the forward bearing is X°, add 180°.'
+    ],
+    [
+        'question_text' => 'Calculate the local time at Longitude 75°W when it is 10:00 AM at the Prime Meridian (0°).',
+        'option_a' => '5:00 AM',
+        'option_b' => '3:00 PM',
+        'option_c' => '5:00 PM',
+        'option_d' => '8:00 AM',
+        'correct_option' => 'A',
+        'explanation' => '75°/15 = 5 hours. Since it is West, we subtract: 10:00 AM - 5 hours = 5:00 AM.'
+    ],
+    [
+        'question_text' => 'A map scale is 1:100,000. If a forest covers 4 cm² on this map, what is its actual area on the ground?',
+        'option_a' => '4 km²',
+        'option_b' => '40 km²',
+        'option_c' => '16 km²',
+        'option_d' => '8 km²',
+        'correct_option' => 'A',
+        'explanation' => 'Linear scale is 1cm = 1km. Areal scale is (1cm)² = (1km)². Thus, 4 cm² = 4 km².'
+    ],
+    [
+        'question_text' => 'Which statistical diagram is most suitable for showing the components of a total population (e.g., age groups) in a single year?',
+        'option_a' => 'Dot map',
+        'option_b' => 'Pie chart',
+        'option_c' => 'Line graph',
+        'option_d' => 'Isopleth',
+        'correct_option' => 'B',
+        'explanation' => 'Pie charts effectively show the proportion of various components that make up a whole.'
+    ],
+    [
+        'question_text' => 'The vertical distance between the highest and lowest points in a given area is known as:',
+        'option_a' => 'Vertical Interval',
+        'option_b' => 'Gradient',
+        'option_c' => 'Relative Relief',
+        'option_d' => 'Aspect',
+        'correct_option' => 'C',
+        'explanation' => 'Relative relief measures local height variation, whereas V.I. is specific to contour lines on a map.'
+    ],
+    [
+        'question_text' => "The 'Gutenberg Discontinuity' separates which two layers?",
+        'option_a' => 'Crust and Mantle',
+        'option_b' => 'Mantle and Outer Core',
+        'option_c' => 'Inner and Outer Core',
+        'option_d' => 'Sial and Sima',
+        'correct_option' => 'B',
+        'explanation' => 'This boundary marks the point where seismic S-waves stop, indicating a transition from solid mantle to liquid core.'
+    ],
+    [
+        'question_text' => "A 'knickpoint' is a feature associated with:",
+        'option_a' => 'River rejuvenation',
+        'option_b' => 'Glacial deposition',
+        'option_c' => 'Wind abrasion',
+        'option_d' => 'Coastal submergence',
+        'correct_option' => 'A',
+        'explanation' => 'Rejuvenation (a drop in sea level) causes a river to cut back into its bed, creating a sharp break in the profile called a knickpoint.'
+    ],
+    [
+        'question_text' => 'Which rock type is formed from the cooling of magma but lacks crystals due to extremely rapid cooling?',
+        'option_a' => 'Granite',
+        'option_b' => 'Basalt',
+        'option_c' => 'Obsidian',
+        'option_d' => 'Gabbro',
+        'correct_option' => 'C',
+        'explanation' => 'Obsidian is volcanic glass; it cools so fast that atoms cannot arrange into a crystalline structure.'
+    ],
+    [
+        'question_text' => "The 'Great Rift Valley' of East Africa was formed primarily by:",
+        'option_a' => 'Folding',
+        'option_b' => 'Faulting (Tension)',
+        'option_c' => 'Volcanic eruption',
+        'option_d' => 'Glacial gouging',
+        'correct_option' => 'B',
+        'explanation' => 'It is a graben formed by the pulling apart of tectonic plates (tensional forces).'
+    ],
+    [
+        'question_text' => "The 'Horse Latitudes' are characterized by:",
+        'option_a' => 'Heavy rainfall and low pressure',
+        'option_b' => 'High pressure and calm winds',
+        'option_c' => 'Cyclonic activity',
+        'option_d' => 'Strong trade winds',
+        'correct_option' => 'B',
+        'explanation' => 'Located at 30° N/S, these are subtropical high-pressure belts where air sinks, causing dry, calm conditions.'
+    ],
+    [
+        'question_text' => 'Which cloud type is most responsible for heavy thunderstorms and hailstones?',
+        'option_a' => 'Cirrus',
+        'option_b' => 'Stratus',
+        'option_c' => 'Cumulonimbus',
+        'option_d' => 'Altocumulus',
+        'correct_option' => 'C',
+        'explanation' => 'These are massive vertical clouds often called "thunderheads."'
+    ],
+    [
+        'question_text' => "The 'Rain Shadow' effect is most associated with which type of rainfall?",
+        'option_a' => 'Convectional',
+        'option_b' => 'Cyclonic',
+        'option_c' => 'Orographic',
+        'option_d' => 'Frontal',
+        'correct_option' => 'C',
+        'explanation' => 'Orographic (relief) rain occurs when mountains force air upward; the leeward side remains dry (rain shadow).'
+    ],
+    [
+        'question_text' => "In the 'Koppen Climate Classification', the letter 'f' (e.g., Af) stands for:",
+        'option_a' => 'Frequently dry',
+        'option_b' => 'Forest vegetation',
+        'option_c' => 'No dry season',
+        'option_d' => 'High humidity',
+        'correct_option' => 'C',
+        'explanation' => "'f' comes from the German feucht (moist), indicating precipitation throughout the year."
+    ],
+    [
+        'question_text' => 'Which soil order is commonly found in semi-arid regions and contains high levels of calcium?',
+        'option_a' => 'Oxisols',
+        'option_b' => 'Pedocals',
+        'option_c' => 'Pedalfers',
+        'option_d' => 'Podzols',
+        'correct_option' => 'B',
+        'explanation' => 'Pedocals are typical of dry climates where evaporation exceeds precipitation, leading to calcium carbonate accumulation.'
+    ],
+    [
+        'question_text' => "The 'Montreal Protocol' was an international agreement designed to:",
+        'option_a' => 'Reduce CO2 emissions',
+        'option_b' => 'Protect the ozone layer',
+        'option_c' => 'Stop desertification',
+        'option_d' => 'Regulate international trade in ivory',
+        'correct_option' => 'B',
+        'explanation' => 'It phased out the production of CFCs that deplete the ozone layer.'
+    ],
+    [
+        'question_text' => 'The location of the Iron and Steel industry at Ajakuta, Nigeria, is primarily due to:',
+        'option_a' => 'Market proximity',
+        'option_b' => 'Availability of Iron Ore at Itakpe',
+        'option_c' => 'Proximity to the sea',
+        'option_d' => 'High population density',
+        'correct_option' => 'B',
+        'explanation' => 'Heavy industries are typically "resource-oriented" to minimize transport costs of bulky raw materials.'
+    ],
+    [
+        'question_text' => "A 'Primate City' is one that:",
+        'option_a' => 'Is the oldest city in a country',
+        'option_b' => 'Is more than twice as large as the second-largest city',
+        'option_c' => 'Performs only religious functions',
+        'option_d' => 'Has a declining population',
+        'correct_option' => 'B',
+        'explanation' => 'Proposed by Mark Jefferson, it describes a city that dominates the urban hierarchy in size and influence.'
+    ],
+    [
+        'question_text' => 'Which mode of transport is most suitable for transporting bulky, low-value goods over very long distances?',
+        'option_a' => 'Air',
+        'option_b' => 'Road',
+        'option_c' => 'Water',
+        'option_d' => 'Pipeline',
+        'correct_option' => 'C',
+        'explanation' => 'Water transport has the highest capacity and lowest cost per unit for heavy/bulky cargo.'
+    ],
+    [
+        'question_text' => 'The Demographic Transition Model suggests that in Stage 2:',
+        'option_a' => 'Both birth and death rates are high',
+        'option_b' => 'Birth rates are high while death rates fall rapidly',
+        'option_c' => 'Population begins to decline',
+        'option_d' => 'Death rates rise due to famine',
+        'correct_option' => 'B',
+        'explanation' => 'This stage represents the "population explosion" seen in many developing nations.'
+    ],
+    [
+        'question_text' => "'Agglomeration economies' refer to the benefits firms gain by:",
+        'option_a' => 'Moving to rural areas',
+        'option_b' => 'Locating near each other in a single cluster',
+        'option_c' => 'Diversifying their products',
+        'option_d' => 'Reducing their workforce',
+        'correct_option' => 'B',
+        'explanation' => 'Clustering allows for shared infrastructure, specialized labor pools, and lower costs.'
+    ],
+    [
+        'question_text' => 'The most extensive agricultural system practiced in the Northern Savanna of Nigeria is:',
+        'option_a' => 'Plantation agriculture',
+        'option_b' => 'Mediterranean farming',
+        'option_c' => 'Nomadic herding',
+        'option_d' => 'Intensive subsistence farming',
+        'correct_option' => 'C',
+        'explanation' => 'Vast grasslands and a seasonal climate favor the movement of livestock (transhumance).'
+    ],
+    [
+        'question_text' => "Which Nigerian city is best known for 'Groundnut Pyramids' in the past?",
+        'option_a' => 'Ibadan',
+        'option_b' => 'Kano',
+        'option_c' => 'Enugu',
+        'option_d' => 'Port Harcourt',
+        'correct_option' => 'B',
+        'explanation' => 'Kano was the historic hub for groundnut production and trade in Northern Nigeria.'
+    ],
+    [
+        'question_text' => 'The Great Lakes of North America are an important waterway for:',
+        'option_a' => 'Coffee and Cocoa',
+        'option_b' => 'Iron ore and Wheat',
+        'option_c' => 'Rubber and Timber',
+        'option_d' => 'Crude oil only',
+        'correct_option' => 'B',
+        'explanation' => 'The St. Lawrence Seaway connects the industrial heartland (iron) and the prairies (wheat) to the Atlantic.'
+    ],
+    [
+        'question_text' => "In which ecological zone of Nigeria is 'Lumbering' a major economic activity?",
+        'option_a' => 'Sudan Savanna',
+        'option_b' => 'Tropical Rainforest',
+        'option_c' => 'Sahel Savanna',
+        'option_d' => 'Montane vegetation',
+        'correct_option' => 'B',
+        'explanation' => 'High rainfall supports large hardwood trees like Iroko and Mahogany.'
+    ],
+    [
+        'question_text' => "The 'Aswan High Dam' is located on which river?",
+        'option_a' => 'River Zambezi',
+        'option_b' => 'River Niger',
+        'option_c' => 'River Nile',
+        'option_d' => 'River Limpopo',
+        'correct_option' => 'C',
+        'explanation' => 'Built in Egypt to control flooding and provide hydroelectric power and irrigation.'
+    ],
+    [
+        'question_text' => "Which of the following settlement types is typical of a 'Gap Town'?",
+        'option_a' => 'A town at a river confluence',
+        'option_b' => 'A town located in a pass through a mountain range',
+        'option_c' => 'A town centered around a market',
+        'option_d' => 'A town on a hilltop for defense',
+        'correct_option' => 'B',
+        'explanation' => 'Gap towns develop where transport routes are forced through a physical break in a ridge or mountain.'
+    ],
+    [
+        'question_text' => "A 'linear' settlement pattern is most likely to develop along:",
+        'option_a' => 'A river delta',
+        'option_b' => 'A railway line or highway',
+        'option_c' => 'A high-altitude plateau',
+        'option_d' => 'A desert oasis',
+        'correct_option' => 'B',
+        'explanation' => 'Buildings are arranged in a line following the path of a transport route.'
+    ],
+    [
+        'question_text' => 'Contour lines that are very close together on a map indicate:',
+        'option_a' => 'A gentle slope',
+        'option_b' => 'A steep slope',
+        'option_c' => 'A valley floor',
+        'option_d' => 'A plateau',
+        'correct_option' => 'B',
+        'explanation' => 'The closer the lines, the faster the elevation changes over a short horizontal distance.'
+    ],
+    [
+        'question_text' => 'The Sphere of Influence of a city refers to:',
+        'option_a' => 'Its political boundaries',
+        'option_b' => 'The area from which it draws customers and provides services',
+        'option_c' => 'The distance people can walk in an hour',
+        'option_d' => 'Its industrial output',
+        'correct_option' => 'B',
+        'explanation' => 'Also known as the hinterland, it is the geographic area served by the city\'s functions.'
+    ],
+    [
+        'question_text' => 'Which map projection is best for maintaining the correct shape of small areas?',
+        'option_a' => 'Conical',
+        'option_b' => 'Cylindrical (Mercator)',
+        'option_c' => 'Azimuthal',
+        'option_d' => 'Conformal',
+        'correct_option' => 'D',
+        'explanation' => 'Conformal projections (like Mercator) preserve angles and shapes of small features.'
+    ],
+    [
+        'question_text' => "'Pangaea' refers to:",
+        'option_a' => 'The movement of tides',
+        'option_b' => 'An ancient supercontinent',
+        'option_c' => 'A type of volcanic rock',
+        'option_d' => 'Deep-sea trenches',
+        'correct_option' => 'B',
+        'explanation' => 'Alfred Wegener proposed that all continents were once joined in a single landmass called Pangaea.'
+    ],
+    [
+        'question_text' => "An 'Ox-bow lake' is a landform of:",
+        'option_a' => 'River deposition and erosion',
+        'option_b' => 'Wind deflation',
+        'option_c' => 'Glacial abrasion',
+        'option_d' => 'Marine transgression',
+        'correct_option' => 'A',
+        'explanation' => 'It forms when a river meander is cut off from the main channel during a flood.'
+    ],
+    [
+        'question_text' => 'The Epicenter of an earthquake is:',
+        'option_a' => 'The point deep inside the Earth where the break occurs',
+        'option_b' => 'The point on the Earth\'s surface directly above the focus',
+        'option_c' => 'The instrument used to measure the quake',
+        'option_d' => 'The scale used to measure magnitude',
+        'correct_option' => 'B',
+        'explanation' => 'The "Focus" is underground; the "Epicenter" is on the surface.'
+    ],
+    [
+        'question_text' => "A 'Yardang' is a feature of wind erosion characterized by:",
+        'option_a' => 'Large circular pits',
+        'option_b' => 'Ridges of hard rock separated by furrows of soft rock',
+        'option_c' => 'Crescent-shaped sand dunes',
+        'option_d' => 'Flat-topped hills',
+        'correct_option' => 'B',
+        'explanation' => 'Yardangs are streamlined ridges carved by wind abrasion in desert regions.'
+    ],
+    [
+        'question_text' => 'The Pacific Ring of Fire is best known for:',
+        'option_a' => 'High solar radiation',
+        'option_b' => 'Frequent volcanic and earthquake activity',
+        'option_c' => 'Extensive coral reefs',
+        'option_d' => 'Large oil reserves',
+        'correct_option' => 'B',
+        'explanation' => 'This horseshoe-shaped zone is where several tectonic plates meet and interact.'
+    ],
+    [
+        'question_text' => "Which of these is a 'Secondary' energy source?",
+        'option_a' => 'Coal',
+        'option_b' => 'Natural Gas',
+        'option_c' => 'Electricity',
+        'option_d' => 'Sunlight',
+        'correct_option' => 'C',
+        'explanation' => 'Secondary sources are generated from the conversion of primary sources (like burning coal to make electricity).'
+    ],
+    [
+        'question_text' => 'The process of Fracking is used to extract:',
+        'option_a' => 'Gold',
+        'option_b' => 'Shale gas and oil',
+        'option_c' => 'Limestone',
+        'option_d' => 'Underground water',
+        'correct_option' => 'B',
+        'explanation' => 'Hydraulic fracturing involves injecting fluid at high pressure into rocks to release trapped gas.'
+    ],
+    [
+        'question_text' => "OPEC was primarily formed to:",
+        'option_a' => 'Promote agricultural trade',
+        'option_b' => 'Stabilize and coordinate petroleum policies of member nations',
+        'option_c' => 'Fight desertification in Africa',
+        'option_d' => 'Provide loans for infrastructure',
+        'correct_option' => 'B',
+        'explanation' => 'The Organization of the Petroleum Exporting Countries manages global oil supply and pricing.'
+    ],
+    [
+        'question_text' => 'Which mineral is the primary raw material for the production of Aluminum?',
+        'option_a' => 'Hematite',
+        'option_b' => 'Bauxite',
+        'option_c' => 'Cassiterite',
+        'option_d' => 'Galena',
+        'correct_option' => 'B',
+        'explanation' => 'Bauxite is the main ore of aluminum.'
+    ],
+    [
+        'question_text' => 'Thermal inversion occurs when:',
+        'option_a' => 'Temperature increases with altitude',
+        'option_b' => 'Temperature decreases with altitude',
+        'option_c' => 'It rains during the dry season',
+        'option_d' => 'Winds blow from sea to land',
+        'correct_option' => 'A',
+        'explanation' => 'Usually, air cools as it rises; an inversion traps cool air (and pollution) near the ground under a layer of warm air.'
+    ],
+]);
 
 foreach ($rows as $row) {
     // skip duplicates if already exist
