@@ -18,14 +18,11 @@ class ExamToken extends Model
         'expires_at',
         'notes',
         'center_id',
-<<<<<<< HEAD
-=======
         'plan_id',
         'bound_user_id',
         'sharing_detected',
         'first_used_ip',
         'first_used_device',
->>>>>>> origin/backup-main
     ];
 
     protected $casts = [
