@@ -1,11 +1,12 @@
 @extends('layouts.admin')
 
 @section('content')
-<<<<<<< HEAD
+
 <div class="card">
     <div class="card-header">
-        <h3 class="card-title">Performance Analytics</h3>
-=======
+        <h3 class="card-title"><i class="bi bi-bar-chart-line-fill"></i> Performance Analytics</h3>
+    </div>
+</div>
 
 <!-- Filter Section -->
 <div class="card">
@@ -95,90 +96,54 @@
 <div class="card" style="margin-top: 1.5rem;">
     <div class="card-header">
         <h3 class="card-title"><i class="bi bi-people-fill"></i> Select Students for Export</h3>
->>>>>>> origin/backup-main
     </div>
     <div class="card-body">
         @if(session('error'))
             <div class="alert alert-danger">{{ session('error') }}</div>
         @endif
 
-<<<<<<< HEAD
-        <form method="POST" action="{{ route('admin.performance.generate') }}" enctype="multipart/form-data">
-            @csrf
-            <div class="mb-3">
-                <label for="center_select" class="form-label">Center (optional)</label>
-                <select id="center_select" class="form-control">
-                    <option value="">-- All Centers --</option>
-                    @foreach($centers ?? [] as $center)
-                        <option value="{{ $center->id }}" {{ request('center_id') == $center->id ? 'selected' : '' }}>{{ $center->name }} @if($center->location) ({{ $center->location }}) @endif</option>
-                    @endforeach
-                </select>
-                <input type="hidden" name="center_id" id="center_id_input" value="{{ request('center_id') }}">
-            </div>
-            <div class="mb-3">
-                <label for="school_name" class="form-label">School Name / Institution Name (optional)</label>
-                <input type="text" name="school_name" id="school_name" class="form-control" value="{{ old('school_name') }}">
-            </div>
-            <div class="mb-3">
-                <label for="watermark_font_size" class="form-label">Watermark Font Size (optional, default: 60px)</label>
-                <input type="number" name="watermark_font_size" id="watermark_font_size" class="form-control" min="20" max="120" value="{{ old('watermark_font_size', 60) }}">
-                <small class="form-text text-muted">Adjust the font size of the school name watermark (20-120px)</small>
-            </div>
-            <div class="mb-3">
-                <label for="school_address" class="form-label">School Address (optional)</label>
-                <input type="text" name="school_address" id="school_address" class="form-control" value="{{ old('school_address') }}">
-            </div>
-            <div class="mb-3">
-                <label for="school_logo" class="form-label">School Logo (optional)</label>
-                <input type="file" name="school_logo" id="school_logo" class="form-control" accept="image/*">
-                <small class="form-text text-muted">Max 2MB. Accepted formats: JPG, PNG, GIF</small>
-            </div>
-            <div class="mb-3">
-                <button type="submit" name="all" value="1" class="btn btn-secondary">Download All Students</button>
-                <button type="submit" class="btn btn-primary" id="download-selected">Download Selected</button>
-=======
         <div class="alert alert-info" role="alert">
             <i class="bi bi-info-circle-fill"></i> <strong>Export Details:</strong> Each selected student's <strong>all JAMB sessions</strong> will be exported. If a student retook the exam, all attempts appear in one PDF.
         </div>
 
         @if($students->isNotEmpty())
-        <form method="POST" action="{{ route('admin.performance.generate') }}" enctype="multipart/form-data">
-            @csrf
+            <form method="POST" action="{{ route('admin.performance.generate') }}" enctype="multipart/form-data">
+                @csrf
 
-            <!-- Hidden filters to preserve during export -->
-            <input type="hidden" name="date_from" value="{{ $filters['date_from'] ?? '' }}">
-            <input type="hidden" name="date_to" value="{{ $filters['date_to'] ?? '' }}">
-            <input type="hidden" name="center_id" value="{{ $filters['center_id'] ?? '' }}">
+                <!-- Hidden filters to preserve during export -->
+                <input type="hidden" name="date_from" value="{{ $filters['date_from'] ?? '' }}">
+                <input type="hidden" name="date_to" value="{{ $filters['date_to'] ?? '' }}">
+                <input type="hidden" name="center_id" value="{{ $filters['center_id'] ?? '' }}">
 
-            <div class="row g-3 mb-3">
-                <div class="col-md-4">
-                    <label for="school_name" class="form-label">School Name / Institution Name (optional)</label>
-                    <input type="text" name="school_name" id="school_name" class="form-control" value="{{ old('school_name') }}" placeholder="e.g., Federal College of Education">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label for="school_name" class="form-label">School Name / Institution Name (optional)</label>
+                        <input type="text" name="school_name" id="school_name" class="form-control" value="{{ old('school_name') }}" placeholder="e.g., Federal College of Education">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="watermark_font_size" class="form-label">Watermark Font Size (optional)</label>
+                        <input type="number" name="watermark_font_size" id="watermark_font_size" class="form-control" min="20" max="120" value="{{ old('watermark_font_size', 60) }}">
+                        <small class="form-text text-muted">20-120px (default: 60)</small>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="school_address" class="form-label">School Address (optional)</label>
+                        <input type="text" name="school_address" id="school_address" class="form-control" value="{{ old('school_address') }}" placeholder="e.g., Lagos, Nigeria">
+                    </div>
+                    <div class="col-md-12">
+                        <label for="school_logo" class="form-label">School Logo (optional)</label>
+                        <input type="file" name="school_logo" id="school_logo" class="form-control" accept="image/*">
+                        <small class="form-text text-muted">Max 2MB. Accepted formats: JPG, PNG, GIF</small>
+                    </div>
                 </div>
-                <div class="col-md-4">
-                    <label for="watermark_font_size" class="form-label">Watermark Font Size (optional)</label>
-                    <input type="number" name="watermark_font_size" id="watermark_font_size" class="form-control" min="20" max="120" value="{{ old('watermark_font_size', 60) }}">
-                    <small class="form-text text-muted">20-120px (default: 60)</small>
-                </div>
-                <div class="col-md-4">
-                    <label for="school_address" class="form-label">School Address (optional)</label>
-                    <input type="text" name="school_address" id="school_address" class="form-control" value="{{ old('school_address') }}" placeholder="e.g., Lagos, Nigeria">
-                </div>
-                <div class="col-md-12">
-                    <label for="school_logo" class="form-label">School Logo (optional)</label>
-                    <input type="file" name="school_logo" id="school_logo" class="form-control" accept="image/*">
-                    <small class="form-text text-muted">Max 2MB. Accepted formats: JPG, PNG, GIF</small>
-                </div>
-            </div>
 
-            <div class="mb-3 d-flex gap-2">
-                <button type="submit" name="all" value="1" class="btn btn-secondary">
-                    <i class="bi bi-download"></i> Download All (Filtered)
-                </button>
-                <button type="submit" class="btn btn-primary" id="download-selected">
-                    <i class="bi bi-download"></i> Download Selected
-                </button>
->>>>>>> origin/backup-main
+                <div class="mb-3 d-flex gap-2">
+                    <button type="submit" name="all" value="1" class="btn btn-secondary">
+                        <i class="bi bi-download"></i> Download All (Filtered)
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="download-selected">
+                        <i class="bi bi-download"></i> Download Selected
+                    </button>
+                </div>
             </div>
 
             <table class="table table-bordered table-striped">
@@ -187,11 +152,7 @@
                         <th style="width:40px;"><input type="checkbox" id="select-all"></th>
                         <th>Student Name</th>
                         <th>Student ID</th>
-<<<<<<< HEAD
-                        <th>Attempts</th>
-=======
                         <th>JAMB Attempts</th>
->>>>>>> origin/backup-main
                     </tr>
                 </thead>
                 <tbody>
@@ -203,13 +164,6 @@
                             <td><span class="badge badge-primary">{{ $student->submitted_exam_sessions_count }}</span></td>
                         </tr>
                     @empty
-<<<<<<< HEAD
-                        <tr><td colspan="4">No students with submitted exams found.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </form>
-=======
                         <tr><td colspan="4" class="text-center" style="padding: 2rem;">No students found matching your filters.</td></tr>
                     @endforelse
                 </tbody>
@@ -219,12 +173,6 @@
                 {{ $students->withQueryString()->links() }}
             </div>
         </form>
-        @else
-        <div class="alert alert-warning">
-            <i class="bi bi-exclamation-triangle-fill"></i> No students with completed JAMB exams found. Try adjusting your date or center filter.
-        </div>
-        @endif
->>>>>>> origin/backup-main
     </div>
 </div>
 
@@ -234,39 +182,6 @@
         const checked = e.target.checked;
         document.querySelectorAll('input[name="student_ids[]"]').forEach(cb => cb.checked = checked);
     });
-<<<<<<< HEAD
-    document.getElementById('center_select')?.addEventListener('change', function (e) {
-        const centerId = e.target.value;
-        document.getElementById('center_id_input').value = centerId;
-        const tbody = document.querySelector('table tbody');
-        tbody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
-        if (!centerId) {
-            window.location.href = '{{ route("admin.performance.index") }}';
-            return;
-        }
-
-        fetch('{{ url("/admin/centers") }}' + '/' + centerId + '/students')
-            .then(r => r.json())
-            .then(data => {
-                const students = data.students || [];
-                if (students.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4">No students found for selected center.</td></tr>';
-                    return;
-                }
-                tbody.innerHTML = students.map(s => `
-                    <tr>
-                        <td><input type="checkbox" name="student_ids[]" value="${s.id}"></td>
-                        <td>${s.name}</td>
-                        <td>${s.student_id || '-'}</td>
-                        <td><span class="badge badge-primary">-</span></td>
-                    </tr>
-                `).join('');
-            }).catch(() => {
-                tbody.innerHTML = '<tr><td colspan="4">Failed to load students.</td></tr>';
-            });
-    });
-=======
->>>>>>> origin/backup-main
 </script>
 @endpush
 
