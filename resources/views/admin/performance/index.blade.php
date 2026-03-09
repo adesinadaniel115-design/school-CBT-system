@@ -176,6 +176,8 @@
     </div>
 </div>
 
+@endif
+
 @push('scripts')
 <script>
     document.getElementById('select-all')?.addEventListener('change', function (e) {
