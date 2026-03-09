@@ -12,21 +12,17 @@
             </h3>
             <p style="color: #6b7280; margin: 0.25rem 0 0; font-size: 0.875rem;">Generate and manage exam access tokens</p>
         </div>
-<<<<<<< HEAD
-        <div style="display: flex; gap: 0.75rem;">
-            @if($tokens->total() > 0)
-=======
         <div style="display: flex; gap: 0.75rem; align-items: center;">
-                <a href="{{ route('admin.tokens.create') }}" class="btn btn-primary" title="Generate Tokens">
-                    <i class="bi bi-plus-circle"></i> Generate Tokens
-                </a>
-                @if($tokens->total() > 0)
->>>>>>> origin/backup-main
+            <a href="{{ route('admin.tokens.create') }}" class="btn btn-primary" title="Generate Tokens">
+                <i class="bi bi-plus-circle"></i> Generate Tokens
+            </a>
+            @if($tokens->total() > 0)
                 <a href="{{ route('admin.tokens.print', ['all' => 1] + request()->only(['search', 'status', 'center_id'])) }}" 
                    class="btn btn-secondary" target="_blank" title="Print all filtered tokens">
                     <i class="bi bi-printer-fill"></i> Print All
                 </a>
-                @endif
+            @endif
+        </div>
     </div>
 </div>
 
@@ -145,10 +141,7 @@
                 <tr>
                     <th>Token Code</th>
                     <th>Center</th>
-<<<<<<< HEAD
-=======
                     <th>Plan</th>
->>>>>>> origin/backup-main
                     <th>Status</th>
                     <th>Usage</th>
                     <th>Created By</th>
@@ -175,8 +168,6 @@
                             @endif
                         </td>
                         <td>
-<<<<<<< HEAD
-=======
                             @if($includePlan)
                                 @php
                                     $planName = $token->plan ? $token->plan->name : 'Basic';
@@ -188,7 +179,6 @@
                             @endif
                         </td>
                         <td>
->>>>>>> origin/backup-main
                             @if(!$token->is_active)
                                 <span class="badge badge-danger">Inactive</span>
                             @elseif($token->expires_at && $token->expires_at->isPast())
