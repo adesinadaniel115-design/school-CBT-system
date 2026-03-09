@@ -44,8 +44,9 @@ COPY . .
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# Clear old Laravel cache (just remove old files, not running artisan)
-RUN rm -f bootstrap/cache/*.php
+# Ensure required Laravel directories exist and are writable before installing dependencies
+RUN mkdir -p bootstrap/cache storage && \
+    rm -f bootstrap/cache/*.php
 
 # Install PHP dependencies (production ready)
 RUN composer install --no-dev --optimize-autoloader --no-interaction
