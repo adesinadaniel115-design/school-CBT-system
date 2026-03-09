@@ -259,16 +259,14 @@
         .calc-screen {
             font-size: 1.25rem;
         }
-<<<<<<< HEAD
-=======
-        
+
         .autosave-toast {
             right: 1rem;
             bottom: 1rem;
             font-size: 0.85rem;
         }
     }
-    
+
     @media (max-width: 480px) {
         .autosave-toast {
             right: 0.75rem;
@@ -276,7 +274,6 @@
             padding: 0.6rem 0.8rem;
             font-size: 0.75rem;
         }
->>>>>>> origin/backup-main
     }
 </style>
 @endpush

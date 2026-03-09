@@ -646,27 +646,13 @@
                                     <div class="detail-label">Max Uses</div>
                                     <div class="detail-value">{{ $token->max_uses }}</div>
                                 </div>
-<<<<<<< HEAD
-=======
                                 @endif
->>>>>>> origin/backup-main
                                 @if($token->center)
                                 <div class="detail-item">
                                     <div class="detail-label">Center</div>
                                     <div class="detail-value" style="font-size:9px;">{{ $token->center->name }}</div>
                                 </div>
                                 @endif
-<<<<<<< HEAD
-=======
-                                @if(\Schema::hasTable('plans') && $token->plan)
-                                @php $planSlug = strtolower($token->plan->name); @endphp
-                                <div class="detail-item plan {{ $planSlug }}">
-                                    <div class="detail-label">Plan</div>
-                                    <div class="detail-value" style="font-size:9px;">{{ $token->plan->name }}</div>
-                                </div>
-                                @endif
->>>>>>> origin/backup-main
-                                <div class="detail-item">
                                     <div class="detail-label">Remaining</div>
                                     <div class="detail-value" style="color: {{ $token->remainingUses() > 0 ? '#10b981' : '#ef4444' }};">
                                         {{ $token->remainingUses() }}

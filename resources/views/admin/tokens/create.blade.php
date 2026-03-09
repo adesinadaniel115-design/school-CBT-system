@@ -35,8 +35,6 @@
                 </div>
 
                 <div class="form-group">
-<<<<<<< HEAD
-=======
                     <label for="plan_id" class="form-label">Plan *</label>
                     <select id="plan_id" name="plan_id" class="form-control @error('plan_id') is-invalid @enderror" required>
                         <option value="">-- select plan --</option>
@@ -53,7 +51,6 @@
                 </div>
 
                 <div class="form-group">
->>>>>>> origin/backup-main
                     <label for="quantity" class="form-label">Number of Tokens to Generate *</label>
                     <input type="number" id="quantity" name="quantity" class="form-control @error('quantity') is-invalid @enderror" 
                            value="{{ old('quantity', 1) }}" min="1" max="100" required>

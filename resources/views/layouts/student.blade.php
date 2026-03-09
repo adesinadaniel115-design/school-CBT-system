@@ -1,22 +1,27 @@
-                /* Desktop sidebar: fixed, full height, above content */
-                @media (min-width: 992px) {
-                    .sidebar {
-                        position: fixed;
-                        top: 0;
-                        left: 0;
-                        width: var(--sidebar-width, 260px);
-                        height: 100vh;
-                        background: #fff;
-                        border-right: 1px solid #e2e8f0;
-                        z-index: 1040;
-                        box-shadow: 2px 0 20px rgba(15, 23, 42, 0.08);
-                    }
-                    .main-content {
-                        margin-left: var(--sidebar-width, 260px) !important;
-                        position: relative;
-                        z-index: 1;
-                    }
-                }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>School CBT - @yield('title', 'Exam')</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Source+Serif+4:wght@400;600&display=swap">
+    <style>
+        :root {
+            --sidebar-width: 300px;
+            --navbar-height: 60px;
+            --exam-ink: #0f172a;
+            --exam-muted: #64748b;
+            --exam-paper: #ffffff;
+            --exam-surface: #f8fafc;
+            --exam-accent: #1e3a8a;
+            --exam-accent-2: #fbbf24;
+            --exam-border: #e2e8f0;
+            --exam-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+            --exam-radius: 16px;
+        }
+
         /* Sidebar collapse for student panel */
         .sidebar {
             position: fixed;
@@ -54,30 +59,7 @@
                 margin-left: 0 !important;
             }
         }
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>School CBT - @yield('title', 'Exam')</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Source+Serif+4:wght@400;600&display=swap">
-    <style>
-        :root {
-            --sidebar-width: 300px;
-            --navbar-height: 60px;
-            --exam-ink: #0f172a;
-            --exam-muted: #64748b;
-            --exam-paper: #ffffff;
-            --exam-surface: #f8fafc;
-            --exam-accent: #1e3a8a;
-            --exam-accent-2: #fbbf24;
-            --exam-border: #e2e8f0;
-            --exam-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
-            --exam-radius: 16px;
-        }
-        
+
         body {
             overflow-x: hidden;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
