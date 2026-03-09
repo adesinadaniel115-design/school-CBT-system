@@ -45,11 +45,11 @@
         @endif
     </div>
 
-        .header .title { font-weight: 700; font-size: 16px; text-transform: uppercase; }
+    <div class="header">
         @if(!empty($centerName))
-            <h2>Center: {{ $centerName }}</h2>
+            <div class="title">Center: {{ $centerName }}</div>
         @else
-            <h2>Center: All centers</h2>
+            <div class="title">Center: All centers</div>
         @endif
     </div>
 

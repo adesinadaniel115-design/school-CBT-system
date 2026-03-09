@@ -22,10 +22,61 @@
         /* Watermark */
         .watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); color: #ccc; opacity: 0.15; z-index: -1; white-space: nowrap; pointer-events: none; }
         
-        .header { text-align: center; margin-bottom: 20px; border-bottom: 3px solid #000; padding-bottom: 10px; padding-top: 80px; }
-        .institution-name { font-weight: 700; font-size: 14px; margin-bottom: 3px; }
-        .institution-address { font-size: 11px; color: #333; margin-bottom: 8px; }
-        .title { font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin: 10px 0; }
+        .header {
+            text-align: center;
+            margin-bottom: 1.25rem;
+            padding: 1rem 1.25rem;
+            border-radius: 12px;
+            background: linear-gradient(120deg, #1e3a8a, #3b82f6);
+            color: white;
+            position: relative;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            letter-spacing: 0.04em;
+        }
+
+        .header .institution-name {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-top: 0.25rem;
+            opacity: 0.9;
+        }
+
+        .header .institution-address {
+            font-size: 0.85rem;
+            opacity: 0.85;
+            margin-top: 0.15rem;
+        }
+
+        .header .title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-top: 0.5rem;
+            opacity: 0.9;
+        }
+
+        .logo {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
         
         .section { margin: 15px 0; }
         .section-title { font-weight: 700; font-size: 11px; text-transform: uppercase; margin: 10px 0 8px 0; border-bottom: 2px solid #000; padding-bottom: 4px; }
@@ -67,6 +118,29 @@
 --}}
 
 <div class="slip">
+    <div class="header">
+        @if(!empty($schoolLogoBase64))
+            <div class="logo">
+                <img src="data:image/png;base64,{{ $schoolLogoBase64 }}" alt="Logo">
+            </div>
+        @endif
+
+        <h1>JAMB MOCK EXAM RESULT SLIP</h1>
+
+        @if(!empty($schoolName))
+            <div class="institution-name">{{ $schoolName }}</div>
+        @endif
+
+        @if(!empty($schoolAddress))
+            <div class="institution-address">{{ $schoolAddress }}</div>
+        @endif
+
+        @php
+            $studentCenter = $report['student']->center?->name ?? 'No center';
+            $printedCenter = $centerName ?? $studentCenter;
+        @endphp
+        <div class="title">Center: {{ $printedCenter }}</div>
+    </div>
 
     <!-- Student Photo - Top Right -->
     <div class="student-photo">
@@ -76,9 +150,7 @@
             <span style="font-size: 11px;">No Photo</span>
         @endif
     </div>
-    </div>
 
-    <!-- Subject Scores Section -->
     <div class="section">
         <div class="section-title">Subject Scores</div>
         
@@ -123,19 +195,22 @@
         <div class="remarks-row">
             <div class="remarks-col">
                 <div class="label">Performance Remark</div>
-                <div class="value">{{ $report['remark'] }}</div>            </div>
+                <div class="value">{{ $report['remark'] }}</div>
+            </div>
         </div>
 
         <div class="remarks-row">
             <div class="remarks-col">
                 <div class="label">Time Spent</div>
-                <div class="value">{{ $report['time_spent'] ? $report['time_spent'] . ' minutes' : 'N/A' }}</div>            </div>
+                <div class="value">{{ $report['time_spent'] ? $report['time_spent'] . ' minutes' : 'N/A' }}</div>
+            </div>
         </div>
 
         <div class="remarks-row">
             <div class="remarks-col">
                 <div class="label">Exam Date</div>
-                <div class="value">{{ $report['completed_at']?->format('d/m/Y H:i') ?? 'N/A' }}</div>            </div>
+                <div class="value">{{ $report['completed_at']?->format('d/m/Y H:i') ?? 'N/A' }}</div>
+            </div>
         </div>
 
         <div class="section-title" style="margin-top: 12px;">General Comment</div>
@@ -148,7 +223,9 @@
     <div class="date-generated">
         Generated: {{ now()->format('d/m/Y H:i:s') }}
     </div>
-</div>@endforeach
+</div>
+
+@endforeach
 
 </body>
 </html>
