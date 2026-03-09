@@ -35,10 +35,14 @@ class AdminExamTokenController extends Controller
             $query->where('center_id', $request->center_id);
         }
 
-        $tokens = $query->latest()->paginate(20);
+        // Allow page size selection via query param (default: 25)
+        $perPage = intval($request->query('per_page', 25));
+        $perPage = in_array($perPage, [25, 50, 100]) ? $perPage : 25;
+
+        $tokens = $query->latest()->paginate($perPage)->withQueryString();
         $centers = \App\Models\Center::orderBy('name')->get();
 
-        return view('admin.tokens.index', compact('tokens', 'centers', 'includePlan'));
+        return view('admin.tokens.index', compact('tokens', 'centers', 'includePlan', 'perPage'));
     }
 
     public function create()

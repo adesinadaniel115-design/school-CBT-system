@@ -66,6 +66,14 @@
                 <option value="used_up" {{ request('status') === 'used_up' ? 'selected' : '' }}>Fully Used</option>
             </select>
         </div>
+        <div style="width: 140px;">
+            <label class="form-label">Show</label>
+            <select name="per_page" class="form-control" onchange="this.form.submit()">
+                <option value="25" {{ ($perPage ?? 25) === 25 ? 'selected' : '' }}>25</option>
+                <option value="50" {{ ($perPage ?? 25) === 50 ? 'selected' : '' }}>50</option>
+                <option value="100" {{ ($perPage ?? 25) === 100 ? 'selected' : '' }}>100</option>
+            </select>
+        </div>
         <button type="submit" class="btn btn-secondary">
             <i class="bi bi-search"></i> Filter
         </button>
@@ -75,6 +83,17 @@
             </a>
         @endif
     </form>
+</div>
+
+<!-- Pagination Info -->
+<div class="d-flex justify-content-between align-items-center" style="margin-bottom: 1rem;">
+    <div style="color: #6b7280; font-size: 0.9rem;">
+        Showing {{ $tokens->firstItem() ?? 0 }} to {{ $tokens->lastItem() ?? 0 }} of {{ $tokens->total() }} tokens
+    </div>
+    <div>
+        <span style="color: #6b7280; font-size: 0.9rem;">Per page:</span>
+        <span style="font-weight: 600;">{{ $perPage ?? 25 }}</span>
+    </div>
 </div>
 
 <!-- Bulk Actions -->
@@ -269,7 +288,7 @@
 
     @if($tokens->hasPages())
         <div style="padding: 1.5rem;">
-            {{ $tokens->links() }}
+            {{ $tokens->links('pagination::bootstrap-5') }}
         </div>
     @endif
 </div>
