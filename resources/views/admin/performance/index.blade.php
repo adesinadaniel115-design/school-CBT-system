@@ -2,6 +2,12 @@
 
 @section('content')
 
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="bi bi-bar-chart-line-fill"></i> Performance Analytics</h3>
+    </div>
+</div>
+
 <!-- Filter Section -->
 <div class="card">
     <div class="card-header">
@@ -101,42 +107,43 @@
         </div>
 
         @if($students->isNotEmpty())
-        <form method="POST" action="{{ route('admin.performance.generate') }}" enctype="multipart/form-data">
-            @csrf
+            <form method="POST" action="{{ route('admin.performance.generate') }}" enctype="multipart/form-data">
+                @csrf
 
-            <!-- Hidden filters to preserve during export -->
-            <input type="hidden" name="date_from" value="{{ $filters['date_from'] ?? '' }}">
-            <input type="hidden" name="date_to" value="{{ $filters['date_to'] ?? '' }}">
-            <input type="hidden" name="center_id" value="{{ $filters['center_id'] ?? '' }}">
+                <!-- Hidden filters to preserve during export -->
+                <input type="hidden" name="date_from" value="{{ $filters['date_from'] ?? '' }}">
+                <input type="hidden" name="date_to" value="{{ $filters['date_to'] ?? '' }}">
+                <input type="hidden" name="center_id" value="{{ $filters['center_id'] ?? '' }}">
 
-            <div class="row g-3 mb-3">
-                <div class="col-md-4">
-                    <label for="school_name" class="form-label">School Name / Institution Name (optional)</label>
-                    <input type="text" name="school_name" id="school_name" class="form-control" value="{{ old('school_name') }}" placeholder="e.g., Federal College of Education">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label for="school_name" class="form-label">School Name / Institution Name (optional)</label>
+                        <input type="text" name="school_name" id="school_name" class="form-control" value="{{ old('school_name') }}" placeholder="e.g., Federal College of Education">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="watermark_font_size" class="form-label">Watermark Font Size (optional)</label>
+                        <input type="number" name="watermark_font_size" id="watermark_font_size" class="form-control" min="20" max="120" value="{{ old('watermark_font_size', 60) }}">
+                        <small class="form-text text-muted">20-120px (default: 60)</small>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="school_address" class="form-label">School Address (optional)</label>
+                        <input type="text" name="school_address" id="school_address" class="form-control" value="{{ old('school_address') }}" placeholder="e.g., Lagos, Nigeria">
+                    </div>
+                    <div class="col-md-12">
+                        <label for="school_logo" class="form-label">School Logo (optional)</label>
+                        <input type="file" name="school_logo" id="school_logo" class="form-control" accept="image/*">
+                        <small class="form-text text-muted">Max 2MB. Accepted formats: JPG, PNG, GIF</small>
+                    </div>
                 </div>
-                <div class="col-md-4">
-                    <label for="watermark_font_size" class="form-label">Watermark Font Size (optional)</label>
-                    <input type="number" name="watermark_font_size" id="watermark_font_size" class="form-control" min="20" max="120" value="{{ old('watermark_font_size', 60) }}">
-                    <small class="form-text text-muted">20-120px (default: 60)</small>
-                </div>
-                <div class="col-md-4">
-                    <label for="school_address" class="form-label">School Address (optional)</label>
-                    <input type="text" name="school_address" id="school_address" class="form-control" value="{{ old('school_address') }}" placeholder="e.g., Lagos, Nigeria">
-                </div>
-                <div class="col-md-12">
-                    <label for="school_logo" class="form-label">School Logo (optional)</label>
-                    <input type="file" name="school_logo" id="school_logo" class="form-control" accept="image/*">
-                    <small class="form-text text-muted">Max 2MB. Accepted formats: JPG, PNG, GIF</small>
-                </div>
-            </div>
 
-            <div class="mb-3 d-flex gap-2">
-                <button type="submit" name="all" value="1" class="btn btn-secondary">
-                    <i class="bi bi-download"></i> Download All (Filtered)
-                </button>
-                <button type="submit" class="btn btn-primary" id="download-selected">
-                    <i class="bi bi-download"></i> Download Selected
-                </button>
+                <div class="mb-3 d-flex gap-2">
+                    <button type="submit" name="all" value="1" class="btn btn-secondary">
+                        <i class="bi bi-download"></i> Download All (Filtered)
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="download-selected">
+                        <i class="bi bi-download"></i> Download Selected
+                    </button>
+                </div>
             </div>
 
             <table class="table table-bordered table-striped">
@@ -166,13 +173,10 @@
                 {{ $students->withQueryString()->links() }}
             </div>
         </form>
-        @else
-        <div class="alert alert-warning">
-            <i class="bi bi-exclamation-triangle-fill"></i> No students with completed JAMB exams found. Try adjusting your date or center filter.
-        </div>
-        @endif
     </div>
 </div>
+
+@endif
 
 @push('scripts')
 <script>

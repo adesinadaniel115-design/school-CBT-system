@@ -77,6 +77,8 @@ class User extends Authenticatable
     }
 
     /**
+<<<<<<< HEAD
+=======
      * Plans that have been granted to the student (via token redemption).
      */
     public function studentPlans()
@@ -143,6 +145,7 @@ class User extends Authenticatable
     }
 
     /**
+>>>>>>> origin/backup-main
      * Get the center this user (student) belongs to
      */
     public function center()

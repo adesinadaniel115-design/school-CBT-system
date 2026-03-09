@@ -198,6 +198,8 @@ A fully functional scientific calculator integrated into the JAMB exam interface
 - [x] Exponential: e^x
 - [x] Power: x^y
 - [x] Root: √
+<<<<<<< HEAD
+=======
 
 ---
 
@@ -225,6 +227,7 @@ attached to tokens and granted to students upon token redemption.
 ### Testing
 Unit tests added (`PlanAccessTest`) to verify plan creation,
 helper methods, and feature flag behaviour.
+>>>>>>> origin/backup-main
 - [x] Constants: π
 - [x] Factorial: n!
 - [x] Clear function

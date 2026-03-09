@@ -23,12 +23,11 @@ class AdminPerformanceController extends Controller
         $dateFrom = $filters['date_from'] ?? null;
         $dateTo = $filters['date_to'] ?? null;
 
-        // Build the query to get students with completed sessions on the selected date(s)
+        // Build the query to get students with completed JAMB sessions in the given date range
         $query = User::where('is_admin', false)
             ->whereHas('examSessions', function ($q) use ($dateFrom, $dateTo) {
                 $q->where('exam_mode', 'jamb')->whereNotNull('completed_at');
-                
-                // Handle date filtering
+
                 if ($dateFrom && $dateTo) {
                     $q->whereDate('completed_at', '>=', $dateFrom)
                       ->whereDate('completed_at', '<=', $dateTo);
@@ -40,7 +39,7 @@ class AdminPerformanceController extends Controller
             })
             ->withCount(['examSessions as submitted_exam_sessions_count' => function ($q) use ($dateFrom, $dateTo) {
                 $q->where('exam_mode', 'jamb')->whereNotNull('completed_at');
-                
+
                 if ($dateFrom && $dateTo) {
                     $q->whereDate('completed_at', '>=', $dateFrom)
                       ->whereDate('completed_at', '<=', $dateTo);
@@ -55,12 +54,12 @@ class AdminPerformanceController extends Controller
             $query->where('center_id', $centerId);
         }
 
-        // Use pagination to avoid loading large datasets into memory at once
+        // Use pagination to avoid loading large datasets into memory
         $students = $query->orderBy('name')->paginate(50);
 
         // Get summary stats for the selected date range
         $statsQuery = ExamSession::where('exam_mode', 'jamb')->whereNotNull('completed_at');
-        
+
         if ($dateFrom && $dateTo) {
             $statsQuery->whereDate('completed_at', '>=', $dateFrom)
                        ->whereDate('completed_at', '<=', $dateTo);
@@ -69,7 +68,7 @@ class AdminPerformanceController extends Controller
         } elseif ($dateTo) {
             $statsQuery->whereDate('completed_at', $dateTo);
         }
-        
+
         if ($centerId) {
             $statsQuery->whereHas('student', function ($q) use ($centerId) {
                 $q->where('center_id', $centerId);
@@ -80,7 +79,7 @@ class AdminPerformanceController extends Controller
             'total_sessions' => $statsQuery->count(),
             'avg_score' => round($statsQuery->avg('score'), 1),
             'highest_score' => $statsQuery->max('score') ?? 0,
-            'date_range' => $dateFrom || $dateTo 
+            'date_range' => $dateFrom || $dateTo
                 ? ($dateFrom && $dateTo ? "{$dateFrom} to {$dateTo}" : ($dateFrom ?? $dateTo))
                 : 'All dates',
         ];
@@ -143,7 +142,7 @@ class AdminPerformanceController extends Controller
         }
 
         // Filter by center if provided
-        if (!empty($data['center_id'])) {
+        if (!empty($data['center_id']) && Schema::hasTable('centers')) {
             $query->where('center_id', $data['center_id']);
         }
 
@@ -158,7 +157,7 @@ class AdminPerformanceController extends Controller
         $reports = [];
 
         foreach ($students as $student) {
-            // Get ALL completed JAMB exam sessions for this student (not just the latest)
+            // Get ALL completed JAMB exam sessions for this student
             $sessions = $student->examSessions()
                 ->where('exam_mode', 'jamb')
                 ->whereNotNull('completed_at')
@@ -170,23 +169,19 @@ class AdminPerformanceController extends Controller
             }
 
             foreach ($sessions as $session) {
-                // Get 4 subject scores from examSubjectScores (JAMB format)
                 $subjectScores = $session->examSubjectScores()
                     ->with('subject')
                     ->orderBy('subject_id')
                     ->limit(4)
                     ->get();
 
-                // Calculate total score (sum of individual subject scores)
                 $totalScore = $subjectScores->sum('score_over_100');
 
-                // Calculate time spent
                 $timeSpent = null;
                 if ($session->started_at && $session->completed_at) {
                     $timeSpent = $session->started_at->diffInMinutes($session->completed_at);
                 }
 
-                // Generate performance remark based on total score
                 if ($totalScore >= 300) {
                     $remark = 'Excellent';
                 } elseif ($totalScore >= 240) {
@@ -199,7 +194,6 @@ class AdminPerformanceController extends Controller
                     $remark = 'Fair';
                 }
 
-                // Generate performance comment based on total score
                 if ($totalScore >= 300) {
                     $comment = 'Outstanding performance. Excellent grasp of all subjects.';
                 } elseif ($totalScore >= 240) {
@@ -226,15 +220,14 @@ class AdminPerformanceController extends Controller
 
         try {
             $pdf = app()->make('dompdf.wrapper');
-            
-            // Configure DomPDF options for better compatibility
+
             $options = $pdf->getOptions();
             $options->set([
                 'isHtml5ParserEnabled' => true,
                 'isRemoteEnabled' => true,
                 'defaultFont' => 'Helvetica',
             ]);
-            
+
             $html = view('admin.performance.jamb_result_slip', compact('reports', 'schoolName', 'schoolAddress', 'schoolLogoBase64', 'watermarkFontSize', 'centerName'))->render();
             $pdf->loadHTML($html)->setPaper('a4', 'portrait');
             return $pdf->stream('performance-jamb-result-slip.pdf');

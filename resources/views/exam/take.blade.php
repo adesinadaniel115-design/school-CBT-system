@@ -259,14 +259,14 @@
         .calc-screen {
             font-size: 1.25rem;
         }
-        
+
         .autosave-toast {
             right: 1rem;
             bottom: 1rem;
             font-size: 0.85rem;
         }
     }
-    
+
     @media (max-width: 480px) {
         .autosave-toast {
             right: 0.75rem;

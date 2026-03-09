@@ -352,6 +352,7 @@ class ExamController extends Controller
             'subjectIds' => $selectedSubjectIds,
             'englishQuestionCount' => $englishQuestionCount,
             'subjectQuestionCount' => $subjectQuestionCount,
+            'englishQuestionsAvailable' => $englishQuestionsAvailable,
             'duration' => Cache::get('jamb_duration_minutes', 120),
                 'englishQuestionsAvailable' => $englishQuestionsAvailable,
             ]);

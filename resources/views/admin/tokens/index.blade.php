@@ -13,15 +13,16 @@
             <p style="color: #6b7280; margin: 0.25rem 0 0; font-size: 0.875rem;">Generate and manage exam access tokens</p>
         </div>
         <div style="display: flex; gap: 0.75rem; align-items: center;">
-                <a href="{{ route('admin.tokens.create') }}" class="btn btn-primary" title="Generate Tokens">
-                    <i class="bi bi-plus-circle"></i> Generate Tokens
-                </a>
-                @if($tokens->total() > 0)
+            <a href="{{ route('admin.tokens.create') }}" class="btn btn-primary" title="Generate Tokens">
+                <i class="bi bi-plus-circle"></i> Generate Tokens
+            </a>
+            @if($tokens->total() > 0)
                 <a href="{{ route('admin.tokens.print', ['all' => 1] + request()->only(['search', 'status', 'center_id'])) }}" 
                    class="btn btn-secondary" target="_blank" title="Print all filtered tokens">
                     <i class="bi bi-printer-fill"></i> Print All
                 </a>
-                @endif
+            @endif
+        </div>
     </div>
 </div>
 
@@ -65,6 +66,14 @@
                 <option value="used_up" {{ request('status') === 'used_up' ? 'selected' : '' }}>Fully Used</option>
             </select>
         </div>
+        <div style="width: 140px;">
+            <label class="form-label">Show</label>
+            <select name="per_page" class="form-control" onchange="this.form.submit()">
+                <option value="25" {{ ($perPage ?? 25) === 25 ? 'selected' : '' }}>25</option>
+                <option value="50" {{ ($perPage ?? 25) === 50 ? 'selected' : '' }}>50</option>
+                <option value="100" {{ ($perPage ?? 25) === 100 ? 'selected' : '' }}>100</option>
+            </select>
+        </div>
         <button type="submit" class="btn btn-secondary">
             <i class="bi bi-search"></i> Filter
         </button>
@@ -74,6 +83,17 @@
             </a>
         @endif
     </form>
+</div>
+
+<!-- Pagination Info -->
+<div class="d-flex justify-content-between align-items-center" style="margin-bottom: 1rem;">
+    <div style="color: #6b7280; font-size: 0.9rem;">
+        Showing {{ $tokens->firstItem() ?? 0 }} to {{ $tokens->lastItem() ?? 0 }} of {{ $tokens->total() }} tokens
+    </div>
+    <div>
+        <span style="color: #6b7280; font-size: 0.9rem;">Per page:</span>
+        <span style="font-weight: 600;">{{ $perPage ?? 25 }}</span>
+    </div>
 </div>
 
 <!-- Bulk Actions -->
@@ -268,7 +288,7 @@
 
     @if($tokens->hasPages())
         <div style="padding: 1.5rem;">
-            {{ $tokens->links() }}
+            {{ $tokens->links('pagination::bootstrap-5') }}
         </div>
     @endif
 </div>
