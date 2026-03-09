@@ -353,7 +353,8 @@ class ExamController extends Controller
             'englishQuestionCount' => $englishQuestionCount,
             'subjectQuestionCount' => $subjectQuestionCount,
             'duration' => Cache::get('jamb_duration_minutes', 120),
-        ]);
+                'englishQuestionsAvailable' => $englishQuestionsAvailable,
+            ]);
     }
 
     public function take(ExamSession $session)

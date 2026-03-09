@@ -1,20 +1,25 @@
-                /* Desktop sidebar: fixed, full height, above content */
+                /* Desktop sidebar: side-by-side layout, no overlay */
                 @media (min-width: 992px) {
+                    body {
+                        display: flex !important;
+                    }
                     .sidebar {
-                        position: fixed;
-                        top: 0;
-                        left: 0;
-                        width: var(--sidebar-width, 260px);
-                        height: 100vh;
-                        background: #fff;
-                        border-right: 1px solid #e2e8f0;
-                        z-index: 1040;
-                        box-shadow: 2px 0 20px rgba(15, 23, 42, 0.08);
+                        width: var(--sidebar-width, 260px) !important;
+                        flex-shrink: 0 !important;
+                        position: static !important;
+                        height: 100vh !important;
+                        top: auto !important;
+                        left: auto !important;
+                        z-index: auto !important;
+                        background: #fff !important;
+                        border-right: 1px solid #e2e8f0 !important;
+                        box-shadow: none !important;
                     }
                     .main-content {
-                        margin-left: var(--sidebar-width, 260px) !important;
-                        position: relative;
-                        z-index: 1;
+                        flex: 1 !important;
+                        margin-left: 0 !important;
+                        position: static !important;
+                        z-index: auto !important;
                     }
                 }
         /* Sidebar collapse for student panel */
@@ -31,13 +36,12 @@
         }
 
         /* Collapsed sidebar on desktop */
-        body.sidebar-collapsed .sidebar {
-            width: 64px !important;
-            min-width: 64px !important;
-            overflow-x: hidden;
-        }
-        body.sidebar-collapsed .main-content {
-            margin-left: 64px !important;
+        @media (min-width: 992px) {
+            body.sidebar-collapsed .sidebar {
+                width: 64px !important;
+                min-width: 64px !important;
+                overflow-x: hidden;
+            }
         }
 
         /* Sidebar slide for mobile */

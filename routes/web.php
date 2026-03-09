@@ -130,6 +130,9 @@ Route::post('performance/generate', [AdminPerformanceController::class, 'generat
             Route::post('settings/clear-exam-sessions', [AdminSettingsController::class, 'clearExamSessions'])->name('settings.clear-exam-sessions');
             Route::post('settings/delete-exam-sessions', [AdminSettingsController::class, 'hardDeleteExamSessions'])->name('settings.delete-exam-sessions');
 
+    // Add missing admin.settings.index route for compatibility
+    Route::get('admin/settings', [AdminSettingsController::class, 'index'])->name('admin.settings.index');
+
             // Profile
             Route::get('profile', [ProfileController::class, 'editAdmin'])->name('profile.edit');
             Route::post('profile', [ProfileController::class, 'updateAdmin'])->name('profile.update');
