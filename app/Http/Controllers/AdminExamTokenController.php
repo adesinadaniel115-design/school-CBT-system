@@ -9,15 +9,11 @@ class AdminExamTokenController extends Controller
 {
     public function index(Request $request)
     {
-<<<<<<< HEAD
-        $query = ExamToken::with(['creator', 'usages.user', 'center']);
-=======
         $includePlan = \Schema::hasTable('plans');
         $query = ExamToken::with(['creator', 'usages.user', 'center']);
         if ($includePlan) {
             $query->with('plan');
         }
->>>>>>> origin/backup-main
 
         if ($request->filled('search')) {
             $query->where('code', 'like', "%{$request->search}%");
@@ -42,19 +38,12 @@ class AdminExamTokenController extends Controller
         $tokens = $query->latest()->paginate(20);
         $centers = \App\Models\Center::orderBy('name')->get();
 
-<<<<<<< HEAD
-        return view('admin.tokens.index', compact('tokens', 'centers'));
-=======
         return view('admin.tokens.index', compact('tokens', 'centers', 'includePlan'));
->>>>>>> origin/backup-main
     }
 
     public function create()
     {
         $centers = \App\Models\Center::orderBy('name')->get();
-<<<<<<< HEAD
-        return view('admin.tokens.create', compact('centers'));
-=======
         $plans = [];
 
         if (\Schema::hasTable('plans')) {
@@ -62,7 +51,6 @@ class AdminExamTokenController extends Controller
         }
 
         return view('admin.tokens.create', compact('centers', 'plans'));
->>>>>>> origin/backup-main
     }
 
     public function store(Request $request)
@@ -72,9 +60,6 @@ class AdminExamTokenController extends Controller
             'expires_at' => ['nullable', 'date', 'after:today'],
             'notes' => ['nullable', 'string', 'max:500'],
             'center_id' => ['nullable','exists:centers,id'],
-<<<<<<< HEAD
-        ]);
-=======
         ];
 
         if (\Schema::hasTable('plans')) {
@@ -83,7 +68,6 @@ class AdminExamTokenController extends Controller
         }
 
         $validated = $request->validate($rules);
->>>>>>> origin/backup-main
 
         $tokens = [];
         $planValue = null;
@@ -102,10 +86,7 @@ class AdminExamTokenController extends Controller
                 'expires_at' => $validated['expires_at'] ?? null,
                 'notes' => $validated['notes'] ?? null,
                 'center_id' => $validated['center_id'] ?? null,
-<<<<<<< HEAD
-=======
                 'plan_id' => $planValue,
->>>>>>> origin/backup-main
             ]);
         }
 
