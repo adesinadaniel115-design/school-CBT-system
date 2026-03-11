@@ -32,6 +32,7 @@
                     
                     <div class="mb-4 form-check">
                         <input class="form-check-input" type="checkbox" id="append" name="append" value="1" {{ old('append') ? 'checked' : '' }}>
+                            <input class="form-check-input" type="checkbox" id="append" name="append" value="1" checked>
                         <label class="form-check-label" for="append">
                             Keep existing questions (append/merge)
                         </label>
@@ -69,6 +70,12 @@
                         <a href="{{ route('admin.questions.import.template') }}" class="btn btn-success ms-3" download>
                             <i class="bi bi-download me-2"></i>Download Template
                         </a>
+                    
+                            <div class="mb-4">
+                                <button type="submit" class="btn btn-primary btn-lg w-100">
+                                    <i class="bi bi-upload me-2"></i>Import Questions
+                                </button>
+                            </div>
                     </div>
                 </div>
 
