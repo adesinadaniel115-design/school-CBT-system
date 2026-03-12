@@ -877,10 +877,24 @@
     let calcExpression = '';
 
     function toggleCalculator() {
-        const overlay = document.getElementById('calculatorOverlay');
-        overlay.classList.toggle('show');
-        if (overlay.classList.contains('show')) {
-            document.getElementById('calcDisplay').focus();
+        const calculatorOverlay = document.getElementById('calculatorOverlay');
+
+        // Toggle visibility of the calculator overlay
+        if (calculatorOverlay.classList.contains('show')) {
+            calculatorOverlay.classList.remove('show');
+        } else {
+            // Close sidebar on mobile
+            const sidebar = document.getElementById('examSidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            if (window.innerWidth <= 991) {
+                sidebar.classList.remove('show');
+                sidebarOverlay.classList.remove('show');
+            }
+
+            // Show calculator
+            setTimeout(() => {
+                calculatorOverlay.classList.add('show');
+            }, 300); // Adjust delay as needed
         }
     }
 

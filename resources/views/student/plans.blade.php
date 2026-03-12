@@ -169,11 +169,19 @@
         .main-content {
             flex: 1;
             padding: 2rem;
-            transition: padding 0.25s ease;
+            transition: padding 0.25s ease, margin-left 0.3s;
             width: 100%;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+        }
+        @media (min-width: 992px) {
+            .main-content {
+                margin-left: 280px !important;
+            }
+            body.sidebar-collapsed .main-content {
+                margin-left: 64px !important;
+            }
         }
 
         .top-actions {
@@ -703,7 +711,7 @@
     <!-- Main Content -->
     <div class="main-content">
         <div class="top-actions">
-            <button class="sidebar-toggle" id="sidebarToggle" type="button" style="display: flex !important;">
+            <button type="button" class="sidebar-toggle" id="studentSidebarToggle" aria-label="Toggle sidebar" style="display: flex !important;">
                 <i class="bi bi-list"></i>
             </button>
         </div>

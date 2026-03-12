@@ -155,12 +155,38 @@
             width: 100%;
         }
 
+        /* Desktop: shift main content right by sidebar width */
+        @media (min-width: 992px) {
+            .main-content {
+                margin-left: 280px !important;
+                transition: margin-left 0.3s;
+            }
+            body.sidebar-collapsed .main-content {
+                margin-left: 64px !important;
+            }
+        }
+        }
+
         .top-actions {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: flex-end;
             gap: 1rem;
             margin-bottom: 1.5rem;
+        }
+
+        /* Desktop: move profile chip to right edge */
+        @media (min-width: 992px) {
+            .top-actions {
+                position: relative;
+            }
+            .profile-chip {
+                position: absolute;
+                right: 0;
+                top: 0;
+                z-index: 1100;
+            }
+        }
         }
 
         .sidebar-toggle {

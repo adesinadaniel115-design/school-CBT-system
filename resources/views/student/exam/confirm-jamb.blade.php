@@ -421,7 +421,7 @@
                     <div class="subject-item">
                         <div class="subject-icon"><i class="bi bi-book-fill"></i></div>
                         <div class="subject-name">{{ $englishSubject->name }}</div>
-                        <div class="subject-count">{{ $englishQuestionsAvailable }} questions (actual)</div>
+                        <div class="subject-count">{{ $englishQuestionCount }} questions</div>
                     </div>
                     @foreach($selectedSubjects as $subject)
                         <div class="subject-item">
