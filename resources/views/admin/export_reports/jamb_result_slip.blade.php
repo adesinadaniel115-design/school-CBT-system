@@ -2,227 +2,269 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>JAMB UTME Result Slip</title>
+    <title>JAMB Mock Examination Result Slip</title>
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'DejaVu Sans', Arial, sans-serif; color: #000; line-height: 1.4; }
-        
-        .slip { width: 100%; max-width: 800px; margin: 0 auto; padding: 20px; min-height: 100vh; position: relative; }
-        
-        /* Logo - Top Left */
-        .logo { position: absolute; top: 20px; left: 20px; width: 70px; height: 70px; }
-        .logo img { width: 100%; height: 100%; object-fit: contain; }
-        
-        /* Student Photo - Top Right */
-        .student-photo { position: absolute; top: 200px; right: 80px; width: 100px; height: 120px; border: 1px solid #000; display: flex; align-items: center; justify-content: center; background: #f5f5f5; overflow: hidden; }
-        .student-photo img { width: 100%; height: 100%; object-fit: cover; }
-        
-        
-        /* Watermark */
-        .watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); color: #ccc; opacity: 0.15; z-index: -1; white-space: nowrap; pointer-events: none; }
-        
+
+        body {
+            font-family: 'DejaVu Sans', Arial, sans-serif;
+            color: #000;
+            font-size: 12px;
+        }
+
+        .page {
+            position: relative;
+            padding: 1.5cm;
+            min-height: 27cm;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* HEADER */
         .header {
             text-align: center;
-            margin-bottom: 1.25rem;
-            padding: 1rem 1.25rem;
-            border-radius: 12px;
-            background: linear-gradient(120deg, #1e3a8a, #3b82f6);
-            color: white;
-            position: relative;
+            margin-bottom: 0.8cm;
+            border-bottom: 2px solid #000;
+            padding-bottom: 0.3cm;
         }
 
         .header h1 {
-            margin: 0;
-            font-size: 1.5rem;
-            letter-spacing: 0.04em;
+            font-size: 20px;
+            font-weight: bold;
         }
 
-        .header .institution-name {
-            font-weight: 700;
-            font-size: 1rem;
-            margin-top: 0.25rem;
-            opacity: 0.9;
-        }
-
-        .header .institution-address {
-            font-size: 0.85rem;
-            opacity: 0.85;
-            margin-top: 0.15rem;
+        .header h2 {
+            font-size: 13px;
+            margin-top: 3px;
         }
 
         .header .title {
-            font-weight: 700;
-            font-size: 0.95rem;
-            margin-top: 0.5rem;
-            opacity: 0.9;
+            font-size: 12px;
+            margin-top: 4px;
         }
 
-        .logo {
-            position: absolute;
-            top: 16px;
-            left: 16px;
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
-            overflow: hidden;
-            background: rgba(255, 255, 255, 0.15);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .logo img {
+        /* TOP SECTION */
+        .top-section {
+            display: table;
             width: 100%;
-            height: 100%;
-            object-fit: contain;
+            margin-bottom: 0.8cm;
         }
-        
-        .section { margin: 15px 0; }
-        .section-title { font-weight: 700; font-size: 11px; text-transform: uppercase; margin: 10px 0 8px 0; border-bottom: 2px solid #000; padding-bottom: 4px; }
-        
-        table { width: 100%; border-collapse: collapse; margin: 8px 0; }
-        th, td { border: 1px solid #000; padding: 6px 8px; text-align: left; font-size: 10px; }
-        th { font-weight: 700; background: #f5f5f5; }
-        
-        .info { display: block; margin-bottom: 1cm; }
-        .details .field { margin-bottom: 0.25cm; font-size: 12px; }
-        .details .field strong { font-weight: 700; }
-        
-        .scores-table { width: 100%; }
-        .scores-table th, .scores-table td { border: 1px solid #000; padding: 8px; text-align: center; }
-        .subject-name { text-align: left; }
-        
-        .total-row { font-weight: 700; background: #f5f5f5; }
-        
-        .remarks-row { display: flex; margin: 6px 0; font-size: 11px; }
-        .remarks-col { flex: 0.5; }
-        
-        .comment-box { margin: 8px 0; padding: 8px; border: 1px solid #000; font-size: 10px; line-height: 1.4; }
-        
-        .date-generated { text-align: right; font-size: 10px; margin-top: 15px; }
-        
-        .page-break { page-break-after: always; }    </style>
+
+        .details {
+            display: table-cell;
+            width: 70%;
+            vertical-align: top;
+        }
+
+        .student-photo {
+            display: table-cell;
+            width: 30%;
+            text-align: right;
+        }
+
+        .student-photo img {
+            width: 100px;
+            height: 120px;
+            border: 1px solid #000;
+        }
+
+        .field {
+            margin-bottom: 6px;
+        }
+
+        .field strong {
+            display: inline-block;
+            width: 110px;
+        }
+
+        /* TABLE */
+        .scores table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .scores th {
+            background: #000;
+            color: #fff;
+            padding: 6px;
+            font-size: 12px;
+            text-align: left;
+        }
+
+        .scores td {
+            padding: 6px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .scores td:last-child {
+            text-align: center;
+            font-weight: bold;
+        }
+
+        /* TOTAL */
+        .total {
+            text-align: center;
+            margin: 15px 0;
+            border-top: 2px solid #000;
+            border-bottom: 2px solid #000;
+            padding: 10px 0;
+        }
+
+        .total .label {
+            font-size: 13px;
+        }
+
+        .total .score {
+            font-size: 28px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        /* REMARKS */
+        .remarks {
+            margin-top: 10px;
+            line-height: 1.6;
+        }
+
+        /* SIGNATURE */
+        .signature {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* FOOTER */
+        .footer {
+            margin-top: auto;
+            font-size: 10px;
+            text-align: center;
+            border-top: 1px solid #ccc;
+            padding-top: 5px;
+        }
+    </style>
 </head>
 <body>
 
-<!-- PROFESSIONAL LAYOUT - updated 2026-03-01; clear view cache if you still see old design -->
+@foreach($reports as $report)
 
-@foreach($reports as $idx => $report)
+<div class="page">
 
-{{-- Watermark temporarily disabled to avoid GD errors
-<!-- Watermark with adjustable font size -->
-@if($schoolName)
-    <div class="watermark" style="font-size: {{ $watermarkFontSize }}px;">{{ $schoolName }}</div>
-@endif
---}}
-
-<div class="slip">
+    <!-- HEADER -->
     <div class="header">
-        @if(!empty($schoolLogoBase64))
-            <div class="logo">
-                <img src="data:image/png;base64,{{ $schoolLogoBase64 }}" alt="Logo">
-            </div>
-        @endif
+        <h1>JAMB Mock Examination</h1>
+        <h2>UTME MOCK RESULT SLIP</h2>
 
-        <h1>JAMB MOCK EXAM RESULT SLIP</h1>
-
-        @if(!empty($schoolName))
-            <div class="institution-name">{{ $schoolName }}</div>
-        @endif
-
-        @if(!empty($schoolAddress))
-            <div class="institution-address">{{ $schoolAddress }}</div>
-        @endif
-
-        @php
-            $studentCenter = $report['student']->center?->name ?? 'No center';
-            $printedCenter = $centerName ?? $studentCenter;
-        @endphp
-        <div class="title">Center: {{ $printedCenter }}</div>
-    </div>
-
-    <!-- Student Photo - Top Right -->
-    <div class="student-photo">
-        @if($report['student']->profile_photo_path)
-            <img src="{{ asset('storage/' . $report['student']->profile_photo_path) }}" alt="Photo">
+        @if(!empty($centerName))
+            <div class="title">Center: {{ $centerName }}</div>
         @else
-            <span style="font-size: 11px;">No Photo</span>
+            <div class="title">Center: All Centers</div>
         @endif
     </div>
 
-    <div class="section">
-        <div class="section-title">Subject Scores</div>
-        
-        <table class="scores-table">
+    <!-- TOP SECTION -->
+    <div class="top-section">
+
+        <div class="details">
+            <div class="field"><strong>Full Name:</strong> {{ $report['student']->name }}</div>
+            <div class="field"><strong>Candidate ID:</strong> {{ $report['student']->student_id ?? 'N/A' }}</div>
+            <div class="field"><strong>Center:</strong> {{ $report['student']->center?->name ?? '—' }}</div>
+            <div class="field"><strong>Email:</strong> {{ $report['student']->email ?? 'N/A' }}</div>
+        </div>
+
+        <div class="student-photo">
+            @if($report['student']->profile_photo_path)
+<img src="{{ asset('storage/' . $report['student']->profile_photo_path) }}">
+            @else
+                <div style="width:100px;height:120px;border:1px solid #000;display:flex;align-items:center;justify-content:center;">
+                    No Photo
+                </div>
+            @endif
+        </div>
+
+    </div>
+
+    <!-- SCORES -->
+    <div class="scores">
+        <table>
             <thead>
                 <tr>
-                    <th class="subject-name">Subject</th>
+                    <th>Subject</th>
                     <th>Score /100</th>
                 </tr>
             </thead>
             <tbody>
-                @forelse($report['subject_scores'] as $subScore)
-                <tr>
-                    <td class="subject-name">{{ $subScore->subject->name }}</td>
-                    <td>{{ (int)$subScore->score_over_100 }}</td>
-                </tr>
+                @forelse($report['subject_scores'] as $sub)
+                    <tr>
+                        <td>{{ $sub->subject->name }}</td>
+                        <td>{{ (int)$sub->score_over_100 }}</td>
+                    </tr>
                 @empty
-                <tr>
-                    <td colspan="2" style="text-align:center;">No subject scores available</td>
-                </tr>
+                    <tr>
+                        <td colspan="2" style="text-align:center;">No subject performance available</td>
+                    </tr>
                 @endforelse
-                
-                <!-- Padding rows if less than 4 subjects -->
-                @for($i = count($report['subject_scores']); $i < 4; $i++)
-                <tr>
-                    <td class="subject-name">&nbsp;</td>
-                    <td>&nbsp;</td>
-                </tr>
-                @endfor
-                
-                <tr class="total-row">
-                    <td>Total Score</td>
-                    <td>{{ $report['total_score'] }}/400</td>
-                </tr>
             </tbody>
         </table>
     </div>
 
-    <!-- Performance & Comments Section -->
-    <div class="section">
-        <div class="section-title">Performance Assessment</div>
-        <div class="remarks-row">
-            <div class="remarks-col">
-                <div class="label">Performance Remark</div>
-                <div class="value">{{ $report['remark'] }}</div>
-            </div>
+    <!-- TOTAL -->
+    <div class="total">
+        <div class="label">TOTAL SCORE</div>
+        <div class="score">{{ $report['total_score'] }}/400</div>
+    </div>
+
+    <!-- REMARKS -->
+    <div class="remarks">
+        <p><strong>Performance:</strong> 
+            @if($report['total_score'] >= 300)
+                Excellent
+            @elseif($report['total_score'] >= 200)
+                Good
+            @elseif($report['total_score'] >= 150)
+                Average
+            @else
+                Needs Improvement
+            @endif
+        </p>
+
+        <p><strong>Remark:</strong> {{ $report['remark'] }}</p>
+
+        <p><strong>General Comment:</strong> 
+            @if($report['total_score'] >= 300)
+                Outstanding performance. Keep it up!
+            @elseif($report['total_score'] >= 200)
+                Good effort. With more practice, you can improve further.
+            @elseif($report['total_score'] >= 150)
+                Fair performance. More practice is recommended.
+            @else
+                You need more practice. Stay consistent and improve.
+            @endif
+        </p>
+
+        <p><strong>Time spent:</strong> {{ $report['time_spent'] ? $report['time_spent'].' minutes' : 'N/A' }}</p>
+        <p><strong>Exam Date:</strong> {{ $report['completed_at']?->format('d/m/Y H:i') ?? 'N/A' }}</p>
+    </div>
+
+    <!-- SIGNATURE -->
+    <div class="signature">
+        <div>
+            ___________________________<br>
+            Candidate Signature
         </div>
 
-        <div class="remarks-row">
-            <div class="remarks-col">
-                <div class="label">Time Spent</div>
-                <div class="value">{{ $report['time_spent'] ? $report['time_spent'] . ' minutes' : 'N/A' }}</div>
-            </div>
-        </div>
-
-        <div class="remarks-row">
-            <div class="remarks-col">
-                <div class="label">Exam Date</div>
-                <div class="value">{{ $report['completed_at']?->format('d/m/Y H:i') ?? 'N/A' }}</div>
-            </div>
-        </div>
-
-        <div class="section-title" style="margin-top: 12px;">General Comment</div>
-        <div class="comment-box">
-            {{ $report['comment'] }}
+        <div style="text-align: right;">
+            ___________________________<br>
+            Authorized Signature
         </div>
     </div>
 
-    <!-- Date Generated -->
-    <div class="date-generated">
-        Generated: {{ now()->format('d/m/Y H:i:s') }}
+    <!-- FOOTER -->
+    <div class="footer">
+        Generated on {{ now()->format('d/m/Y H:i') }}
     </div>
+
 </div>
 
 @endforeach
