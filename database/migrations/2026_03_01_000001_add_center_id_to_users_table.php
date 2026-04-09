@@ -8,25 +8,20 @@ return new class extends Migration
 {
     public function up(): void
     {
-<<<<<<< HEAD
-        Schema::table('users', function (Blueprint $table) {
-            $table->foreignId('center_id')->nullable()->constrained('centers')->onDelete('set null');
-        });
-=======
         if (!Schema::hasColumn('users', 'center_id')) {
             Schema::table('users', function (Blueprint $table) {
-                // Add center_id without foreign key constraint to avoid dependency issues
-                $table->unsignedBigInteger('center_id')->nullable();
+                $table->foreignId('center_id')->nullable()->constrained('centers')->nullOnDelete();
             });
         }
->>>>>>> origin/backup-main
     }
 
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropForeignKeyIfExists(['center_id']);
-            $table->dropColumn('center_id');
-        });
+        if (Schema::hasColumn('users', 'center_id')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->dropForeign(['center_id']);
+                $table->dropColumn('center_id');
+            });
+        }
     }
 };

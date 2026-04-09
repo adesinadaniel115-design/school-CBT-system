@@ -77,8 +77,6 @@ class User extends Authenticatable
     }
 
     /**
-<<<<<<< HEAD
-=======
      * Plans that have been granted to the student (via token redemption).
      */
     public function studentPlans()
@@ -123,6 +121,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Helper to determine whether the current student has offline package access.
+     */
+    public function hasActivePackage(): bool
+    {
+        $planRecord = $this->studentPlans()
+            ->where(function ($q) {
+                $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
+            })
+            ->where('attempts_remaining', '>', 0)
+            ->orderBy('expires_at', 'desc')
+            ->first();
+
+        return (bool) $planRecord;
+    }
+
+    /**
      * Helper to determine whether the current student is allowed a named feature.
      *
      * Supported feature names correspond to the boolean columns on the `plans`
@@ -145,7 +159,6 @@ class User extends Authenticatable
     }
 
     /**
->>>>>>> origin/backup-main
      * Get the center this user (student) belongs to
      */
     public function center()

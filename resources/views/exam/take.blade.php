@@ -275,6 +275,13 @@
             font-size: 0.75rem;
         }
     }
+
+    /* Ensure exam pages render footer below the content rather than beside it */
+    @media (min-width: 992px) {
+        body {
+            display: block !important;
+        }
+    }
 </style>
 @endpush
 
@@ -644,6 +651,14 @@
     </form>
 </main>
 
+<div id="submissionOverlay" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(15,23,42,0.85);color:#fff;backdrop-filter:blur(4px);padding:2rem;align-items:center;justify-content:center;text-align:center;">
+    <div style="max-width:420px;margin:auto;">
+        <div style="font-size:3rem;line-height:1;">⏳</div>
+        <h2 style="margin:1rem 0 0.5rem;">Submitting exam...</h2>
+        <p id="submissionOverlayMessage" style="opacity:.9;">Please wait while we save your answers and complete submission.</p>
+    </div>
+</div>
+
 <div class="autosave-toast" id="autosaveToast" role="status" aria-live="polite">
     <i class="bi bi-check-circle-fill"></i>
     <span>Saved</span>
@@ -707,34 +722,147 @@
         }
     }
 
+    const pendingSaveRequests = new Map();
+    const saveRetryLimit = 3;
+    const saveEndpoint = "{{ route('exam.answer', $session) }}";
+    let ignoreBeforeUnload = false;
+
     function saveAnswer(questionId, index) {
         const card = document.querySelector(`.question-card[data-question-index="${index}"]`);
         if (!card) return;
 
         const selected = card.querySelector('input[type="radio"]:checked');
-        const selectedOption = selected ? selected.value : '';
+        const selectedOption = selected ? selected.value : null;
         const token = document.querySelector('input[name="_token"]')?.value;
 
         if (!token) {
+            console.error('CSRF token not found when saving answer');
             return;
         }
 
-        const formData = new FormData();
-        formData.append('_token', token);
-        formData.append('question_id', questionId);
-        formData.append('selected_option', selectedOption);
+        if (selectedOption === null) {
+            return;
+        }
 
-        fetch("{{ route('exam.answer', $session) }}", {
+        const request = {
+            questionId,
+            selectedOption,
+            attempts: 0,
+            token,
+            index,
+            inFlight: false,
+        };
+
+        pendingSaveRequests.set(questionId, request);
+        processSaveQueue(questionId);
+    }
+
+    function processSaveQueue(questionId) {
+        const request = pendingSaveRequests.get(questionId);
+        if (!request || request.inFlight) return;
+
+        request.inFlight = true;
+        request.attempts += 1;
+
+        const formData = new FormData();
+        formData.append('_token', request.token);
+        formData.append('question_id', request.questionId);
+        if (request.selectedOption) {
+            formData.append('selected_option', request.selectedOption);
+        }
+
+        fetch(saveEndpoint, {
             method: 'POST',
             body: formData,
-        }).then(() => {
+            keepalive: true,
+        }).then(response => {
+            if (pendingSaveRequests.get(questionId) !== request) {
+                return;
+            }
+
+            request.inFlight = false;
+
+            if (!response.ok) {
+                throw new Error('Save answer request failed with status ' + response.status);
+            }
+
+            pendingSaveRequests.delete(questionId);
             showAutosaveToast();
-        }).catch(() => {
-            // Silent fail: we do not block the UI on network issues.
+        }).catch((error) => {
+            if (pendingSaveRequests.get(questionId) !== request) {
+                return;
+            }
+
+            request.inFlight = false;
+            console.warn('Answer save failed', {
+                questionId: request.questionId,
+                attempts: request.attempts,
+                error: error.message,
+            });
+
+            if (request.attempts < saveRetryLimit) {
+                setTimeout(() => processSaveQueue(questionId), request.attempts * 1000);
+            } else {
+                showAutosaveError(request.questionId);
+            }
         });
     }
 
+    function flushPendingSavesOnUnload() {
+        if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+            pendingSaveRequests.forEach(request => {
+                const payload = new URLSearchParams();
+                payload.append('_token', request.token);
+                payload.append('question_id', request.questionId);
+                if (request.selectedOption) {
+                    payload.append('selected_option', request.selectedOption);
+                }
+
+                const beaconData = new Blob([payload.toString()], {
+                    type: 'application/x-www-form-urlencoded;charset=UTF-8'
+                });
+                navigator.sendBeacon(saveEndpoint, beaconData);
+            });
+        } else {
+            pendingSaveRequests.forEach((_, questionId) => processSaveQueue(questionId));
+        }
+    }
+
+    function waitForPendingSaves(timeout = 2500) {
+        return new Promise((resolve) => {
+            const startTime = Date.now();
+
+            function checkQueue() {
+                if (pendingSaveRequests.size === 0) {
+                    return resolve(true);
+                }
+
+                if (Date.now() - startTime >= timeout) {
+                    return resolve(false);
+                }
+
+                setTimeout(checkQueue, 100);
+            }
+
+            checkQueue();
+        });
+    }
+
+    function showAutosaveError(questionId) {
+        const toast = document.getElementById('autosaveToast');
+        if (!toast) return;
+
+        toast.classList.add('error');
+        toast.querySelector('span').textContent = 'Save failed. Please check your connection.';
+
+        setTimeout(() => {
+            toast.classList.remove('error');
+            toast.querySelector('span').textContent = 'Saved';
+        }, 2500);
+    }
+
     let autosaveTimer = null;
+    let submissionTimeoutId = null;
 
     function showAutosaveToast() {
         const toast = document.getElementById('autosaveToast');
@@ -751,6 +879,21 @@
         autosaveTimer = setTimeout(() => {
             toast.classList.remove('show');
         }, 1200);
+    }
+
+    function showSubmissionOverlay(message) {
+        const overlay = document.getElementById('submissionOverlay');
+        const messageEl = document.getElementById('submissionOverlayMessage');
+        if (!overlay || !messageEl) return;
+
+        messageEl.textContent = message;
+        overlay.style.display = 'flex';
+    }
+
+    function hideSubmissionOverlay() {
+        const overlay = document.getElementById('submissionOverlay');
+        if (!overlay) return;
+        overlay.style.display = 'none';
     }
 
     function toggleFlag(index) {
@@ -800,7 +943,7 @@
         submitModal.show();
     }
 
-    function submitExam() {
+    async function submitExam() {
         // Prevent double submission
         if (isSubmitting) {
             console.log('Already submitting, please wait...');
@@ -845,9 +988,25 @@
             form.removeEventListener('submit', handleSubmitError);
         }, { once: true });
         
+        // Show a clear submission overlay so the user knows the exam is being submitted
+        showSubmissionOverlay('Submitting exam... Please do not close this window.');
+        submissionTimeoutId = setTimeout(() => {
+            if (document.visibilityState !== 'hidden') {
+                showSubmissionOverlay('Submission is taking longer than expected. Please wait, or refresh if the page does not change.');
+            }
+        }, 8000);
+
+        // Ensure all pending answer saves are flushed before final submit
+        const saveFlushSuccess = await waitForPendingSaves(3000);
+        if (!saveFlushSuccess && pendingSaveRequests.size > 0) {
+            console.warn('Submitting exam while some answer saves are still pending.', {
+                pendingSaves: pendingSaveRequests.size,
+            });
+        }
+
         // Ensure all selected answers are included in the form submission
         const allQuestions = document.querySelectorAll('.question-card');
-        allQuestions.forEach((card, idx) => {
+        allQuestions.forEach((card) => {
             const checkedRadio = card.querySelector('input[type="radio"]:checked');
             if (checkedRadio) {
                 // Ensure the answer is set in the form
@@ -858,7 +1017,15 @@
 
         // Submit the form
         console.log('Submitting exam form', { timestamp: new Date().toISOString() });
-        form.submit();
+        try {
+            form.submit();
+        } catch (error) {
+            console.error('Error submitting exam form:', error);
+            showSubmissionOverlay('Submission failed. Please refresh the page and try again.');
+            if (submissionTimeoutId) {
+                clearTimeout(submissionTimeoutId);
+            }
+        }
     }
 
     function toggleSidebar() {
@@ -1047,11 +1214,18 @@
                 // Attempt submission - add slight delay to ensure DOM is ready
                 setTimeout(() => {
                     try {
+                        if (isSubmitting) {
+                            return;
+                        }
+                        ignoreBeforeUnload = true;
+                        isSubmitting = true;
+
                         if (!form) {
                             console.error('Form element not found for auto-submit');
                             timerEl.textContent = 'ERROR: Form not found';
                             return;
                         }
+                        showSubmissionOverlay('Time is up. Auto-submitting your exam...');
                         console.log('Executing auto-submit', { formId: form.id });
                         form.submit();
                     } catch (error) {
@@ -1114,8 +1288,15 @@
 
     // Prevent accidental page refresh
     window.addEventListener('beforeunload', function (e) {
-        e.preventDefault();
-        e.returnValue = '';
+        if (ignoreBeforeUnload) {
+            return;
+        }
+
+        if (pendingSaveRequests.size > 0) {
+            flushPendingSavesOnUnload();
+            e.preventDefault();
+            e.returnValue = '';
+        }
     });
 </script>
 @endpush

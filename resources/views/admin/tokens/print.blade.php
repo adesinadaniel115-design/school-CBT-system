@@ -637,33 +637,35 @@
 
                             <div class="card-details">
                                 @if(\Schema::hasTable('plans') && $token->plan)
-                                <div class="detail-item">
-                                    <div class="detail-label">Grants</div>
-                                    <div class="detail-value">{{ $token->plan->attempts_allowed }} attempts</div>
-                                </div>
+                                    <div class="detail-item">
+                                        <div class="detail-label">Grants</div>
+                                        <div class="detail-value">{{ $token->plan->attempts_allowed }} attempts</div>
+                                    </div>
+                                    <div class="detail-item">
+                                        <div class="detail-label">Plan Attempts</div>
+                                        <div class="detail-value">{{ $token->plan->attempts_allowed }}</div>
+                                    </div>
                                 @else
-                                <div class="detail-item">
-                                    <div class="detail-label">Max Uses</div>
-                                    <div class="detail-value">{{ $token->max_uses }}</div>
-                                </div>
+                                    <div class="detail-item">
+                                        <div class="detail-label">Max Uses</div>
+                                        <div class="detail-value">{{ $token->max_uses }}</div>
+                                    </div>
                                 @endif
+
                                 @if($token->center)
-                                <div class="detail-item">
-                                    <div class="detail-label">Center</div>
-                                    <div class="detail-value" style="font-size:9px;">{{ $token->center->name }}</div>
-                                </div>
+                                    <div class="detail-item">
+                                        <div class="detail-label">Center</div>
+                                        <div class="detail-value" style="font-size:9px;">{{ $token->center->name }}</div>
+                                    </div>
                                 @endif
+
+                                <div class="detail-item">
                                     <div class="detail-label">Remaining</div>
                                     <div class="detail-value" style="color: {{ $token->remainingUses() > 0 ? '#10b981' : '#ef4444' }};">
                                         {{ $token->remainingUses() }}
                                     </div>
                                 </div>
-                                @if(\Schema::hasTable('plans') && $token->plan)
-                                <div class="detail-item">
-                                    <div class="detail-label">Plan Attempts</div>
-                                    <div class="detail-value">{{ $token->plan->attempts_allowed }}</div>
-                                </div>
-                                @endif
+
                                 <div class="detail-item">
                                     <div class="detail-label">Expires</div>
                                     <div class="detail-value" style="font-size: 8px;">

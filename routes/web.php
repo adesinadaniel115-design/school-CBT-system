@@ -78,64 +78,66 @@ Route::middleware('auto.login')->group(function () {
         Route::get('/exam/{session}/review', [ExamController::class, 'review'])->name('exam.review');
     });
 
-    Route::prefix('admin')
-        ->middleware(['auth', 'admin'])
-        ->name('admin.')
-        ->group(function () {
-            Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
-            Route::get('all-questions', [AdminDashboardController::class, 'allQuestions'])->name('all-questions');
-            Route::get('all-exams', [AdminDashboardController::class, 'allExams'])->name('all-exams');
-            
-            // Student Management
-            Route::resource('students', AdminStudentController::class);
-            
-            // Center Management
-            Route::resource('centers', AdminCenterController::class);
-            Route::get('centers/{center}/students', [AdminCenterController::class, 'getStudents'])->name('centers.students');
-            
-            // Exam Token Management
-            Route::get('tokens', [AdminExamTokenController::class, 'index'])->name('tokens.index');
-            Route::get('tokens/create', [AdminExamTokenController::class, 'create'])->name('tokens.create');
-            Route::post('tokens', [AdminExamTokenController::class, 'store'])->name('tokens.store');
-            Route::post('tokens/{token}/toggle', [AdminExamTokenController::class, 'toggle'])->name('tokens.toggle');
-            Route::delete('tokens/{token}', [AdminExamTokenController::class, 'destroy'])->name('tokens.destroy');
-            Route::delete('tokens-bulk-delete', [AdminExamTokenController::class, 'bulkDelete'])->name('tokens.bulk-delete');
-            Route::get('tokens/print', [AdminExamTokenController::class, 'print'])->name('tokens.print');
-            Route::post('tokens/validate', [AdminExamTokenController::class, 'validate'])->name('tokens.validate');
-            
-            // Subject & Question Management
-            Route::resource('subjects', SubjectController::class);
-            Route::resource('questions', QuestionController::class)->except(['show']);
+    if (!config('app.offline_mode') || config('app.offline_admin_enabled')) {
+        Route::prefix('admin')
+            ->middleware(['auth', 'admin'])
+            ->name('admin.')
+            ->group(function () {
+                Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+                Route::get('all-questions', [AdminDashboardController::class, 'allQuestions'])->name('all-questions');
+                Route::get('all-exams', [AdminDashboardController::class, 'allExams'])->name('all-exams');
+                
+                // Student Management
+                Route::resource('students', AdminStudentController::class);
+                
+                // Center Management
+                Route::resource('centers', AdminCenterController::class);
+                Route::get('centers/{center}/students', [AdminCenterController::class, 'getStudents'])->name('centers.students');
+                
+                // Exam Token Management
+                Route::get('tokens', [AdminExamTokenController::class, 'index'])->name('tokens.index');
+                Route::get('tokens/create', [AdminExamTokenController::class, 'create'])->name('tokens.create');
+                Route::post('tokens', [AdminExamTokenController::class, 'store'])->name('tokens.store');
+                Route::post('tokens/{token}/toggle', [AdminExamTokenController::class, 'toggle'])->name('tokens.toggle');
+                Route::delete('tokens/{token}', [AdminExamTokenController::class, 'destroy'])->name('tokens.destroy');
+                Route::delete('tokens-bulk-delete', [AdminExamTokenController::class, 'bulkDelete'])->name('tokens.bulk-delete');
+                Route::get('tokens/print', [AdminExamTokenController::class, 'print'])->name('tokens.print');
+                Route::post('tokens/validate', [AdminExamTokenController::class, 'validate'])->name('tokens.validate');
+                
+                // Subject & Question Management
+                Route::resource('subjects', SubjectController::class);
+                Route::resource('questions', QuestionController::class)->except(['show']);
 
-            // Plan Management (for subscription features)
-            Route::resource('plans', PlanController::class)->except(['show']);
-            Route::get('questions-import/download-template', [QuestionController::class, 'downloadTemplate'])->name('questions.import.template');
-            Route::get('questions-import', [QuestionController::class, 'showImportForm'])->name('questions.import.form');
-            Route::post('questions-import', [QuestionController::class, 'import'])->name('questions.import');
-            
-            // Reports & Analytics
-            Route::get('reports', [AdminReportController::class, 'index'])->name('reports.index');
-            Route::get('reports/{session}', [AdminReportController::class, 'show'])->name('reports.show');
-            
-            // Export Exam Reports
-            Route::get('export-reports', [AdminExportReportController::class, 'index'])->name('export-reports.index');
-            Route::post('export-reports/generate', [AdminExportReportController::class, 'generate'])->name('export-reports.generate');
+                // Plan Management (for subscription features)
+                Route::resource('plans', PlanController::class)->except(['show']);
+                Route::get('questions-import/download-template', [QuestionController::class, 'downloadTemplate'])->name('questions.import.template');
+                Route::get('questions-import', [QuestionController::class, 'showImportForm'])->name('questions.import.form');
+                Route::post('questions-import', [QuestionController::class, 'import'])->name('questions.import');
+                
+                // Reports & Analytics
+                Route::get('reports', [AdminReportController::class, 'index'])->name('reports.index');
+                Route::get('reports/{session}', [AdminReportController::class, 'show'])->name('reports.show');
+                
+                // Export Exam Reports
+                Route::get('export-reports', [AdminExportReportController::class, 'index'])->name('export-reports.index');
+                Route::post('export-reports/generate', [AdminExportReportController::class, 'generate'])->name('export-reports.generate');
 
-            // Performance Analytics
-            Route::get('performance', [AdminPerformanceController::class, 'index'])->name('performance.index');
-            Route::post('performance/generate', [AdminPerformanceController::class, 'generate'])->name('performance.generate');
+                // Performance Analytics
+                Route::get('performance', [AdminPerformanceController::class, 'index'])->name('performance.index');
+                Route::post('performance/generate', [AdminPerformanceController::class, 'generate'])->name('performance.generate');
 
-            // Settings
-            Route::get('settings', [AdminSettingsController::class, 'index'])->name('settings.index');
-            Route::post('settings', [AdminSettingsController::class, 'update'])->name('settings.update');
-            Route::post('settings/clear-exam-sessions', [AdminSettingsController::class, 'clearExamSessions'])->name('settings.clear-exam-sessions');
-            Route::post('settings/delete-exam-sessions', [AdminSettingsController::class, 'hardDeleteExamSessions'])->name('settings.delete-exam-sessions');
+                // Settings
+                Route::get('settings', [AdminSettingsController::class, 'index'])->name('settings.index');
+                Route::post('settings', [AdminSettingsController::class, 'update'])->name('settings.update');
+                Route::post('settings/clear-exam-sessions', [AdminSettingsController::class, 'clearExamSessions'])->name('settings.clear-exam-sessions');
+                Route::post('settings/delete-exam-sessions', [AdminSettingsController::class, 'hardDeleteExamSessions'])->name('settings.delete-exam-sessions');
 
-    // Add missing admin.settings.index route for compatibility
-    Route::get('admin/settings', [AdminSettingsController::class, 'index'])->name('admin.settings.index');
+        // Add missing admin.settings.index route for compatibility
+        Route::get('admin/settings', [AdminSettingsController::class, 'index'])->name('admin.settings.index');
 
-            // Profile
-            Route::get('profile', [ProfileController::class, 'editAdmin'])->name('profile.edit');
-            Route::post('profile', [ProfileController::class, 'updateAdmin'])->name('profile.update');
-        });
+                // Profile
+                Route::get('profile', [ProfileController::class, 'editAdmin'])->name('profile.edit');
+                Route::post('profile', [ProfileController::class, 'updateAdmin'])->name('profile.update');
+            });
+    }
 });

@@ -123,4 +123,17 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Offline / LAN mode settings
+    |--------------------------------------------------------------------------
+    |
+    | Enable offline mode to restrict admin access and support local token,
+    | plan-based access in LAN deployments.
+    |
+    */
+    'offline_mode' => env('APP_OFFLINE_MODE', false),
+    'offline_admin_enabled' => env('APP_OFFLINE_ADMIN_ENABLED', false),
+    'offline_monthly_access' => env('APP_OFFLINE_MONTHLY_ACCESS', false),
+
 ];

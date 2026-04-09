@@ -451,14 +451,13 @@
                     <p style="color: #92400e; margin-bottom: 1.5rem;">Enter your exam access token to proceed. Contact your administrator if you don't have one.</p>
 
                     <div class="form-group">
-                        <label for="token_code" class="form-label">Token Code *</label>
+                        <label for="token_code" class="form-label">Token Code{{ config('app.offline_mode') && config('app.offline_monthly_access') ? ' (optional for active monthly package)' : ' *' }}</label>
                         <input type="text" 
                                id="token_code" 
                                name="token_code" 
                                class="form-control token-input @error('token_code') is-invalid @enderror" 
                                placeholder="ABC-DEF-GHI"
                                value="{{ old('token_code') }}"
-                               required
                                autocomplete="off">
                         @error('token_code')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -490,6 +489,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let tokenValid = false;
+        const offlineMonthlyEnabled = {!! json_encode(config('app.offline_mode') && config('app.offline_monthly_access')) !!};
 
         function validateToken() {
             const input = document.getElementById('token_code');
@@ -498,7 +498,7 @@
             const startBtn = document.getElementById('startBtn');
             const code = input.value.trim().toUpperCase();
 
-            if (!code) {
+            if (!code && !offlineMonthlyEnabled) {
                 showStatus('Please enter a token code', 'error');
                 return;
             }

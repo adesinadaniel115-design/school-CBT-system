@@ -37,7 +37,7 @@
     @auth
         <a href="{{ route('student.dashboard') }}">Dashboard</a>
         <a href="{{ route('student.history') }}">History</a>
-        @if(auth()->user()->is_admin)
+        @if(auth()->user()->is_admin && (!config('app.offline_mode') || config('app.offline_admin_enabled')))
             <a href="{{ route('admin.subjects.index') }}">Admin Subjects</a>
             <a href="{{ route('admin.questions.index') }}">Admin Questions</a>
             <a href="{{ route('admin.reports.index') }}">Reports</a>

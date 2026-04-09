@@ -91,23 +91,41 @@ class ExamController extends Controller
     {
         $data = $request->validate([
             'subject_id' => ['required', 'exists:subjects,id'],
-            'token_code' => ['required', 'string'],
+            'token_code' => ['nullable', 'string'],
         ]);
 
         $studentId = $request->user()->id;
-        $tokenCode = strtoupper(trim($data['token_code']));
+        $tokenCode = strtoupper(trim($data['token_code'] ?? ''));
+        $token = null;
 
-        // Validate token
-        $token = ExamToken::where('code', $tokenCode)->first();
+        if ($tokenCode !== '') {
+            // Validate token
+            $token = ExamToken::where('code', $tokenCode)->first();
 
-        if (!$token) {
-            return back()->withErrors(['token_code' => 'Invalid token code.'])->withInput();
-        }
+            if (!$token) {
+                return back()->withErrors(['token_code' => 'Invalid token code.'])->withInput();
+            }
 
-        if (!$token->isValid()) {
-            $reason = !$token->is_active ? 'deactivated' :
-                     ($token->expires_at && $token->expires_at->isPast() ? 'expired' : 'fully used');
-            return back()->withErrors(['token_code' => "Token is {$reason}."])->withInput();
+            if (!$token->isValid()) {
+                $reason = !$token->is_active ? 'deactivated' :
+                         ($token->expires_at && $token->expires_at->isPast() ? 'expired' : 'fully used');
+                return back()->withErrors(['token_code' => "Token is {$reason}."])->withInput();
+            }
+        } elseif (config('app.offline_mode') && config('app.offline_monthly_access') && $request->user()->hasActivePackage()) {
+            // Offline monthly access path: no token required when active package exists
+            $activeStudentPlan = $request->user()->studentPlans()
+                ->where(function ($q) {
+                    $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
+                })
+                ->where('attempts_remaining', '>', 0)
+                ->orderBy('expires_at', 'desc')
+                ->first();
+
+            if (!$activeStudentPlan) {
+                return back()->withErrors(['token_code' => 'No active package found.'])->withInput();
+            }
+        } else {
+            return back()->withErrors(['token_code' => 'Token code is required.'])->withInput();
         }
 
         // Check for any active (ongoing) session again to be safe
@@ -204,52 +222,69 @@ class ExamController extends Controller
 
             ExamAnswer::insert($answers);
 
-            // consume the token, binding it and creating StudentPlan if needed
-            $ip = request()->ip();
-            $ua = request()->header('User-Agent');
-            $ok = $token->use(request()->user(), $session->id, $ip, $ua);
-            if (!$ok) {
-                throw new \Exception('Token cannot be used by this account; it may have been used by another user.');
-            }
+            if ($token) {
+                // consume the token, binding it and creating StudentPlan if needed
+                $ip = request()->ip();
+                $ua = request()->header('User-Agent');
+                $ok = $token->use(request()->user(), $session->id, $ip, $ua);
+                if (!$ok) {
+                    throw new \Exception('Token cannot be used by this account; it may have been used by another user.');
+                }
 
-            // Log token usage for debugging
-            \Log::info('Token used for exam session', [
-                'session_id' => $session->id,
-                'student_id' => $session->student_id,
-                'token_id' => $token->id,
-                'token_has_plan' => $token->plan_id ? true : false,
-                'exam_mode' => $session->exam_mode
-            ]);
+                // Log token usage for debugging
+                \Log::info('Token used for exam session', [
+                    'session_id' => $session->id,
+                    'student_id' => $session->student_id,
+                    'token_id' => $token->id,
+                    'token_has_plan' => $token->plan_id ? true : false,
+                    'exam_mode' => $session->exam_mode
+                ]);
 
-            // now that the token has been used we can locate the plan record
-            if ($token->plan_id) {
-                $record = $request->user()->studentPlans()
-                    ->where('plan_id', $token->plan_id)
-                    ->latest()
-                    ->first();
-                if ($record) {
-                    $record->decrement('attempts_remaining');
-                    $session->student_plan_id = $record->id;
-                    $session->save();
-                    
-                    \Log::info('StudentPlan updated for exam', [
-                        'session_id' => $session->id,
-                        'student_plan_id' => $record->id,
-                        'attempts_remaining' => $record->attempts_remaining
-                    ]);
+                // now that the token has been used we can locate the plan record
+                if ($token->plan_id) {
+                    $record = $request->user()->studentPlans()
+                        ->where('plan_id', $token->plan_id)
+                        ->latest()
+                        ->first();
+                    if ($record) {
+                        $record->decrement('attempts_remaining');
+                        $session->student_plan_id = $record->id;
+                        $session->save();
+                        
+                        \Log::info('StudentPlan updated for exam', [
+                            'session_id' => $session->id,
+                            'student_plan_id' => $record->id,
+                            'attempts_remaining' => $record->attempts_remaining
+                        ]);
+                    } else {
+                        \Log::warning('StudentPlan not found after token use', [
+                            'session_id' => $session->id,
+                            'student_id' => $session->student_id,
+                            'token_plan_id' => $token->plan_id
+                        ]);
+                    }
                 } else {
-                    \Log::warning('StudentPlan not found after token use', [
+                    \Log::info('Token has no plan (legacy token)', [
                         'session_id' => $session->id,
-                        'student_id' => $session->student_id,
-                        'token_plan_id' => $token->plan_id
+                        'token_id' => $token->id,
+                        'student_id' => $session->student_id
                     ]);
                 }
             } else {
-                \Log::info('Token has no plan (legacy token)', [
-                    'session_id' => $session->id,
-                    'token_id' => $token->id,
-                    'student_id' => $session->student_id
-                ]);
+                // Offline package path, consume one attempt from active plan record (if available)
+                if (isset($activeStudentPlan) && $activeStudentPlan) {
+                    $activeStudentPlan->decrement('attempts_remaining');
+                    $session->student_plan_id = $activeStudentPlan->id;
+                    $session->save();
+
+                    \Log::info('Offline package StudentPlan consumption', [
+                        'session_id' => $session->id,
+                        'student_plan_id' => $activeStudentPlan->id,
+                        'attempts_remaining' => $activeStudentPlan->attempts_remaining
+                    ]);
+                } else {
+                    throw new \Exception('No active offline package found.');
+                }
             }
 
             return $session;
@@ -503,6 +538,11 @@ class ExamController extends Controller
 
         $question = Question::find($data['question_id']);
         if (!$question) {
+            \Log::warning('Attempted to save answer for missing question', [
+                'session_id' => $session->id,
+                'question_id' => $data['question_id'],
+                'student_id' => $session->student_id,
+            ]);
             return response()->json(['message' => 'Question not found.'], 404);
         }
 
@@ -512,18 +552,36 @@ class ExamController extends Controller
             $question = $this->shuffleQuestionOptions(collect([$question]), $session->id)->first();
         }
 
-        $isCorrect = $data['selected_option']
-            ? $data['selected_option'] === $question->correct_option
+        $selectedOption = $data['selected_option'] ?? null;
+        $isCorrect = $selectedOption
+            ? $selectedOption === $question->correct_option
             : false;
 
-        ExamAnswer::where('exam_session_id', $session->id)
-            ->where('question_id', $data['question_id'])
-            ->update([
-                'selected_option' => $data['selected_option'],
+        $answer = ExamAnswer::updateOrCreate(
+            [
+                'exam_session_id' => $session->id,
+                'question_id' => $data['question_id'],
+            ],
+            [
+                'selected_option' => $selectedOption,
                 'is_correct' => $isCorrect,
-            ]);
+            ]
+        );
 
-        return response()->json(['saved' => true]);
+        \Log::info('exam answer saved', [
+            'session_id' => $session->id,
+            'student_id' => $session->student_id,
+            'question_id' => $question->id,
+            'selected_option' => $data['selected_option'],
+            'is_correct' => $isCorrect,
+            'answer_id' => $answer->id,
+        ]);
+
+        return response()->json([
+            'saved' => true,
+            'question_id' => $data['question_id'],
+            'selected_option' => $data['selected_option'],
+        ]);
     }
 
     public function terminate(ExamSession $session)
@@ -882,23 +940,40 @@ class ExamController extends Controller
         $data = $request->validate([
             'subject_ids' => ['required', 'array', 'size:3'],
             'subject_ids.*' => ['required', 'exists:subjects,id'],
-            'token_code' => ['required', 'string'],
+            'token_code' => ['nullable', 'string'],
         ]);
 
         $studentId = $request->user()->id;
-        $tokenCode = strtoupper(trim($data['token_code']));
+        $tokenCode = strtoupper(trim($data['token_code'] ?? ''));
+        $token = null;
 
-        // Validate token
-        $token = ExamToken::where('code', $tokenCode)->first();
+        if ($tokenCode !== '') {
+            // Validate token
+            $token = ExamToken::where('code', $tokenCode)->first();
 
-        if (!$token) {
-            return back()->withErrors(['token_code' => 'Invalid token code.'])->withInput();
-        }
+            if (!$token) {
+                return back()->withErrors(['token_code' => 'Invalid token code.'])->withInput();
+            }
 
-        if (!$token->isValid()) {
-            $reason = !$token->is_active ? 'deactivated' :
-                     ($token->expires_at && $token->expires_at->isPast() ? 'expired' : 'fully used');
-            return back()->withErrors(['token_code' => "Token is {$reason}."])->withInput();
+            if (!$token->isValid()) {
+                $reason = !$token->is_active ? 'deactivated' :
+                         ($token->expires_at && $token->expires_at->isPast() ? 'expired' : 'fully used');
+                return back()->withErrors(['token_code' => "Token is {$reason}."])->withInput();
+            }
+        } elseif (config('app.offline_mode') && config('app.offline_monthly_access') && $request->user()->hasActivePackage()) {
+            $activeStudentPlan = $request->user()->studentPlans()
+                ->where(function ($q) {
+                    $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
+                })
+                ->where('attempts_remaining', '>', 0)
+                ->orderBy('expires_at', 'desc')
+                ->first();
+
+            if (!$activeStudentPlan) {
+                return back()->withErrors(['token_code' => 'No active package found.'])->withInput();
+            }
+        } else {
+            return back()->withErrors(['token_code' => 'Token code is required.'])->withInput();
         }
 
         // Get English subject
@@ -1028,43 +1103,59 @@ class ExamController extends Controller
 
             ExamAnswer::insert($answers);
 
-            // Use the token first (capture IP/UA); this will bind the token and
-            // create a StudentPlan record if the token grants a plan.
-            $ip = $request->ip();
-            $ua = $request->header('User-Agent');
-            $ok = $token->use($request->user(), $session->id, $ip, $ua);
-            if (!$ok) {
-                throw new \Exception('Token sharing detected');
-            }
+            if ($token) {
+                // Use the token first (capture IP/UA); this will bind the token and
+                // create a StudentPlan record if the token grants a plan.
+                $ip = $request->ip();
+                $ua = $request->header('User-Agent');
+                $ok = $token->use($request->user(), $session->id, $ip, $ua);
+                if (!$ok) {
+                    throw new \Exception('Token sharing detected');
+                }
 
-            // If the student has an active plan record (just created above),
-            // consume an attempt and remember the record on the session so
-            // features persist for this exam.
-            if ($token->plan_id) {
-                $record = $request->user()->studentPlans()->where('plan_id', $token->plan_id)->latest()->first();
-                if ($record) {
-                    $record->decrement('attempts_remaining');
-                    $session->student_plan_id = $record->id;
-                    $session->save();
-                    
-                    \Log::info('JAMB StudentPlan updated for exam', [
-                        'session_id' => $session->id,
-                        'student_plan_id' => $record->id,
-                        'attempts_remaining' => $record->attempts_remaining
-                    ]);
+                // If the student has an active plan record (just created above),
+                // consume an attempt and remember the record on the session so
+                // features persist for this exam.
+                if ($token->plan_id) {
+                    $record = $request->user()->studentPlans()->where('plan_id', $token->plan_id)->latest()->first();
+                    if ($record) {
+                        $record->decrement('attempts_remaining');
+                        $session->student_plan_id = $record->id;
+                        $session->save();
+                        
+                        \Log::info('JAMB StudentPlan updated for exam', [
+                            'session_id' => $session->id,
+                            'student_plan_id' => $record->id,
+                            'attempts_remaining' => $record->attempts_remaining
+                        ]);
+                    } else {
+                        \Log::warning('JAMB StudentPlan not found after token use', [
+                            'session_id' => $session->id,
+                            'student_id' => $session->student_id,
+                            'token_plan_id' => $token->plan_id
+                        ]);
+                    }
                 } else {
-                    \Log::warning('JAMB StudentPlan not found after token use', [
+                    \Log::info('JAMB Token has no plan (legacy token)', [
                         'session_id' => $session->id,
-                        'student_id' => $session->student_id,
-                        'token_plan_id' => $token->plan_id
+                        'token_id' => $token->id,
+                        'student_id' => $session->student_id
                     ]);
                 }
             } else {
-                \Log::info('JAMB Token has no plan (legacy token)', [
-                    'session_id' => $session->id,
-                    'token_id' => $token->id,
-                    'student_id' => $session->student_id
-                ]);
+                if (isset($activeStudentPlan) && $activeStudentPlan) {
+                    $activeStudentPlan->decrement('attempts_remaining');
+                    $session->student_plan_id = $activeStudentPlan->id;
+                    $session->save();
+
+                    \Log::info('JAMB offline package StudentPlan consumption', [
+                        'session_id' => $session->id,
+                        'student_plan_id' => $activeStudentPlan->id,
+                        'attempts_remaining' => $activeStudentPlan->attempts_remaining
+                    ]);
+                } else {
+                    throw new \Exception('No active offline package found.');
+                }
             }
 
             return $session;
@@ -1076,10 +1167,38 @@ class ExamController extends Controller
     public function validateToken(Request $request)
     {
         $request->validate([
-            'code' => ['required', 'string']
+            'code' => ['nullable', 'string']
         ]);
 
-        $token = ExamToken::where('code', strtoupper(trim($request->code)))->first();
+        $user = $request->user();
+        $code = strtoupper(trim($request->code ?? ''));
+
+        if ($code === '') {
+            if (config('app.offline_mode') && config('app.offline_monthly_access') && $user && $user->hasActivePackage()) {
+                $plan = $user->activePlan();
+                return response()->json([
+                    'valid' => true,
+                    'message' => 'Offline monthly package is active. No token required.',
+                    'token_plan' => true,
+                    'plan' => $plan ? [
+                        'name' => $plan->name,
+                        'price' => $plan->price,
+                        'attempts_allowed' => $plan->attempts_allowed,
+                        'duration_days' => $plan->duration_days,
+                        'has_explanations' => $plan->has_explanations,
+                        'has_leaderboard' => $plan->has_leaderboard,
+                        'has_streak' => $plan->has_streak,
+                    ] : null,
+                ]);
+            }
+
+            return response()->json([
+                'valid' => false,
+                'message' => 'Token code is required.'
+            ], 400);
+        }
+
+        $token = ExamToken::where('code', $code)->first();
 
         if (!$token) {
             return response()->json([
