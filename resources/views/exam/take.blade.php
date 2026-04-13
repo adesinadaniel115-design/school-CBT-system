@@ -1040,8 +1040,33 @@
         helpModal.show();
     }
 
-    // Basic Calculator Functions
-    let calcExpression = '';
+    // Session keep-alive to prevent logout during calculator use
+    let keepAliveInterval = null;
+
+    function startSessionKeepAlive() {
+        if (keepAliveInterval) return; // Already running
+        
+        keepAliveInterval = setInterval(() => {
+            // Send a simple request to keep session alive
+            fetch('{{ route("exam.take", $session) }}', {
+                method: 'HEAD', // HEAD request is lighter
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]')?.value
+                },
+                keepalive: true
+            }).catch(() => {
+                // Ignore errors - this is just for keep-alive
+            });
+        }, 5 * 60 * 1000); // Every 5 minutes
+    }
+
+    function stopSessionKeepAlive() {
+        if (keepAliveInterval) {
+            clearInterval(keepAliveInterval);
+            keepAliveInterval = null;
+        }
+    }
 
     function toggleCalculator() {
         const calculatorOverlay = document.getElementById('calculatorOverlay');
@@ -1049,6 +1074,7 @@
         // Toggle visibility of the calculator overlay
         if (calculatorOverlay.classList.contains('show')) {
             calculatorOverlay.classList.remove('show');
+            stopSessionKeepAlive(); // Stop keep-alive when calculator closes
         } else {
             // Close sidebar on mobile
             const sidebar = document.getElementById('examSidebar');
@@ -1061,15 +1087,23 @@
             // Show calculator
             setTimeout(() => {
                 calculatorOverlay.classList.add('show');
+                startSessionKeepAlive(); // Start keep-alive when calculator opens
             }, 300); // Adjust delay as needed
         }
     }
 
     function appendCalc(value) {
         const display = document.getElementById('calcDisplay');
-        if (display.value === '0' && value !== '.') {
+        const currentValue = display.value;
+        
+        // Limit input length to prevent performance issues
+        if (currentValue.length >= 50) {
+            return; // Don't allow more input
+        }
+        
+        if (currentValue === '0' && value !== '.') {
             display.value = value;
-        } else if (display.value === '0' && value === '.') {
+        } else if (currentValue === '0' && value === '.') {
             display.value = '0.';
         } else {
             display.value += value;
@@ -1095,13 +1129,30 @@
     function calculateResult() {
         const display = document.getElementById('calcDisplay');
         try {
-            let expression = display.value;
+            let expression = display.value.trim();
+            
+            // Basic validation - only allow numbers, operators, and parentheses
+            if (!/^[\d\s\+\-\*\/\(\)\.]+$/.test(expression)) {
+                display.value = 'Invalid input';
+                return;
+            }
+            
             // Replace mathematical symbols with JavaScript operators
             expression = expression.replace(/×/g, '*');
             expression = expression.replace(/÷/g, '/');
             expression = expression.replace(/−/g, '-');
             
-            let result = eval(expression);
+            // Use Function constructor instead of eval for safer evaluation
+            // This only allows mathematical expressions, not arbitrary code
+            let result;
+            try {
+                result = new Function('return ' + expression)();
+            } catch (e) {
+                display.value = 'Error';
+                console.warn('Calculator evaluation error:', e);
+                return;
+            }
+            
             if (!isFinite(result)) {
                 display.value = 'Error';
             } else {
@@ -1152,6 +1203,7 @@
 
     document.addEventListener('DOMContentLoaded', function() {
         updateCounts();
+        startSessionKeepAlive(); // Start keep-alive for the entire exam session
     });
 
     // Timer functionality - continuous countdown with automatic submission
@@ -1296,6 +1348,8 @@
         if (ignoreBeforeUnload) {
             return;
         }
+
+        stopSessionKeepAlive(); // Clean up keep-alive on page unload
 
         if (pendingSaveRequests.size > 0) {
             flushPendingSavesOnUnload();
