@@ -1251,6 +1251,11 @@
         
         // Keyboard navigation
         document.addEventListener('keydown', function(e) {
+            const calculatorOverlay = document.getElementById('calculatorOverlay');
+            if (calculatorOverlay && calculatorOverlay.classList.contains('show')) {
+                return;
+            }
+
             // Left arrow - previous question
             if (e.key === 'ArrowLeft' && currentQuestion > 0) {
                 e.preventDefault();
