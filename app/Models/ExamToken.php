@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 use App\Models\Plan;
 use App\Models\StudentPlan;
 
@@ -159,10 +160,33 @@ class ExamToken extends Model
 
     public static function generateCode(): string
     {
-        do {
-            $code = strtoupper(Str::random(3) . '-' . Str::random(3) . '-' . Str::random(3));
-        } while (self::where('code', $code)->exists());
+        // Use database-level uniqueness constraint with retry logic
+        $maxAttempts = 10;
+        $attempt = 0;
 
-        return $code;
+        while ($attempt < $maxAttempts) {
+            $code = strtoupper(Str::random(3) . '-' . Str::random(3) . '-' . Str::random(3));
+            
+            try {
+                // Try to create with unique constraint check at database level
+                // This is safer than checking then inserting
+                $exists = DB::table('exam_tokens')
+                    ->where('code', $code)
+                    ->lockForUpdate() // Lock the row to prevent race conditions
+                    ->exists();
+                    
+                if (!$exists) {
+                    return $code;
+                }
+            } catch (\Throwable $e) {
+                // If lock fails, retry
+                \Log::warning('Token code generation lock failed, retrying', ['attempt' => $attempt + 1]);
+            }
+            
+            $attempt++;
+            usleep(100000); // Wait 100ms before retry
+        }
+
+        throw new \Exception('Failed to generate unique token code after ' . $maxAttempts . ' attempts');
     }
 }

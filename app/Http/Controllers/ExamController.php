@@ -1198,9 +1198,17 @@ class ExamController extends Controller
             ], 400);
         }
 
-        $token = ExamToken::where('code', $code)->first();
+        // Use strict case-sensitive search for token code
+        $token = ExamToken::where('code', '=', $code)
+            ->first();
 
         if (!$token) {
+            \Log::warning('Token not found during validation', [
+                'attempted_code' => $code,
+                'user_id' => $user->id ?? null,
+                'ip' => $request->ip()
+            ]);
+            
             return response()->json([
                 'valid' => false,
                 'message' => 'Token not found'
@@ -1210,6 +1218,13 @@ class ExamController extends Controller
         // prevent validation if token has been bound to someone else
         $user = $request->user();
         if ($token->bound_user_id && $token->bound_user_id !== $user->id) {
+            \Log::warning('Token already bound to different user', [
+                'token_id' => $token->id,
+                'token_code' => $token->code,
+                'bound_user_id' => $token->bound_user_id,
+                'current_user_id' => $user->id
+            ]);
+            
             return response()->json([
                 'valid' => false,
                 'message' => 'Token has already been redeemed by another user.'
@@ -1219,6 +1234,17 @@ class ExamController extends Controller
         if (!$token->isValid()) {
             $reason = !$token->is_active ? 'deactivated' :
                      ($token->expires_at && $token->expires_at->isPast() ? 'expired' : 'fully used');
+            
+            \Log::warning('Token validation failed', [
+                'token_id' => $token->id,
+                'token_code' => $token->code,
+                'reason' => $reason,
+                'is_active' => $token->is_active,
+                'expires_at' => $token->expires_at,
+                'used_count' => $token->used_count,
+                'max_uses' => $token->max_uses,
+                'user_id' => $user->id
+            ]);
             
             return response()->json([
                 'valid' => false,

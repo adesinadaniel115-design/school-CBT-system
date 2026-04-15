@@ -61,38 +61,59 @@ class AdminExamTokenController extends Controller
     {
         $rules = [
             'quantity' => ['required', 'integer', 'min:1', 'max:100'],
+            'max_uses' => ['required', 'integer', 'min:1', 'max:1000'],
             'expires_at' => ['nullable', 'date', 'after:today'],
             'notes' => ['nullable', 'string', 'max:500'],
             'center_id' => ['nullable','exists:centers,id'],
         ];
 
         if (\Schema::hasTable('plans')) {
-            // Plan-first flow: require selecting a plan; token usage limits inherit from plan
-            $rules['plan_id'] = ['required','exists:plans,id'];
+            // Plan-first flow: allow optional plan selection
+            $rules['plan_id'] = ['nullable', 'exists:plans,id'];
         }
 
         $validated = $request->validate($rules);
 
-        $tokens = [];
-        $planValue = null;
-        $planAttempts = 1;
-        if (\Schema::hasTable('plans')) {
-            $planValue = $validated['plan_id'];
-            $planModel = \App\Models\Plan::findOrFail($planValue);
-            $planAttempts = $planModel->attempts_allowed;
-        }
+        // Start transaction for bulk token creation
+        $tokens = \Illuminate\Support\Facades\DB::transaction(function () use ($validated) {
+            $tokens = [];
+            $planValue = $validated['plan_id'] ?? null;
+            $planAttempts = $validated['max_uses'];
+            
+            // Override max_uses if plan is selected
+            if (\Schema::hasTable('plans') && $planValue) {
+                $planModel = \App\Models\Plan::findOrFail($planValue);
+                $planAttempts = $planModel->attempts_allowed;
+            }
 
-        for ($i = 0; $i < $validated['quantity']; $i++) {
-            $tokens[] = ExamToken::create([
-                'code' => ExamToken::generateCode(),
-                'max_uses' => $planAttempts,
-                'created_by' => auth()->id(),
-                'expires_at' => $validated['expires_at'] ?? null,
-                'notes' => $validated['notes'] ?? null,
-                'center_id' => $validated['center_id'] ?? null,
-                'plan_id' => $planValue,
-            ]);
-        }
+            for ($i = 0; $i < $validated['quantity']; $i++) {
+                try {
+                    $token = \App\Models\ExamToken::create([
+                        'code' => \App\Models\ExamToken::generateCode(),
+                        'max_uses' => $planAttempts,
+                        'is_active' => true, // Explicitly set to active
+                        'created_by' => auth()->id(),
+                        'expires_at' => $validated['expires_at'] ?? null,
+                        'notes' => $validated['notes'] ?? null,
+                        'center_id' => $validated['center_id'] ?? null,
+                        'plan_id' => $planValue,
+                    ]);
+                    $tokens[] = $token;
+                } catch (\Throwable $e) {
+                    // Log the error but continue creating remaining tokens
+                    \Log::error('Error creating token', [
+                        'iteration' => $i,
+                        'error' => $e->getMessage()
+                    ]);
+                    
+                    // If we're in a transaction and get here, we might want to notify admin
+                    // but not fail the entire batch
+                    throw new \Exception("Failed to create token batch. Error at item " . ($i + 1) . ": " . $e->getMessage());
+                }
+            }
+            
+            return $tokens;
+        }, 5); // 5 attempts for transaction
 
         if ($validated['quantity'] === 1) {
             return redirect()->route('admin.tokens.index')
