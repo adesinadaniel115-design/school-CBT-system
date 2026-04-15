@@ -61,7 +61,6 @@ class AdminExamTokenController extends Controller
     {
         $rules = [
             'quantity' => ['required', 'integer', 'min:1', 'max:100'],
-            'max_uses' => ['required', 'integer', 'min:1', 'max:1000'],
             'expires_at' => ['nullable', 'date', 'after:today'],
             'notes' => ['nullable', 'string', 'max:500'],
             'center_id' => ['nullable','exists:centers,id'],
@@ -70,6 +69,11 @@ class AdminExamTokenController extends Controller
         if (\Schema::hasTable('plans')) {
             // Plan-first flow: allow optional plan selection
             $rules['plan_id'] = ['nullable', 'exists:plans,id'];
+            // max_uses is only required when no plan is selected
+            $rules['max_uses'] = ['required_without:plan_id', 'nullable', 'integer', 'min:1', 'max:1000'];
+        } else {
+            // No plans table, max_uses is always required
+            $rules['max_uses'] = ['required', 'integer', 'min:1', 'max:1000'];
         }
 
         $validated = $request->validate($rules);
@@ -78,12 +82,15 @@ class AdminExamTokenController extends Controller
         $tokens = \Illuminate\Support\Facades\DB::transaction(function () use ($validated) {
             $tokens = [];
             $planValue = $validated['plan_id'] ?? null;
-            $planAttempts = $validated['max_uses'];
             
-            // Override max_uses if plan is selected
+            // Determine max_uses based on plan selection
             if (\Schema::hasTable('plans') && $planValue) {
+                // Use plan's attempts when plan is selected
                 $planModel = \App\Models\Plan::findOrFail($planValue);
                 $planAttempts = $planModel->attempts_allowed;
+            } else {
+                // Use provided max_uses for plan-less tokens (defaults to 1 if not provided)
+                $planAttempts = $validated['max_uses'] ?? 1;
             }
 
             for ($i = 0; $i < $validated['quantity']; $i++) {
