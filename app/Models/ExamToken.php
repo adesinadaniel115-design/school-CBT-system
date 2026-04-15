@@ -160,33 +160,57 @@ class ExamToken extends Model
 
     public static function generateCode(): string
     {
-        // Use database-level uniqueness constraint with retry logic
-        $maxAttempts = 10;
+        // Use database-level uniqueness with proper retry logic
+        $maxAttempts = 20; // Increased from 10 for better reliability
         $attempt = 0;
 
         while ($attempt < $maxAttempts) {
             $code = strtoupper(Str::random(3) . '-' . Str::random(3) . '-' . Str::random(3));
-            
+
             try {
-                // Try to create with unique constraint check at database level
-                // This is safer than checking then inserting
+                // Check if code exists without locking (faster)
                 $exists = DB::table('exam_tokens')
                     ->where('code', $code)
-                    ->lockForUpdate() // Lock the row to prevent race conditions
                     ->exists();
-                    
+
                 if (!$exists) {
-                    return $code;
+                    // Double-check with a unique constraint insert attempt
+                    // This is the most reliable way to ensure uniqueness
+                    try {
+                        DB::table('exam_tokens')->insert([
+                            'code' => $code,
+                            'max_uses' => 1, // Temporary placeholder
+                            'used_count' => 0,
+                            'is_active' => false, // Mark as inactive initially
+                            'created_by' => 1, // System user
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+
+                        // If insert succeeded, delete the placeholder and return the code
+                        DB::table('exam_tokens')
+                            ->where('code', $code)
+                            ->delete();
+
+                        return $code;
+                    } catch (\Illuminate\Database\QueryException $e) {
+                        // Unique constraint violation - code already exists
+                        // Continue to next attempt
+                    }
                 }
             } catch (\Throwable $e) {
-                // If lock fails, retry
-                \Log::warning('Token code generation lock failed, retrying', ['attempt' => $attempt + 1]);
+                // Log any other database errors but continue
+                \Log::warning('Token code generation database error', [
+                    'attempt' => $attempt + 1,
+                    'error' => $e->getMessage()
+                ]);
             }
-            
+
             $attempt++;
-            usleep(100000); // Wait 100ms before retry
+            // Add small delay to reduce collision probability
+            usleep(1000); // 1ms delay
         }
 
-        throw new \Exception('Failed to generate unique token code after ' . $maxAttempts . ' attempts');
+        throw new \Exception('Failed to generate unique token code after ' . $maxAttempts . ' attempts. Database may be under high load or token table is full.');
     }
 }

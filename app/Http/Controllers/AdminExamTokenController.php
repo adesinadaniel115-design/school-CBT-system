@@ -78,49 +78,59 @@ class AdminExamTokenController extends Controller
 
         $validated = $request->validate($rules);
 
-        // Start transaction for bulk token creation
-        $tokens = \Illuminate\Support\Facades\DB::transaction(function () use ($validated) {
-            $tokens = [];
-            $planValue = $validated['plan_id'] ?? null;
-            
-            // Determine max_uses based on plan selection
-            if (\Schema::hasTable('plans') && $planValue) {
-                // Use plan's attempts when plan is selected
-                $planModel = \App\Models\Plan::findOrFail($planValue);
-                $planAttempts = $planModel->attempts_allowed;
-            } else {
-                // Use provided max_uses for plan-less tokens (defaults to 1 if not provided)
-                $planAttempts = $validated['max_uses'] ?? 1;
-            }
+        // Create tokens individually to avoid transaction rollback issues
+        $tokens = [];
+        $errors = [];
+        $planValue = $validated['plan_id'] ?? null;
 
-            for ($i = 0; $i < $validated['quantity']; $i++) {
-                try {
-                    $token = \App\Models\ExamToken::create([
-                        'code' => \App\Models\ExamToken::generateCode(),
-                        'max_uses' => $planAttempts,
-                        'is_active' => true, // Explicitly set to active
-                        'created_by' => auth()->id(),
-                        'expires_at' => $validated['expires_at'] ?? null,
-                        'notes' => $validated['notes'] ?? null,
-                        'center_id' => $validated['center_id'] ?? null,
-                        'plan_id' => $planValue,
-                    ]);
-                    $tokens[] = $token;
-                } catch (\Throwable $e) {
-                    // Log the error but continue creating remaining tokens
-                    \Log::error('Error creating token', [
-                        'iteration' => $i,
-                        'error' => $e->getMessage()
-                    ]);
-                    
-                    // If we're in a transaction and get here, we might want to notify admin
-                    // but not fail the entire batch
-                    throw new \Exception("Failed to create token batch. Error at item " . ($i + 1) . ": " . $e->getMessage());
-                }
+        // Determine max_uses based on plan selection
+        if (\Schema::hasTable('plans') && $planValue) {
+            // Use plan's attempts when plan is selected
+            $planModel = \App\Models\Plan::findOrFail($planValue);
+            $planAttempts = $planModel->attempts_allowed;
+        } else {
+            // Use provided max_uses for plan-less tokens (defaults to 1 if not provided)
+            $planAttempts = $validated['max_uses'] ?? 1;
+        }
+
+        for ($i = 0; $i < $validated['quantity']; $i++) {
+            try {
+                $token = \App\Models\ExamToken::create([
+                    'code' => \App\Models\ExamToken::generateCode(),
+                    'max_uses' => $planAttempts,
+                    'is_active' => true, // Explicitly set to active
+                    'created_by' => auth()->id(),
+                    'expires_at' => $validated['expires_at'] ?? null,
+                    'notes' => $validated['notes'] ?? null,
+                    'center_id' => $validated['center_id'] ?? null,
+                    'plan_id' => $planValue,
+                ]);
+                $tokens[] = $token;
+            } catch (\Throwable $e) {
+                // Log the error and continue with remaining tokens
+                \Log::error('Error creating token', [
+                    'iteration' => $i,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+
+                $errors[] = "Failed to create token at position " . ($i + 1) . ": " . $e->getMessage();
             }
-            
-            return $tokens;
-        }, 5); // 5 attempts for transaction
+        }
+
+        // If we have errors but also some successful tokens, log warnings
+        if (!empty($errors) && !empty($tokens)) {
+            \Log::warning('Partial token creation failure', [
+                'successful_tokens' => count($tokens),
+                'failed_tokens' => count($errors),
+                'errors' => $errors
+            ]);
+        }
+
+        // If all tokens failed, throw an exception
+        if (empty($tokens)) {
+            throw new \Exception("Failed to create any tokens. Errors: " . implode('; ', $errors));
+        }
 
         if ($validated['quantity'] === 1) {
             return redirect()->route('admin.tokens.index')
