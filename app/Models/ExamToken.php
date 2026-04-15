@@ -177,6 +177,8 @@ class ExamToken extends Model
             }
 
             $attempt++;
+        }
+
         throw new \Exception('Failed to generate unique token code after ' . $maxAttempts . ' attempts. The token table appears to be completely full.');
     }
 }

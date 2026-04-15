@@ -78,19 +78,16 @@ class AdminExamTokenController extends Controller
 
         $validated = $request->validate($rules);
 
-        // Create tokens individually to avoid transaction rollback issues
         $tokens = [];
         $errors = [];
         $planValue = $validated['plan_id'] ?? null;
+        $planAttempts = 1;
 
-        // Determine max_uses based on plan selection
         if (\Schema::hasTable('plans') && $planValue) {
-            // Use plan's attempts when plan is selected
             $planModel = \App\Models\Plan::findOrFail($planValue);
             $planAttempts = $planModel->attempts_allowed;
-        } else {
-            // Use provided max_uses for plan-less tokens (defaults to 1 if not provided)
-            $planAttempts = $validated['max_uses'] ?? 1;
+        } elseif (isset($validated['max_uses'])) {
+            $planAttempts = $validated['max_uses'];
         }
 
         for ($i = 0; $i < $validated['quantity']; $i++) {
@@ -98,47 +95,37 @@ class AdminExamTokenController extends Controller
                 $token = \App\Models\ExamToken::create([
                     'code' => \App\Models\ExamToken::generateCode(),
                     'max_uses' => $planAttempts,
-                    'is_active' => true, // Explicitly set to active
+                    'is_active' => true,
                     'created_by' => auth()->id(),
                     'expires_at' => $validated['expires_at'] ?? null,
                     'notes' => $validated['notes'] ?? null,
                     'center_id' => $validated['center_id'] ?? null,
                     'plan_id' => $planValue,
                 ]);
+
                 $tokens[] = $token;
             } catch (\Throwable $e) {
-                // Log the error and continue with remaining tokens
                 \Log::error('Error creating token', [
                     'iteration' => $i,
                     'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
+                    'trace' => $e->getTraceAsString(),
                 ]);
 
-                $errors[] = "Failed to create token at position " . ($i + 1) . ": " . $e->getMessage();
+                $errors[] = sprintf('Failed to create token at position %d: %s', $i + 1, $e->getMessage());
             }
         }
 
-        // If we have errors but also some successful tokens, log warnings
-        if (!empty($errors) && !empty($tokens)) {
-            \Log::warning('Partial token creation failure', [
-                'successful_tokens' => count($tokens),
-                'failed_tokens' => count($errors),
-                'errors' => $errors
-            ]);
-        }
-
-        // If all tokens failed, throw an exception
         if (empty($tokens)) {
-            throw new \Exception("Failed to create any tokens. Errors: " . implode('; ', $errors));
+            throw new \Exception('Failed to create any tokens. Errors: ' . implode('; ', $errors));
         }
 
-        if ($validated['quantity'] === 1) {
+        if (count($tokens) === 1) {
             return redirect()->route('admin.tokens.index')
-                ->with('status', "Token created: {$tokens[0]->code}");
+                ->with('status', 'Token created: ' . $tokens[0]->code);
         }
 
         return redirect()->route('admin.tokens.print', ['ids' => collect($tokens)->pluck('id')->implode(',')])
-            ->with('status', "{$validated['quantity']} tokens generated successfully!");
+            ->with('status', $validated['quantity'] . ' tokens generated successfully!');
     }
 
     public function toggle(ExamToken $token)
